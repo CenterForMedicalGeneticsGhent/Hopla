@@ -127,9 +127,9 @@ Rscript path/to/hopla.R --settings path/to/settings.txt --skip.raw F --limit.baf
 
 ```bash
 
-git clone https://github.com/leraman/hopla  
-cd hopla  
-Rscript hopla.R --settings example/example-settings.txt  
+git clone https://github.com/leraman/hopla
+cd hopla
+Rscript hopla.R --settings example/example-settings.txt
 ```
 
 # Output
