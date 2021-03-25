@@ -71,7 +71,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 - **`--limit.pm.to.25 [boolean, default=F]`** Whether the parent mapping profiles should be randomly sampled to include only 25% of the data; significantly lowers HTML output size
 - **`--color.palette [string, default=Paired]`** [Color palette](https://rdrr.io/cran/RColorBrewer/man/ColorBrewer.html) to be used in visualizations
 - **`--dot.factor [numeric, default=2]`** The size of every dot in the visualizations is multiplied by this number
-- **`--selfcontained [boolean, default=F]`** Whether to generate a self-contained HTML; requires pandoc (see above)
+- **`--selfcontained [boolean, default=F]`** Whether to generate a self-contained HTML; requires [Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
 - **`--cairo [boolean, default=F]`** Whether the cairo bitmap should be used (required by some systems for plotting)
 
 # Settings file
@@ -134,7 +134,7 @@ Rscript hopla.R --settings example/example-settings.txt
 
 # Output
 
-The output is an interactive HTML file. By mouse hovering, draging, etc., figures can be manipulated and often, raw data can be consulted. A partial toy example is given at *example/hopla.html*.  
+The output is an interactive HTML file. By mouse hovering, draging, etc., figures can be manipulated, and often, raw data can be consulted. A partial toy example is given at *example/hopla.html*.  
 
 ## Family/disease information
 
@@ -188,7 +188,7 @@ Useful for hetero/iso-uniparental disomy (UPD) detection, as an additional quali
 
 'Parent mapping' is executed for every sample when at least one parent is available. Useful for hetero/iso-uniparental disomy (UPD) detection and to analyze whether aberrations are meiotic or mitotic.  
 
-Variants of the child/embryo are distributed per parental origin. Dots above the chromosome bands represent informative variants of the father, while dots below the cytoband represent informative variants of the mother. The top and bottom tracks per parental origin represent variants for which the embryo is heterozygous and homozygous, respectively.  
+Variants of the child/embryo are distributed per parental origin. Dots above the chromosome bands represent informative variants of the father, while dots below represent informative variants of the mother. The top and bottom tracks per parental origin represent variants for which the embryo is heterozygous and homozygous, respectively.  
 
 ## Filter 2: filter 0, filer 1, --keep.informative.ids and --keep.hetero.ids
 
@@ -202,7 +202,9 @@ Merlin is executed if more than one sample is provided in `--sample.ids`, and `-
 
 Different haplotypes are given by colors. Haplotypes are relative between individuals/strands within a family (i.e., same-haplotype colors are not constant between HTML output files). Details at each variant can be obtained by mouse hovering. By default, the latter is only enabled at regions given by `--regions`. This can be omitted by using `--skip.raw F`.  
 
-*Note 1*: 'raw' haplotypes from Merlin can be corrected using `--window.size.voting`. At each variant (e.g., variant X), haplotypes (e.g., haplotype A) can be 'corrected' in accordance to their neighbourhood, defined by argument `--window.size.voting`. The algorithm we created is dubbed 'weighted neighbourhood voting': the closer variant neighbour Y (with, e.g., haplotype B) is to the current variant X, the more votes (for haplotype B) variant Y has to influence the haplotype of variant X. All votes (for haplotype A and B) within the neighbourhood of X are summed, variant X is given the winning haplotype. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
+*Note 1*: 'raw' haplotypes from Merlin can be corrected using `--window.size.voting`. At each variant (e.g., variant X), haplotypes (e.g., haplotype A) can be 'corrected' in accordance to their neighbourhood, defined by argument `--window.size.voting`. The algorithm we created is dubbed 'weighted neighbourhood voting': the closer variant Y (with, e.g., haplotype B; located in the neighbourhood) is to the current variant X, the more votes (for haplotype B) variant Y has to influence the haplotype of variant X. All votes (for haplotype A and B) within the neighbourhood of X are summed, variant X is given the winning haplotype. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
+
+The number of votes each variant has to influence the haplotype of variant X is given by: [((`--window.size.voting`) / (distance to variant X + `--window.size.voting`/2)) - 1]; this way, variants with a negative number of votes lay beyound the bonds of the neighbourhood defined by `--window.size.voting`, and are ignored.  
 
 *Note 2*: haplotypes from Merlin can be further corrected using `--min.seg.var`. A haplotype stretch needs to have at least `--min.seg.var` variants. If not, the haplotype segment is corrected to its neighbouring haplotype segments. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
 
