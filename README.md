@@ -93,7 +93,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
     - DNAcopy (v1.64.0)
 - Standalone tools
     - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
-    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.2.3.2))
+    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.2.3.2))  
 
 Merlin's version should be exactly as given.  
 Plotly's version is ideally no lower than given.  
@@ -180,7 +180,8 @@ Genome-wide BAF profiles are included for samples given in `--baf.ids`.
 Mendelian errors are derived for every sample when at least one parent is available. Shown per child/embryo:  
 - 'trio errors', when both parents are available (e.g., child can't be 0/0 if parents are 1/1 and 0/1)
 - 'father errors', where only the father-child relation is verified (or available), based on homozygous inheritance (e.g., child can't be 0/0 if father is 1/1)
-- 'mother errors', where only the mother-child relation is verified (or available), based on homozygous inheritance (e.g., child can't be 0/0 if mother is 1/1)
+- 'mother errors', where only the mother-child relation is verified (or available), based on homozygous inheritance (e.g., child can't be 0/0 if mother is 1/1)  
+
 Useful for hetero/iso-uniparental disomy (UPD) detection, as an additional quality control, and to recognize sample swaps.  
 
 ### Parent mapping
@@ -205,7 +206,7 @@ Different haplotypes are given by colors. Haplotypes are relative between indivi
 
 *Note 2*: haplotypes from Merlin can be further corrected using `--min.seg.var`. A haplotype stretch needs to have at least `--min.seg.var` variants. If not, the haplotype segment is corrected to its neighbouring haplotype segments. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
 
-*Note 3*: There is no haplotyping executed when the given family structure does not allow it (i.e., when no reference sample is provided): there will be no breakpoints in the haplotyping strands  
+*Note 3*: There is no haplotyping executed when the given family structure does not allow it (i.e., when no reference sample is provided), there will be no breakpoints in the haplotyping strands.  
 
 *Note 4*: When the raw genotype is 'NA', it has been removed by soft filtering, as explained in the [Arguments](#Arguments).  
 
