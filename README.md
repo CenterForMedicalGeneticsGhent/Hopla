@@ -113,7 +113,7 @@ Rscript path/to/hopla.R --settings path/to/settings.txt
 
 ```bash
 
-Rscript path/to/hopla.R --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.file path/to/vcf.gz ...
+Rscript path/to/hopla.R --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.file path/to/vcf.gz 
 ```
 
 - Combining the above, where command line arguments override [settings file](#Settings-file) arguments
@@ -203,7 +203,7 @@ Different haplotypes are given by colors. Haplotypes are relative between indivi
 
 *Note 1*: 'raw' haplotypes from Merlin can be corrected using `--window.size.voting`. At each variant (e.g., variant X), haplotypes (e.g., haplotype A) can be 'corrected' in accordance to their neighbourhood, defined by argument `--window.size.voting`. The algorithm we created is dubbed 'weighted neighbourhood voting': the closer variant neighbour Y (with, e.g., haplotype B) is to the current variant X, the more votes (for haplotype B) variant Y has to influence the haplotype of variant X. All votes (for haplotype A and B) within the neighbourhood of X are summed, variant X is given the winning haplotype. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
 
-*Note 2*: 'raw' haplotypes from Merlin can be corrected using `--min.seg.var`. A haplotype stretch needs to have at least `--min.seg.var` variants. If not, the haplotype segment is corrected to its neighbouring haplotype segments. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
+*Note 2*: haplotypes from Merlin can be further corrected using `--min.seg.var`. A haplotype stretch needs to have at least `--min.seg.var` variants. If not, the haplotype segment is corrected to its neighbouring haplotype segments. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
 
 *Note 3*: There is no haplotyping executed when the given family structure does not allow it (i.e., when no reference sample is provided): there will be no breakpoints in the haplotyping strands  
 
