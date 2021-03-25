@@ -14,7 +14,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 - **`--sample.ids [string list, comma sep]`** Sample IDs as given in the file at `--vcf.file`; e.g., sample_C,sample_B,sample_A; missing samples can be added using IDs U1,U2,... which is useful to, e.g., define uncle/niece/... relations, by reusing these IDs in `--father.ids` and `--mother.ids`
 
 ## Optional arguments
-### Important optional arguments
+### **Important** optional arguments
 
 - **`--father.ids [string list, comma sep, no default]`** Sample IDs fathers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_C
 - **`--mother.ids [string list, comma sep, no default]`** Sample IDs mothers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_B
@@ -22,18 +22,18 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 - **`--merlin.exe [string, no default]`** Path to Merlin executables folder; if not provided, haplotyping is not executed; likely having this form: path/to/merlin-1.1.2/executables
 - **`--cytoband.file [string, no default]`** [UCSC cytoband file](https://hgdownload.soe.ucsc.edu/downloads.html#human); when given, chromosome bands are shown on top of chromosome-wise figures; highly improves interpretability of figures; e.g., path/to/cytoband.hg38.txt
 
-### Important optional variant inclusion arguments: filter 1
+### **Important** optional variant inclusion arguments: filter 1
 
 - EVERY sample in **`--dp.hard.limit.samples [string list, comma sep, default=--sample.ids]`** should have variants with a coverage of at least **`--dp.hard.limit [integer, default=10]`**; applies hard filter: variants that do not comply will be removed from all samples
 - AT LEAST ONE sample in **`--af.hard.limit.samples [string list, comma sep, default=--sample.ids]`** should have variants with an allele fraction of at least **`--af.hard.limit [numeric (range 0-1), default=0]`**; applies hard filter: variants that do not comply will be removed from all samples
 - Variants from samples in **`--dp.soft.limit.samples [string list, comma sep, default=--sample.ids]`** should have a coverage of at least **`--dp.soft.limit [integer, default=15]`**; applies soft filter: variants that do not comply will be removed from the given samples only
 
-### Important optional variant inclusion arguments: filter 2
+### **Important** optional variant inclusion arguments: filter 2
 
 - **`--keep.informative.ids [string list, comma sep, no default]`** Only keep variants that are 0/1 in sample 1 and 0/0|1/1 in sample 2, and vice versa; effective if exactly two samples are given; translates to 'parents' in classic setting; e.g., sample_C,sample_B
 - **`--keep.hetero.ids [string list, comma sep, no default]`** Only keep variants that are 0/1 in at least one of the given samples; effective if one or more samples are given; soft filter will be used to exclude 0/0 and 1/1 variants; only applies to autosomes; translates to 'children/embryos' in classic setting; e.g., sample_A
 
-### Optional: sample/disease annotation
+### Sample/disease annotation
 
 - **`--regions [string list, comma sep, no default]`** Region(s) of interest; define using 'chr:start-end' (in bp); when given, will mark regions in output at any time, generate detailed B-allele frequency (BAF) profiles, and keep corresponding raw data at any time; e.g., chr7:117480025-117668665
 - **`--reference.ids [string list, comma sep, no default]`** When given, family tree and sample names are colored/annotated accordingly; none or more expected
@@ -49,7 +49,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
       Some more information.  
       end.info  
 
-### Optional: B-allele frequency (BAF) profiles
+### B-allele frequency (BAF) profiles
 
 - **`--baf.ids [string list, comma sep, no default]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
 
