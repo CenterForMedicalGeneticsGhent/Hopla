@@ -1,0 +1,65 @@
+---
+fc_name: example
+upload:
+  dir: ../final
+resources:
+  tmp:
+    dir: /path/to/tmp
+details:
+  - analysis: variant2
+    genome_build: hg38
+    description: sample_A
+    metadata:
+      batch: batch_example
+    algorithm:
+      trim_ends: [6, 0, 0, 0]
+      aligner: bwa
+      save_diskspace: true
+      coverage_interval: regional
+      mark_duplicates: false
+      recalibrate: false
+      realign: false
+      variantcaller: gatk-haplotype
+      jointcaller: gatk-haplotype-joint
+      effects: false
+      tools_off:
+        - gemini
+    files: [path/to/sample_A_R1.fastq.gz,path/to/sample_A_R2.fastq.gz]
+  - analysis: variant2
+    genome_build: hg38
+    description: sample_B
+    metadata:
+      batch: batch_example
+    algorithm:
+      trim_ends: [6, 0, 0, 0]
+      aligner: bwa
+      save_diskspace: true
+      coverage_interval: regional
+      mark_duplicates: false
+      recalibrate: false
+      realign: false
+      variantcaller: gatk-haplotype
+      jointcaller: gatk-haplotype-joint
+      effects: false
+      tools_off:
+        - gemini
+    files: [path/to/sample_B_R1.fastq.gz,path/to/sample_B_R2.fastq.gz]
+  - analysis: variant2
+    genome_build: hg38
+    description: sample_C
+    metadata:
+      batch: batch_example
+    algorithm:
+      trim_ends: [6, 0, 0, 0]
+      aligner: bwa
+      save_diskspace: true
+      coverage_interval: regional
+      mark_duplicates: false
+      recalibrate: false
+      realign: false
+      variantcaller: gatk-haplotype
+      jointcaller: gatk-haplotype-joint
+      effects: false
+      tools_off:
+        - gemini
+    files: [path/to/sample_C_R1.fastq.gz,path/to/sample_C_R2.fastq.gz]
