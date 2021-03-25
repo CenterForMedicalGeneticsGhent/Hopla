@@ -113,7 +113,7 @@ Rscript path/to/hopla.R --settings path/to/settings.txt
 
 ```bash
 
-Rscript path/to/hopla.R --sample.ids sampleA,sampleB,sampleC,sampleD,sampleE --out.dir path/to/output --merlin.exe path/to/merlin-1.1.2/executables ...
+Rscript path/to/hopla.R --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.file path/to/vcf.gz ...
 ```
 
 - Combining the above, where command line arguments override [settings file](#Settings-file) arguments
