@@ -1,5 +1,5 @@
 # Hopla's objective
-Hopla enables classic genomic duo-, trio-, etc., analysis, by analyzing a single (multisample) vcf-file, eventually generating interactive visualizations. In addition, when possible, Hopla executes offline pedigree haplotyping through [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Other than post-natal analyses, its all-inclusive output enables embryo selection during preimplantation genetic testing, ultimately intending birth of healthy children in affected families. The name 'Hopla' originates from being both a 'haplo' anagram and a popular kids' television show.
+Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a single (multisample) vcf-file, eventually generating interactive visualizations. In addition, when possible, Hopla executes offline pedigree haplotyping through [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Other than post-natal analyses, its all-inclusive output enables embryo selection during preimplantation genetic testing, ultimately intending birth of healthy children in affected families. The name 'Hopla' originates from being both a 'haplo' anagram and a popular kids' television show.
 
 # Input
 - A (multisample) vcf.gz file (in our tests generated using gatk-haplotype & gatk-haplotype-joint through [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/); settings file: *example/example-bcbio.yaml*)
@@ -65,7 +65,7 @@ Hopla enables classic genomic duo-, trio-, etc., analysis, by analyzing a single
 ### Remaining features
 - **`--X.cutoff [numeric, default = 1.5]`** Used as 'X chromosome copy number cutoff' for gender prediction (one copy assumed in males, two in females)
 - **`--Y.cutoff [numeric, default = 0.5']`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
-- **`--window.size [integer, default=1000000]`** Multiple genomic profiles are made in a bin-wise manner; define size (in bp) of bin
+- **`--window.size [integer, default=1000000]`** Several genome-wide profiles are made in a bin-wise manner; define size (in bp) of bin
 - **`--regions.flanking.size [integer, default=5000000]`** Flanking size (in bp) to mark region(s) of interest
 - **`--limit.baf.to.25 [boolean, default=F]`** Whether the genome-wide BAF profiles should be randomly sampled to include only 25% of the data; significantly lowers HTML output size
 - **`--limit.pm.to.25 [boolean, default=F]`** Whether the parent mapping profiles should be randomly sampled to include only 25% of the data; significantly lowers HTML output size
@@ -80,6 +80,24 @@ Hopla enables classic genomic duo-, trio-, etc., analysis, by analyzing a single
 - Every parameter in this file is overridden by command line arguments when given
 - Everything following '#' will be ignored, serving as a comment
 - Example at *example/example-settings.txt*
+
+# Dependencies
+- R packages
+    - vcfR (v1.12.0)
+    - data.table (v1.13.2)
+    - RColorBrewer (v1.1-2)
+    - kinship2 (v1.8.5)
+    - plotly (v4.9.2.1)
+    - htmltools (v0.5.0)
+    - GenomicRanges (v1.42.0)
+    - DNAcopy (v1.64.0)
+- Standalone tools
+    - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
+    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.2.3.2))
+
+Merlin's version should be exactly as given.  
+Plotly's version is ideally no lower than given.  
+For the remaining packages, other versions are very likely to work.  
 
 # Running Hopla
 There are **three ways** to execute Hopla:
@@ -193,22 +211,4 @@ Different haplotypes are given by colors. Haplotypes are relative between indivi
 
 ### Haplotyping by Merlin: strand concordance
 
-If `--concordance.table` is set to true, the concordance in haplotyping patterns between strands of different family members is shown in form of a pairwise comparative table. The concordance per strand is calculated as (same-haplotype variants between strands)/(total number of evaluated variants).
-
-# Dependencies
-- R packages
-    - vcfR (v1.12.0)
-    - data.table (v1.13.2)
-    - RColorBrewer (v1.1-2)
-    - kinship2 (v1.8.5)
-    - plotly (v4.9.2.1)
-    - htmltools (v0.5.0)
-    - GenomicRanges (v1.42.0)
-    - DNAcopy (v1.64.0)
-- Standalone tools
-    - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
-    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.2.3.2))
-
-Merlin's version should be exactly as given.  
-Plotly's version is ideally no lower than given.  
-For the remaining packages, other versions are very likely to work.  
+If `--concordance.table T` is set, the concordance in haplotyping patterns between strands of different family members is shown in form of a pairwise comparative table. The concordance per strand is calculated as (same-haplotype variants between strands)/(total number of evaluated variants).

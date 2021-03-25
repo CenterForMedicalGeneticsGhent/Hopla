@@ -59,7 +59,7 @@ regions=chr1:50707070-90808080
 reference.ids=
 carrier.ids=sample_C
 affected.ids=sample_A
-nonaffected.ids=sample_
+nonaffected.ids=sample_B
 
 start.info
 Important note: this is a toy example and thus contains very few data points, making the algorithms less accurate
