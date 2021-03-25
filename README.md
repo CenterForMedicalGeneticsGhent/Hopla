@@ -152,8 +152,8 @@ This section contains tables/plots applied to all raw single nucleotide variants
 
 Includes variant tables, allelic drop-out (ADO) & allelic drop-in (ADI) for every child/embryo, variant depth histograms and a genome-wide number-of-variants profile.  
 
-*Note 1*: ADO is calculated using all variants that are 0/0 in mother and 1/1 in father, or vice versa, as (homozygous variants in child)/(total variants in child).  
-*Note 2*: ADI is calculated using all variants that are 1/1 in both mother and father, as (heterozygous variants in child)/(total variants in child).  
+*Note 1*: ADO is calculated using all variants that are 0/0 in mother and 1/1 in father, or vice versa, as [(homozygous variants in child)/(total variants in child)].  
+*Note 2*: ADI is calculated using all variants that are 1/1 in both mother and father, as [(heterozygous variants in child)/(total variants in child)].  
 
 ### Vcf-based copy number
 
