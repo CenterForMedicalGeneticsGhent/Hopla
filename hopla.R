@@ -145,7 +145,7 @@ get.file.args <- function(settings.file){
 
 post.process.args <- function(args){
   no.u.mask <- !sapply(args$sample.ids, function(x) toupper(substr(x,1,1)) == 'U' &
-                    !is.na(suppressWarnings(as.numeric(substr(x,2,999)))))
+                         !is.na(suppressWarnings(as.numeric(substr(x,2,999)))))
   
   if (!length(args$genders)) args$genders = rep(NA, length(args$sample.ids))
   if (!length(args$mother.ids)) args$mother.ids = rep(NA, length(args$sample.ids))
@@ -172,7 +172,7 @@ post.process.args <- function(args){
   if (length(args$sample.ids) > 1){
     if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
       cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
-           '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
+          '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
       invokeRestart("abort")
     }
   }
@@ -215,7 +215,7 @@ post.process.args <- function(args){
     }
     if (length(not.in(args[[arg]], args$sample.ids))){
       cat(paste0('ERROR: Fetched from argument --', arg,', \'', not.in(args[[arg]], args$sample.ids),
-           '\' could not be found in the provided --sample.ids. Please correct.\n'))
+                 '\' could not be found in the provided --sample.ids. Please correct.\n'))
       invokeRestart("abort")
     }
   }
@@ -239,11 +239,11 @@ post.process.args <- function(args){
   add.annot <- function(letter, annot = NULL){
     if (!is.null(annot)){
       args$samples.out[args$sample.ids %in% args[[annot]]] <- paste0(args$samples.out[args$sample.ids %in% args[[annot]]],
-                                                                  ' (', letter, ')')
+                                                                     ' (', letter, ')')
     } else {
       known.set <- unique(c(args$reference.ids, args$carrier.ids, args$affected.ids, args$nonaffected.ids))
       args$samples.out[!(args$sample.ids %in% known.set)] <- paste0(args$samples.out[!(args$sample.ids %in% known.set)],
-                                                                 ' (', letter, ')')
+                                                                    ' (', letter, ')')
     }
     return(args)
   }
@@ -356,7 +356,7 @@ load.samples <- function(args){
   for (sample in args$samples.no.u){
     if (!(sample %in% colnames(vcf.B.tmp))){
       cat(paste0('  ... ERROR: Fetched from argument --sample.ids, \'',  sample,
-           '\' could not be found in the provided --vcf.file. Please correct.\n'))
+                 '\' could not be found in the provided --vcf.file. Please correct.\n'))
       invokeRestart("abort")
     }
     cat(paste0('  ... at ', sample, '\n'))
@@ -372,7 +372,7 @@ load.samples <- function(args){
     vcf.B$GT <- gsub('|', '/', vcf.B$GT, fixed = T)
     vcf.B$DP[is.na(vcf.B$DP)] <- 0
     vcf.B$AF <- suppressWarnings(round(as.numeric(sapply(strsplit(vcf.B$AD, ','), function(x) x[2])) / 
-                        sapply(strsplit(vcf.B$AD, ','), function(x) sum(as.numeric(x))), 3))
+                                         sapply(strsplit(vcf.B$AD, ','), function(x) sum(as.numeric(x))), 3))
     vcf.B$AD <- suppressWarnings(sapply(strsplit(vcf.B$AD, ','), function(x) sum(as.numeric(x))))
     
     vcf <- cbind(vcf.A[which(snp.mask),], vcf.B[which(snp.mask),])
@@ -402,12 +402,12 @@ predict.genders <- function(genders){
   X.model <- ifelse(X.copies < args$X.cutoff, 'M', 'F')
   
   Y.pos.mask <- which(vcfs[[1]]$CHROM %in% 'chrY' &
-    ((vcfs[[1]]$POS > 11700001 & vcfs[[1]]$POS < 21800000)))
+                        ((vcfs[[1]]$POS > 11700001 & vcfs[[1]]$POS < 21800000)))
   Y.copies <- sapply(args$samples.no.u, function(s) mean(vcfs[[s]]$DP[Y.pos.mask]) /
                        mean(vcfs[[s]]$DP[vcfs[[1]]$CHROM %in% chrs[-23]])) * 2
   
   Y.model <- ifelse(Y.copies < args$Y.cutoff, 'F', 'M')
-
+  
   for (s in args$sample.ids[is.na(genders)]){
     if (s %in% args$mother.ids){
       cat(paste0('  ... ', s, ' is included in --mother.ids, setting gender: F\n'))
@@ -634,12 +634,12 @@ run.merlin <- function(args, vcfs.filtered2){
   ## execute 1
   
   cat('Running Merlin --error ...\n')
-  system(paste0('"', Sys.which('merlin'),
+  system(paste0('"', as.character(Sys.which("merlin")), '"',
                 ' -d "', args$out.dir, '/merlin/merlin.dat"',
                 ' -p "', args$out.dir, '/merlin/merlin.ped"',
                 ' -m "', args$out.dir, '/merlin/merlin.map"',
                 ' --error --prefix "', args$out.dir, '/merlin/merlin" > "', args$out.dir, '/merlin/merlin.o" && ',
-                '"', Sys.which('minx'),
+                '"', as.character(Sys.which("minx")), '"',
                 ' -d "', args$out.dir, '/merlin/merlinX.dat"',
                 ' -p "', args$out.dir, '/merlin/merlinX.ped"',
                 ' -m "', args$out.dir, '/merlin/merlinX.map"',
@@ -685,13 +685,13 @@ run.merlin <- function(args, vcfs.filtered2){
   
   cat(paste0('Running Merlin --', args$merlin.model,' ...\n'))
   
-  system(paste0('"', Sys.which('merlin'),
+  system(paste0('"', as.character(Sys.which("merlin")), '"',
                 ' -d "', args$out.dir, '/merlin/merlin.dat"',
                 ' -p "', args$out.dir, '/merlin/merlin.ped"',
                 ' -m "', args$out.dir, '/merlin/merlin.map"',
                 ' --', args$merlin.model,' --prefix "',
                 args$out.dir, '/merlin/merlin" > "',args$out.dir, '/merlin/merlin.o" && ',
-                '"', Sys.which('minx'),
+                '"', as.character(Sys.which("minx")), '"',
                 ' -d "', args$out.dir, '/merlin/merlinX.dat"',
                 ' -p "', args$out.dir, '/merlin/merlinX.ped"',
                 ' -m "', args$out.dir, '/merlin/merlinX.map"',
@@ -1442,7 +1442,7 @@ get.cn.fig <- function(){
   cn <- GRanges(seqnames = chrs, ranges = IRanges(start = 1, width = chr.lengths))
   cn <- as.data.frame(slidingWindows(cn, width = args$window.size, step = args$window.size))[,3:5]
   cn.gr <- GRanges(cn)
-
+  
   hits <- findOverlaps(clusters.gr, pos.gr, select = 'all')
   hits <- split(hits@to, hits@from)
   
@@ -1491,9 +1491,9 @@ get.cn.fig <- function(){
     
     cn.plot <- plot_ly(dat.cn[dat.cn$mask,], x =~index, y =~ratio, text =~range, name = s,
                        height = 210 * length(args$samples.no.u),
-                         marker = list(color = colors[1], alpha = .5, size = args$dot.factor * 2,
-                                       line = list(color = colors[1], alpha = .5)),
-                         type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
+                       marker = list(color = colors[1], alpha = .5, size = args$dot.factor * 2,
+                                     line = list(color = colors[1], alpha = .5)),
+                       type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
     
     chr.lengths <- sapply(chrs, function(chr) length(which(dat.cn$seqnames == chr))) * args$window.size
     chr.cs <- c(0, sapply(chrs, function(chr) last(which(dat.cn$seqnames == chr))) * args$window.size)
@@ -1623,8 +1623,8 @@ get.men.err.fig <- function(child, father, mother, n.rel){
   
   if (length(father) & length(mother)){
     me.plot <- me.plot %>% add_trace(x =~index, y =~trio, text =~range,
-                       line = list(color = colors[1], width = args$dot.factor),
-                       name = 'trio errors', type = 'scatter', mode = 'lines', hoverinfo = 'name+y+text')
+                                     line = list(color = colors[1], width = args$dot.factor),
+                                     name = 'trio errors', type = 'scatter', mode = 'lines', hoverinfo = 'name+y+text')
     
     me.plot <- me.plot %>% add_polygons(x = c(1, x$index, last(x$index)), y = c(0, x$trio,0), inherit = F,
                                         line=list(width=0), fillcolor = colors[1], opacity = .2)
@@ -2221,14 +2221,14 @@ if (args$selfcontained){
   cat('Converting to self-contained HTML ...\n')
   if (!htmlwidgets:::pandoc_available()) {
     cat("ERROR: Saving a widget with selfcontained = T requires pandoc. For details see:\n", 
-         "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
+        "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
     invokeRestart("abort")
   }
   htmlwidgets:::find_pandoc()
   
   system(paste0('cd "', normalizePath(args$out.dir),
-                       '" && ', htmlwidgets:::pandoc(), 
-                       ' hopla.html --output hopla.html --from markdown --self-contained --metadata title=Hopla'),
+                '" && ', htmlwidgets:::pandoc(), 
+                ' hopla.html --output hopla.html --from markdown --self-contained --metadata title=Hopla'),
          ignore.stderr = T)
   #unlink(paste0(normalizePath(args$out.dir), '/hopla_files'), recursive = T)
 }
