@@ -230,8 +230,8 @@ post.process.args <- function(args){
   for (arg in names(args)){
     if (!length(args[[arg]])) next
     cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
-    if (all(is.na(args[[arg]])) & !(arg %in% c('father.ids', 'mother.ids', 'genders'))){
-      cat(paste0('ERROR: Argument --', arg,', cannot be \'NA\'. Please correct.\n'))
+    if (any(is.na(args[[arg]])) & !(arg %in% c('father.ids', 'mother.ids', 'genders'))){
+      cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,',. Please correct.\n'))
       quit(status=0)
     }
   }
