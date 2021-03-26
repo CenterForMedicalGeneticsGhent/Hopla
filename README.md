@@ -19,7 +19,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 - **`--father.ids [string list, comma sep, no default]`** Sample IDs fathers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_C
 - **`--mother.ids [string list, comma sep, no default]`** Sample IDs mothers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_B
 - **`--genders [char (M/F/NA) list, comma sep, no default]`** Sample genders; when not available, use NA, model will predict gender (see below); order matches `--sample.ids`; e.g., M,F,NA
-- **`--merlin.exe [string, no default]`** Path to Merlin executables folder; if not provided, haplotyping is not executed; likely having this form: path/to/merlin-1.1.2/executables
+- **`--run.merlin [boolean, default = T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH; Merlin only runs in Linux**
 - **`--cytoband.file [string, no default]`** [UCSC cytoband file](https://hgdownload.soe.ucsc.edu/downloads.html#human); when given, chromosome bands are shown on top of chromosome-wise figures; highly improves interpretability of figures; e.g., path/to/cytoband.hg38.txt
 
 ### **Important** optional variant inclusion arguments: filter 1
@@ -100,6 +100,9 @@ Plotly's version is ideally no lower than given.
 For the remaining packages, other versions are very likely to work.  
 
 # Running Hopla
+
+**When Merlin (i.e., haplotyping) should be part of the analyses, include the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) in $PATH.**  
+
 There are **three ways** to execute Hopla:
 
 - Using a [settings file](#Settings-file):
@@ -198,7 +201,7 @@ Similar to previous 'Variant statistics' sections, but ADO/ADI is not calculated
 
 ### Haplotyping by Merlin
 
-Merlin is executed if more than one sample is provided in `--sample.ids`, and `--merlin.exe` is given.  
+Merlin is executed if more than one sample is provided in `--sample.ids`, and `--run.merlin T` is given.  
 
 Different haplotypes are given by colors. Haplotypes are relative between individuals/strands within a family (i.e., same-haplotype colors are not constant between HTML output files). Details at each variant can be obtained by mouse hovering. By default, the latter is only enabled at regions given by `--regions`. This can be omitted by using `--skip.raw F`.  
 

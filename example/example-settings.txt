@@ -27,7 +27,7 @@ father.ids=NA,NA,sample_C
 mother.ids=NA,NA,sample_B
 genders=M,F,M
 
-merlin.exe=
+run.merlin=F
 cytoband.file=example/cytoband.hg38.txt
 
 # --------------------------------------------------------

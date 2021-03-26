@@ -32,7 +32,7 @@ args <- list(
   father.ids=c(),
   mother.ids=c(),
   genders=c(),
-  merlin.exe=c(),
+  run.merlin=T,
   cytoband.file=c(),
   
   ## variant inclusion arguments: filter 1
@@ -93,7 +93,8 @@ format.value <- function(arg, value){
                     'window.size.voting', 'window.size.voting.X',
                     'min.seg.var', 'min.seg.var.X', 'X.cutoff', 'Y.cutoff')
   boolean.args <- c('selfcontained', 'cairo', 'limit.pm.to.25',
-                    'limit.baf.to.25', 'skip.raw', 'concordance.table')
+                    'limit.baf.to.25', 'skip.raw', 'concordance.table',
+                    'run.merlin')
   
   value = sapply(strsplit(value, ',')[[1]], function(x) trim(x))
   
@@ -153,12 +154,10 @@ post.process.args <- function(args){
   if (!length(args$window.size.voting.X)) args$window.size.voting.X = args$window.size.voting
   if (!length(args$min.seg.var.X)) args$min.seg.var.X = args$min.seg.var
   
-  if (length(args$sample.ids) == 1) args$merlin.exe = NULL
-  
   man.args <- c('vcf.file', 'out.dir', 'sample.ids')
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man.args){
-      cat('ERROR: Argument --', arg, ' is mandatory. Please provide.\n')
+      cat(paste0('ERROR: Argument --', arg, ' is mandatory. Please provide.\n'))
       invokeRestart("abort")
     }
   }
@@ -191,6 +190,16 @@ post.process.args <- function(args){
   if (!(args$merlin.model %in% c('sample', 'best'))){
     cat('ERROR: Argument --merlin.model should be coded as \'sample\' or \'best\'. Please correct.\n')
     invokeRestart("abort")
+  }
+  
+  if (length(args$sample.ids) == 1){
+    cat(paste0('WARNING: Only one sample provided. Setting --run.merlin F.\n'))
+    args$run.merlin = F
+  }
+  
+  if (Sys.which('merlin') == '' | Sys.which('minx') == ''){
+    cat(paste0('WARNING: Merlin executables folder could not be located in $PATH. Setting --run.merlin F.\n'))
+    args$run.merlin = F
   }
   
   not.in.error <- function(arg){
@@ -257,6 +266,11 @@ if (any(cmd.args == '--settings')){
 }
 if ('--version' %in% cmd.args | '--v' %in% cmd.args){
   cat(version, '\n')
+  invokeRestart("abort")
+}
+
+if ('--help' %in% cmd.args | '--h' %in% cmd.args){
+  cat('Please consult https://github.com/leraman/Hopla/\n')
   invokeRestart("abort")
 }
 args <- get.cmd.args(cmd.args)
@@ -618,12 +632,12 @@ run.merlin <- function(args, vcfs.filtered2){
   ## execute 1
   
   cat('Running Merlin --error ...\n')
-  system(paste0('"', args$merlin.exe, '/merlin"',
+  system(paste0('"', Sys.which('merlin'),
                 ' -d "', args$out.dir, '/merlin/merlin.dat"',
                 ' -p "', args$out.dir, '/merlin/merlin.ped"',
                 ' -m "', args$out.dir, '/merlin/merlin.map"',
                 ' --error --prefix "', args$out.dir, '/merlin/merlin" > "', args$out.dir, '/merlin/merlin.o" && ',
-                '"', args$merlin.exe, '/minx"',
+                '"', Sys.which('minx'),
                 ' -d "', args$out.dir, '/merlin/merlinX.dat"',
                 ' -p "', args$out.dir, '/merlin/merlinX.ped"',
                 ' -m "', args$out.dir, '/merlin/merlinX.map"',
@@ -669,13 +683,13 @@ run.merlin <- function(args, vcfs.filtered2){
   
   cat(paste0('Running Merlin --', args$merlin.model,' ...\n'))
   
-  system(paste0('"', args$merlin.exe, '/merlin"',
+  system(paste0('"', Sys.which('merlin'),
                 ' -d "', args$out.dir, '/merlin/merlin.dat"',
                 ' -p "', args$out.dir, '/merlin/merlin.ped"',
                 ' -m "', args$out.dir, '/merlin/merlin.map"',
                 ' --', args$merlin.model,' --prefix "',
                 args$out.dir, '/merlin/merlin" > "',args$out.dir, '/merlin/merlin.o" && ',
-                '"', args$merlin.exe, '/minx"',
+                '"', Sys.which('minx'),
                 ' -d "', args$out.dir, '/merlin/merlinX.dat"',
                 ' -p "', args$out.dir, '/merlin/merlinX.ped"',
                 ' -m "', args$out.dir, '/merlin/merlinX.map"',
@@ -908,7 +922,7 @@ correct.profiles <- function(args, parsed.flow){
 # Run
 # -----
 
-if (length(args$merlin.exe)){
+if (args$run.merlin){
   map.list <- run.merlin(args, vcfs.filtered2)
   rm(run.merlin)
   
@@ -2178,7 +2192,7 @@ get.html.list <- function(){
   
   ## Merlin
   
-  if (length(args$merlin.exe)){
+  if (args$run.merlin){
     
     cat('  ... at Merlin (filter 2) \n')
     
@@ -2221,7 +2235,7 @@ if (args$selfcontained){
 #                                              Write table output
 # --------------------------------------------------------------------------------------------------------------
 
-if (length(args$merlin.exe)){
+if (args$run.merlin){
   cat('Saving to Merlin output to tables ...\n')
   for (sample in args$samples.no.u){
     dir.create(paste0(args$out.dir, '/tables'), showWarnings = F, recursive = T)
