@@ -1,4 +1,4 @@
-#/usr/bin/env Rscript
+#!/usr/bin/env Rscript
 
 # --------------------------------------------------------------------------------------------------------------
 #                                   Library/parameter/data loading/parsing
