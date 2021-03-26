@@ -164,41 +164,6 @@ post.process.args <- function(args){
     }
   }
   
-  if (length(args$sample.ids) > 1){
-    if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
-      cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
-          '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
-      quit(status=0)
-    }
-  }
-  
-  if (!(length(args$father.ids) == length(args$mother.ids) & 
-        length(args$sample.ids) == length(args$mother.ids) &
-        length(args$genders) == length(args$mother.ids))){
-    cat('ERROR: Arguments --sample.ids, --father.ids, --mother.ids and --genders should be of the same length. Please correct.\n')
-    quit(status=0)
-  }
-  
-  if (!all(args$genders %in% c('M', 'F', NA))){
-    cat('ERROR: Argument --genders should be coded as \'M\', \'F\' or \'NA\'. Please correct.\n')
-    quit(status=0)
-  }
-  
-  if (!(args$merlin.model %in% c('sample', 'best'))){
-    cat('ERROR: Argument --merlin.model should be coded as \'sample\' or \'best\'. Please correct.\n')
-    quit(status=0)
-  }
-  
-  if (length(args$sample.ids) == 1){
-    cat(paste0('WARNING: Only one sample provided. Setting --run.merlin F.\n'))
-    args$run.merlin = F
-  }
-  
-  if (Sys.which('merlin') == '' | Sys.which('minx') == ''){
-    cat(paste0('WARNING: Merlin executables folder could not be located in $PATH. Setting --run.merlin F.\n'))
-    args$run.merlin = F
-  }
-  
   not.in.error <- function(arg){
     not.in <- function(xs, ys){
       for (x in xs){
@@ -214,20 +179,66 @@ post.process.args <- function(args){
       quit(status=0)
     }
   }
-  for(arg in c('father.ids', 'mother.ids', 'dp.hard.limit.ids', 'af.hard.limit.ids',
-               'dp.soft.limit.ids', 'keep.informative.ids', 'keep.hetero.ids',
-               'reference.ids', 'carrier.ids', 'affected.ids',
-               'nonaffected.ids', 'baf.ids')){
-    not.in.error(arg)
-  }
   
   cat('Selected parameters ...\n')
   for (arg in names(args)){
     if (!length(args[[arg]])) next
     cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
+    
     if (any(is.na(args[[arg]])) & !(arg %in% c('father.ids', 'mother.ids', 'genders'))){
       cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,'. Please correct.\n'))
       quit(status=0)
+    }
+    
+    if (arg == 'sample.ids'){
+      if (length(args$sample.ids) > 1){
+        if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
+          cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
+              '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
+          quit(status=0)
+        }
+      }
+    }
+    
+    if (arg == 'genders'){
+      if (!all(args$genders %in% c('M', 'F', NA))){
+        cat('ERROR: Argument --genders should be coded as \'M\', \'F\' or \'NA\'. Please correct.\n')
+        quit(status=0)
+      }
+    }
+    
+    for (same.length.arg in c('father.ids', 'mother.ids', 'genders')){
+      if (arg == same.length.arg){
+        if (!(length(args$sample.ids) == length(args[[same.length.arg]]))){
+          cat(paste0('ERROR: Arguments --sample.ids and --', same.length.arg,' should be of the same length. Please correct.\n'))
+          quit(status=0)
+        }
+      }
+    }
+    
+    if (arg %in% c('father.ids', 'mother.ids', 'dp.hard.limit.ids', 'af.hard.limit.ids',
+                  'dp.soft.limit.ids', 'keep.informative.ids', 'keep.hetero.ids',
+                  'reference.ids', 'carrier.ids', 'affected.ids',
+                  'nonaffected.ids', 'baf.ids')){
+      not.in.error(arg)
+    }
+    
+    if (arg == 'run.merlin' & args$run.merlin){
+      if (length(args$sample.ids) == 1){
+        cat(paste0('WARNING: Only one sample provided. Setting --run.merlin FALSE.\n'))
+        args$run.merlin = F
+      }
+      if ((Sys.which('merlin') == '' | Sys.which('minx') == '') & args$run.merlin){
+        cat(paste0('WARNING: Merlin executables folder could not be located in $PATH. Setting --run.merlin FALSE.\n'))
+        args$run.merlin = F
+      }
+    }
+    
+    if (arg == 'merlin.model'){
+      if (!(args$merlin.model %in% c('sample', 'best'))){
+        cat('ERROR: Argument --merlin.model should be coded as \'sample\' or \'best\'. Please correct.\n')
+        quit(status=0)
+      }
     }
   }
   
@@ -261,12 +272,12 @@ if (any(cmd.args == '--settings')){
   cmd.args <- cmd.args[-(i:(i+1))]
   rm(i)
 }
-if ('--version' %in% cmd.args | '--v' %in% cmd.args){
+if ('--version' %in% cmd.args | '-v' %in% cmd.args){
   cat(version, '\n')
   quit(status=0)
 }
 
-if ('--help' %in% cmd.args | '--h' %in% cmd.args){
+if ('--help' %in% cmd.args | '-h' %in% cmd.args){
   cat('Please consult https://github.com/leraman/Hopla\n')
   quit(status=0)
 }
@@ -341,13 +352,12 @@ load.samples <- function(args){
   snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1
   
   ## vcf.B (data)
-  cat('Parsing variants ...\n')
   vcf.B.tmp <- as.data.frame(vcf@gt)
   cnames <- strsplit(as.character(vcf.B.tmp$FORMAT[1]), ':')[[1]]
   vcfs <- list()
   once = T
   cat('  ... available samples in --vcf.file: ', paste0(colnames(vcf.B.tmp)[-1], collapse = ','), '\n')
-  cat('  ... working ...\n')
+  cat('Parsing variants, working ...\n')
 
   for (sample in args$samples.no.u){
     if (!(sample %in% colnames(vcf.B.tmp))){
@@ -416,7 +426,7 @@ predict.genders <- function(genders){
       next
     }
     if (s %in% args$samples.u){
-      cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (no data), please provide manually.\n'))
+      cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (no data), please provide manually using --genders.\n'))
       quit(status=0)
     }
     X.gender = X.model[args$samples.no.u == s]
@@ -426,12 +436,12 @@ predict.genders <- function(genders){
         cat(paste0('  ... predicted gender of ', s, ': ', X.gender, '\n'))
         genders[args$sample.ids == s] <- X.gender
       } else {
-        cat(paste0('  ... WARNING: X & Y model do not correspond in ', s, ', it is advised to provide this gender manually\n'))
+        cat(paste0('  ... WARNING: X & Y model do not correspond in ', s, ', it is advised to provide this gender manually using --genders\n'))
         cat(paste0('    ... defaulting to Y model: ', Y.gender, '\n'))
         genders[args$sample.ids == s] <- Y.gender
       }
     } else {
-      cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually.\n'))
+      cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using --genders.\n'))
       quit(status=0)
     }
   }
