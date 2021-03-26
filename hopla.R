@@ -1828,7 +1828,7 @@ get.upds <- function(child, father, mother){
     ## raw data
     
     upd <- plot_ly(dat, x = ~index, y = ~track, text =~id,
-                   marker = list(color =~ col, alpha = .5, size = args$dot.factor * 4,
+                   marker = list(color =~ col, alpha = .5, size = args$dot.factor * 2,
                                  line = list(color =~ col, alpha = .5)),
                    type = 'scattergl', mode = 'markers', hoverinfo = 'text', height = 1000,
                    hoverlabel=list(bgcolor=~col))
