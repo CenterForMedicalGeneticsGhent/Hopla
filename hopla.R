@@ -87,7 +87,7 @@ trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 format.value <- function(arg, value){
   if (!(arg %in% names(args))){
     cat(paste0('ERROR: Argument --', arg, ' does not exist.\n'))
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   numeric.args <- c('dot.factor', 'dp.hard.limit', 'af.hard.limit',
@@ -160,20 +160,20 @@ post.process.args <- function(args){
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man.args){
       cat(paste0('ERROR: Argument --', arg, ' is mandatory. Please provide.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
   }
   
   if (any(is.na(args$sample.ids))){
     cat('ERROR: No \'NA\' allowed in argument --sample.ids. Please correct.\n')
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   if (length(args$sample.ids) > 1){
     if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
       cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
           '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
-      invokeRestart("abort")
+      quit(status=0)
     }
   }
   
@@ -181,17 +181,17 @@ post.process.args <- function(args){
         length(args$sample.ids) == length(args$mother.ids) &
         length(args$genders) == length(args$mother.ids))){
     cat('ERROR: Arguments --sample.ids, --father.ids, --mother.ids and --genders should be of the same length. Please correct.\n')
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   if (!all(args$genders %in% c('M', 'F', NA))){
     cat('ERROR: Argument --genders should be coded as \'M\', \'F\' or \'NA\'. Please correct.\n')
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   if (!(args$merlin.model %in% c('sample', 'best'))){
     cat('ERROR: Argument --merlin.model should be coded as \'sample\' or \'best\'. Please correct.\n')
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   if (length(args$sample.ids) == 1){
@@ -216,7 +216,7 @@ post.process.args <- function(args){
     if (length(not.in(args[[arg]], args$sample.ids))){
       cat(paste0('ERROR: Fetched from argument --', arg,', \'', not.in(args[[arg]], args$sample.ids),
                  '\' could not be found in the provided --sample.ids. Please correct.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
   }
   for(arg in c('father.ids', 'mother.ids', 'dp.hard.limit.ids', 'af.hard.limit.ids',
@@ -232,7 +232,7 @@ post.process.args <- function(args){
     cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
     if (all(is.na(args[[arg]])) & !(arg %in% c('father.ids', 'mother.ids', 'genders'))){
       cat(paste0('ERROR: Argument --', arg,', cannot be \'NA\'. Please correct.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
   }
   
@@ -268,12 +268,12 @@ if (any(cmd.args == '--settings')){
 }
 if ('--version' %in% cmd.args | '--v' %in% cmd.args){
   cat(version, '\n')
-  invokeRestart("abort")
+  quit(status=0)
 }
 
 if ('--help' %in% cmd.args | '--h' %in% cmd.args){
   cat('Please consult https://github.com/leraman/Hopla\n')
-  invokeRestart("abort")
+  quit(status=0)
 }
 args <- get.cmd.args(cmd.args)
 args <- post.process.args(args)
@@ -358,7 +358,7 @@ load.samples <- function(args){
     if (!(sample %in% colnames(vcf.B.tmp))){
       cat(paste0('  ... ERROR: Fetched from argument --sample.ids, \'',  sample,
                  '\' could not be found in the provided --vcf.file. Please correct.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
     cat(paste0('  ... at ', sample, '\n'))
     vcf.B <- suppressWarnings(as.data.frame(do.call(rbind, strsplit(as.character(vcf.B.tmp[[sample]]), ':')))[,1:length(cnames)])
@@ -422,7 +422,7 @@ predict.genders <- function(genders){
     }
     if (s %in% args$samples.u){
       cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (no data), please provide manually.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
     X.gender = X.model[args$samples.no.u == s]
     Y.gender = Y.model[args$samples.no.u == s]
@@ -437,7 +437,7 @@ predict.genders <- function(genders){
       }
     } else {
       cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
   }
   cat(paste0('  ... values of X model (~ X copies):\n'))
@@ -507,7 +507,7 @@ apply.filter1 <- function(vcf.list){
   hard.mask <- keep.these.1 & keep.these.2
   if (!any(hard.mask)){
     cat('ERROR: No variants remain after applying filter 1.\n')
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   for (sample in args$samples.no.u){
@@ -531,7 +531,7 @@ apply.filter1 <- function(vcf.list){
     
     if (all(x$GENO == 'N/N')){
       cat(paste0('ERROR: No variants remain for sample ', sample ,' after applying filter 1.\n'))
-      invokeRestart("abort")
+      quit(status=0)
     }
     
     vcf.list[[sample]] <- x
@@ -566,7 +566,7 @@ apply.filter2 <- function(vcf.list){
   
   if (!all(chrs %in% unique(vcf.list[[1]]$CHROM[new.mask]))){
     cat('ERROR: No variants remain in at least one of the chromosomes after applying filter 2.\n')
-    invokeRestart("abort")
+    quit(status=0)
   }
   
   for (sample in args$samples.no.u){
@@ -2223,7 +2223,7 @@ if (args$selfcontained){
   if (!htmlwidgets:::pandoc_available()) {
     cat("ERROR: Saving a widget with selfcontained = T requires pandoc. For details see:\n", 
         "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
-    invokeRestart("abort")
+    quit(status=0)
   }
   htmlwidgets:::find_pandoc()
   
