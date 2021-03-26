@@ -272,7 +272,7 @@ if ('--version' %in% cmd.args | '--v' %in% cmd.args){
 }
 
 if ('--help' %in% cmd.args | '--h' %in% cmd.args){
-  cat('Please consult https://github.com/leraman/Hopla/\n')
+  cat('Please consult https://github.com/leraman/Hopla\n')
   invokeRestart("abort")
 }
 args <- get.cmd.args(cmd.args)
@@ -346,13 +346,14 @@ load.samples <- function(args){
   snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1
   
   ## vcf.B (data)
-  cat('Parsing variants, working ...\n')
+  cat('Parsing variants ...\n')
   vcf.B.tmp <- as.data.frame(vcf@gt)
   cnames <- strsplit(as.character(vcf.B.tmp$FORMAT[1]), ':')[[1]]
   vcfs <- list()
   once = T
   cat('  ... available samples in --vcf.file: ', paste0(colnames(vcf.B.tmp)[-1], collapse = ','), '\n')
-  
+  cat('  ... working ...\n')
+
   for (sample in args$samples.no.u){
     if (!(sample %in% colnames(vcf.B.tmp))){
       cat(paste0('  ... ERROR: Fetched from argument --sample.ids, \'',  sample,
