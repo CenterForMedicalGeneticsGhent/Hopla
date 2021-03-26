@@ -164,11 +164,6 @@ post.process.args <- function(args){
     }
   }
   
-  if (any(is.na(args$sample.ids))){
-    cat('ERROR: No \'NA\' allowed in argument --sample.ids. Please correct.\n')
-    quit(status=0)
-  }
-  
   if (length(args$sample.ids) > 1){
     if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
       cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
@@ -231,7 +226,7 @@ post.process.args <- function(args){
     if (!length(args[[arg]])) next
     cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
     if (any(is.na(args[[arg]])) & !(arg %in% c('father.ids', 'mother.ids', 'genders'))){
-      cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,',. Please correct.\n'))
+      cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,'. Please correct.\n'))
       quit(status=0)
     }
   }
