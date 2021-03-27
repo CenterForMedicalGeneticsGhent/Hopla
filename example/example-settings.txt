@@ -100,5 +100,5 @@ limit.baf.to.25=
 limit.pm.to.25=
 color.palette=
 dot.factor=
-selfcontained=T
+self.contained=T
 cairo=

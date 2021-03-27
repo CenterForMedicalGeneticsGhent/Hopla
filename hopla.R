@@ -78,7 +78,7 @@ args <- list(
   limit.pm.to.25=F,
   color.palette='Paired',
   dot.factor=2,
-  selfcontained=F,
+  self.contained=F,
   cairo=F
 )
 
@@ -94,7 +94,7 @@ format.value <- function(arg, value){
                     'dp.soft.limit', 'regions.flanking.size', 'window.size',
                     'window.size.voting', 'window.size.voting.X',
                     'min.seg.var', 'min.seg.var.X', 'X.cutoff', 'Y.cutoff')
-  boolean.args <- c('selfcontained', 'cairo', 'limit.pm.to.25',
+  boolean.args <- c('self.contained', 'cairo', 'limit.pm.to.25',
                     'limit.baf.to.25', 'skip.raw', 'concordance.table',
                     'run.merlin')
   
@@ -147,12 +147,15 @@ post.process.args <- function(args){
   no.u.mask <- !sapply(args$sample.ids, function(x) toupper(substr(x,1,1)) == 'U' &
                          !is.na(suppressWarnings(as.numeric(substr(x,2,999)))))
   
+  args$samples.no.u <- args$sample.ids[no.u.mask]
+  args$samples.u <- args$sample.ids[!no.u.mask]
+  
   if (!length(args$genders)) args$genders = rep(NA, length(args$sample.ids))
   if (!length(args$mother.ids)) args$mother.ids = rep(NA, length(args$sample.ids))
   if (!length(args$father.ids)) args$father.ids = rep(NA, length(args$sample.ids))
-  if (!length(args$dp.hard.limit.ids)) args$dp.hard.limit.ids = args$sample.ids[no.u.mask]
-  if (!length(args$af.hard.limit.ids)) args$af.hard.limit.ids = args$sample.ids[no.u.mask]
-  if (!length(args$dp.soft.limit.ids)) args$dp.soft.limit.ids = args$sample.ids[no.u.mask]
+  if (!length(args$dp.hard.limit.ids)) args$dp.hard.limit.ids = args$samples.no.u
+  if (!length(args$af.hard.limit.ids)) args$af.hard.limit.ids = args$samples.no.u
+  if (!length(args$dp.soft.limit.ids)) args$dp.soft.limit.ids = args$samples.no.u
   if (!length(args$window.size.voting.X)) args$window.size.voting.X = args$window.size.voting
   if (!length(args$min.seg.var.X)) args$min.seg.var.X = args$min.seg.var
   
@@ -181,7 +184,7 @@ post.process.args <- function(args){
   }
   
   cat('Selected parameters ...\n')
-  for (arg in names(args)){
+  for (arg in names(args)[!(names(args) %in% c('samples.u', 'samples.no.u'))]){
     if (!length(args[[arg]])) next
     cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
     
@@ -223,6 +226,14 @@ post.process.args <- function(args){
       not.in.error(arg)
     }
     
+    if (arg %in% c('dp.hard.limit.ids', 'af.hard.limit.ids', 'dp.soft.limit.ids',
+                   'keep.informative.ids', 'keep.hetero.ids', 'baf.ids')){
+      if (length(intersect(args[[arg]], args$samples.u))){
+        cat(paste0('ERROR: \'U\' IDs not allowed in --', arg, '. Please correct.\n'))
+        quit(status=0)
+      }
+    }
+    
     if (arg == 'run.merlin' & args$run.merlin){
       if (length(args$sample.ids) == 1){
         cat(paste0('WARNING: Only one sample provided. Setting --run.merlin FALSE.\n'))
@@ -231,6 +242,13 @@ post.process.args <- function(args){
       if ((Sys.which('merlin') == '' | Sys.which('minx') == '') & args$run.merlin){
         cat(paste0('WARNING: Merlin executables folder could not be located in $PATH. Setting --run.merlin FALSE.\n'))
         args$run.merlin = F
+      }
+    }
+    
+    if (arg == 'keep.informative.ids'){
+      if (!(length(args[[arg]]) %in% c(0,2))){
+        cat(paste0('ERROR: No or two samples should be given at --keep.informative.ids. Please correct.\n'))
+        quit(status=0)
       }
     }
     
@@ -258,9 +276,6 @@ post.process.args <- function(args){
   args <- add.annot('C', 'carrier.ids')
   args <- add.annot('A', 'affected.ids')
   args <- add.annot('N', 'nonaffected.ids')
-  
-  args$samples.no.u <- args$sample.ids[no.u.mask]
-  args$samples.u <- args$sample.ids[!no.u.mask]
   
   return(args)
 }
@@ -361,7 +376,7 @@ load.samples <- function(args){
 
   for (sample in args$samples.no.u){
     if (!(sample %in% colnames(vcf.B.tmp))){
-      cat(paste0('  ... ERROR: Fetched from argument --sample.ids, \'',  sample,
+      cat(paste0('ERROR: Fetched from argument --sample.ids, \'',  sample,
                  '\' could not be found in the provided --vcf.file. Please correct.\n'))
       quit(status=0)
     }
@@ -426,7 +441,7 @@ predict.genders <- function(genders){
       next
     }
     if (s %in% args$samples.u){
-      cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (no data), please provide manually using --genders.\n'))
+      cat(paste0('ERROR: gender of ', s, ' cannot be derived (no data), please provide manually using --genders.\n'))
       quit(status=0)
     }
     X.gender = X.model[args$samples.no.u == s]
@@ -436,12 +451,12 @@ predict.genders <- function(genders){
         cat(paste0('  ... predicted gender of ', s, ': ', X.gender, '\n'))
         genders[args$sample.ids == s] <- X.gender
       } else {
-        cat(paste0('  ... WARNING: X & Y model do not correspond in ', s, ', it is advised to provide this gender manually using --genders\n'))
-        cat(paste0('    ... defaulting to Y model: ', Y.gender, '\n'))
+        cat(paste0('WARNING: X & Y model do not correspond in ', s, ', it is advised to provide this gender manually using --genders\n'))
+        cat(paste0('  ... defaulting to Y model: ', Y.gender, '\n'))
         genders[args$sample.ids == s] <- Y.gender
       }
     } else {
-      cat(paste0('  ... ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using --genders.\n'))
+      cat(paste0('ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using --genders.\n'))
       quit(status=0)
     }
   }
@@ -555,7 +570,7 @@ apply.filter2 <- function(vcf.list){
       informative.mask[which(vcf.list[[sample]]$GT == '0/1' & vcf.list[[other]]$GT %in% c('0/0', '1/1'))] <- T
     }
     if (all(args$genders[args$sample.ids %in% args$keep.informative.ids] == 'M')){
-      cat(paste0('  ... WARNING: parameter --keep.informative.ids contains male samples only, will only apply to autosomes.\n'))
+      cat(paste0('WARNING: parameter --keep.informative.ids contains male samples only, will only apply to autosomes.\n'))
       informative.mask[vcf.list[[1]]$CHROM == chrs[23]] = T
     }
     new.mask <- new.mask & informative.mask
@@ -2223,10 +2238,10 @@ cat('Saving to HTML ...\n')
 
 save_html(html.list, file = paste0(normalizePath(args$out.dir), '/hopla.html'), libdir = 'hopla_files')
 
-if (args$selfcontained){
+if (args$self.contained){
   cat('Converting to self-contained HTML ...\n')
   if (!htmlwidgets:::pandoc_available()) {
-    cat("ERROR: Saving a widget with selfcontained = T requires pandoc. For details see:\n", 
+    cat("ERROR: Saving a widget with --self.contained = T requires pandoc. For details see:\n", 
         "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
     quit(status=0)
   }
@@ -2244,7 +2259,7 @@ if (args$selfcontained){
 # --------------------------------------------------------------------------------------------------------------
 
 if (args$run.merlin){
-  cat('Saving to Merlin output to tables ...\n')
+  cat('Saving Merlin output to tables ...\n')
   for (sample in args$samples.no.u){
     dir.create(paste0(args$out.dir, '/tables'), showWarnings = F, recursive = T)
     i = which(args$samples.no.u == sample)
