@@ -3,7 +3,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 
 # Easy install
 
-Hopla and all necessary dependencies can be installed through [conda](https://docs.conda.io/en/latest/), using:  
+Hopla and all necessary [dependencies](#Dependencies) can be installed through [conda](https://docs.conda.io/en/latest/), using:  
 
 ```bash
 
@@ -90,7 +90,7 @@ conda install -c conda-forge -c bioconda hopla
 - Everything following '#' will be ignored, serving as a comment
 - Example at *example/example-settings.txt*
 
-# Dependencies
+# Dependencies (automatically installed with [easy install](#Easy-install))
 - R packages
     - vcfR (v1.12.0)
     - data.table (v1.13.2)
