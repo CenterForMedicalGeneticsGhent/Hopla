@@ -3,7 +3,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 
 # Easy install
 
-Hopla and all necessary [dependencies](#Dependencies) can be installed through [conda](https://docs.conda.io/en/latest/), using:  
+Hopla and all [necessary dependencies](#Dependencies-automatically-installed-with-easy-install) can be installed through [conda](https://docs.conda.io/en/latest/), using:  
 
 ```bash
 
