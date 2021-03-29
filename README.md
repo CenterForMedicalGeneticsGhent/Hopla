@@ -1,6 +1,15 @@
 # Hopla's objective
 Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a single (multisample) vcf-file, eventually generating interactive visualizations. In addition, when possible, Hopla executes offline pedigree haplotyping through [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Other than post-natal analyses, its all-inclusive output enables embryo selection during preimplantation genetic testing, ultimately intending birth of healthy children in affected families. The name 'Hopla' originates from being both a 'haplo' anagram and a popular kids' television show.
 
+# Easy install
+
+Hopla and all necessary dependencies can be installed through [conda](https://docs.conda.io/en/latest/), using:  
+
+```bash
+
+conda install -c conda-forge -c bioconda hopla
+```
+
 # Input
 - A (multisample) vcf.gz file (in our tests generated using gatk-haplotype & gatk-haplotype-joint through [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/); settings file: *example/example-bcbio.yaml*)
 - Several parameter arguments, required to, e.g., define the family pedigree structure, in form of a [settings file](#Settings-file) and/or command line arguments
@@ -91,6 +100,7 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
     - htmltools (v0.5.0)
     - GenomicRanges (v1.42.0)
     - DNAcopy (v1.64.0)
+    - knitr (v1.29)
 - Standalone tools
     - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
     - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.2.3.2))  
@@ -109,21 +119,21 @@ There are **three ways** to execute Hopla:
 
 ```bash
 
-Rscript path/to/hopla.R --settings path/to/settings.txt
+hopla --settings path/to/settings.txt
 ```
 
 - Using command line arguments:
 
 ```bash
 
-Rscript path/to/hopla.R --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.file path/to/vcf.gz 
+hopla --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.file path/to/vcf.gz 
 ```
 
 - Combining the above, where command line arguments override [settings file](#Settings-file) arguments
 
 ```bash
 
-Rscript path/to/hopla.R --settings path/to/settings.txt --skip.raw F --limit.baf.to.25 T
+hopla --settings path/to/settings.txt --skip.raw F --limit.baf.to.25 T
 ```
 
 # Running the example
@@ -132,7 +142,7 @@ Rscript path/to/hopla.R --settings path/to/settings.txt --skip.raw F --limit.baf
 
 git clone https://github.com/leraman/hopla
 cd hopla
-Rscript hopla.R --settings example/example-settings.txt
+hopla --settings example/example-settings.txt
 ```
 
 # Output

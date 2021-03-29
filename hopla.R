@@ -18,6 +18,7 @@ suppressMessages(library('plotly'))
 suppressMessages(library('htmltools'))
 suppressMessages(library('GenomicRanges'))
 suppressMessages(library('DNAcopy'))
+suppressMessages(library('knitr'))
 
 # -----
 # Param
@@ -1997,7 +1998,7 @@ get.html.list <- function(){
     
     html.list <- add.main.header(html.list, "Family tree")
     write.pedigree(paste0(args$out.dir, '/ped.tree.png'))
-    x <- htmltools::img(src = knitr::image_uri(paste0(args$out.dir, '/ped.tree.png')),
+    x <- htmltools::img(src = image_uri(paste0(args$out.dir, '/ped.tree.png')),
                         style = paste0('height:',5*100,'px;width:',log(length(args$sample.ids)) * 4 * 100,'px'))
     invisible(file.remove(paste0(args$out.dir, '/ped.tree.png')))
     html.list <- append.list(html.list, x)
