@@ -2044,8 +2044,7 @@ get.html.list <- function(){
   cat('  ... at variant depth (raw) \n')
   
   html.list <- append.list(html.list, tags$h4("Variant depth"))
-  html.list <- append.list(html.list, do.subplot(get.var.depth.hist(vcfs), ncol = 4,
-                                                 overridehovermode = 'x unified'))
+  html.list <- append.list(html.list, do.subplot(get.var.depth.hist(vcfs), ncol = 4))
   
   ## number of variants
   
@@ -2104,8 +2103,7 @@ get.html.list <- function(){
   cat('  ... at variant depth (filter 1) \n')
   
   html.list <- append.list(html.list, tags$h4("Variant depth"))
-  html.list <- append.list(html.list, do.subplot(get.var.depth.hist(vcfs.filtered), ncol = 4,
-                                                 overridehovermode = 'x unified'))
+  html.list <- append.list(html.list, do.subplot(get.var.depth.hist(vcfs.filtered), ncol = 4))
   
   ## number of variants
   
@@ -2204,8 +2202,7 @@ get.html.list <- function(){
   cat('  ... at variant depth (filter 2) \n')
   
   html.list <- append.list(html.list, tags$h4("Variant depth"))
-  html.list <- append.list(html.list, do.subplot(get.var.depth.hist(vcfs.filtered2), ncol = 4,
-                                                 overridehovermode = 'x unified'))
+  html.list <- append.list(html.list, do.subplot(get.var.depth.hist(vcfs.filtered2), ncol = 4))
   
   ## number of variants
   
@@ -2221,8 +2218,7 @@ get.html.list <- function(){
     cat('  ... at Merlin (filter 2) \n')
     
     html.list <- append.list(html.list, tags$h3("Haplotyping by Merlin"))
-    html.list <- append.list(html.list, do.subplot(get.haplo.profiles(), ncol = 2, panning = .015, margin = .007, 
-                                                   overridehovermode = 'x unified'))
+    html.list <- append.list(html.list, do.subplot(get.haplo.profiles(), ncol = 2, panning = .015, margin = .007))
     
     if (args$concordance.table){
       html.list <- append.list(html.list, tags$h3("Haplotyping by Merlin: strand concordance"))
