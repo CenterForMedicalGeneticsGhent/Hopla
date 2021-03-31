@@ -28,7 +28,7 @@ conda install -c conda-forge -c bioconda hopla
 - **`--father.ids [string list, comma sep, no default]`** Sample IDs fathers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_C
 - **`--mother.ids [string list, comma sep, no default]`** Sample IDs mothers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_B
 - **`--genders [char (M/F/NA) list, comma sep, no default]`** Sample genders; when not available, use NA, model will predict gender (see below); order matches `--sample.ids`; e.g., M,F,NA
-- **`--run.merlin [boolean, default = T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH, automatically executed when using [Easy install](#easy-install); Merlin only runs in Linux**
+- **`--run.merlin [boolean, default = T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH, which should be automatically the case when using [Easy install](#easy-install); Merlin only runs in Linux**
 - **`--cytoband.file [string, no default]`** [UCSC cytoband file](https://hgdownload.soe.ucsc.edu/downloads.html#human); when given, chromosome bands are shown on top of chromosome-wise figures; highly improves interpretability of figures; e.g., path/to/cytoband.hg38.txt
 
 ### **Important** optional variant inclusion arguments: filter 1
