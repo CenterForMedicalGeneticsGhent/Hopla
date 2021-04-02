@@ -103,7 +103,7 @@ conda install -c conda-forge -c bioconda hopla
     - knitr (v1.29)
 - Standalone tools
     - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
-    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.2.3.2))  
+    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.10))  
 
 Merlin's version should be exactly as given.  
 Plotly's version is ideally no lower than given.  

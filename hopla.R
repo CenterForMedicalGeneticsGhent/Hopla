@@ -2238,17 +2238,23 @@ save_html(html.list, file = paste0(normalizePath(args$out.dir), '/hopla.html'), 
 if (args$self.contained){
   cat('Converting to self-contained HTML ...\n')
   if (!htmlwidgets:::pandoc_available()) {
-    cat("ERROR: Saving a widget with --self.contained = T requires pandoc. For details see:\n", 
-        "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
-    quit(status=0)
+    cat(paste0("WARNING: Saving a widget with --self.contained T requires pandoc. For details see: https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md\n",
+        "Self-contained HTML will not be created.\n"))
   }
-  htmlwidgets:::find_pandoc()
-  
-  system(paste0('cd "', normalizePath(args$out.dir),
-                '" && ', htmlwidgets:::pandoc(), 
-                ' hopla.html --output hopla.html --from markdown --self-contained --metadata title=Hopla'),
-         ignore.stderr = T)
-  #unlink(paste0(normalizePath(args$out.dir), '/hopla_files'), recursive = T)
+  else {
+    htmlwidgets:::find_pandoc()
+    system(paste0('cd "', normalizePath(args$out.dir),
+                  '" && ', htmlwidgets:::pandoc(), 
+                  ' hopla.html --output hopla-sc.html --from markdown --self-contained --metadata title=Hopla'),
+           ignore.stderr = T)
+    if (file.exists(paste0(normalizePath(args$out.dir), '/hopla-sc.html'))){
+      unlink(paste0(normalizePath(args$out.dir), '/hopla_files'), recursive = T)
+      unlink(paste0(normalizePath(args$out.dir), '/hopla.html'), recursive = T)
+      tmp = file.rename(paste0(normalizePath(args$out.dir), '/hopla-sc.html'), paste0(normalizePath(args$out.dir), '/hopla.html'))
+    } else {
+      cat('WARNING: pandoc error encountered, self-contained HTML could not be created.\n')
+    }
+  }
 }
 
 # --------------------------------------------------------------------------------------------------------------
