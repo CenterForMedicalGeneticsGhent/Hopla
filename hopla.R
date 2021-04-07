@@ -4,7 +4,7 @@
 #                                   Library/parameter/data loading/parsing
 # --------------------------------------------------------------------------------------------------------------
 
-version <- 'v0.1.2'
+version <- 'v0.1.3'
 
 # -----
 # Library
@@ -2243,10 +2243,12 @@ if (args$self.contained){
   }
   else {
     htmlwidgets:::find_pandoc()
+    system(paste0('cd ', normalizePath(args$out.dir), ' && touch nocss.css'))
     system(paste0('cd "', normalizePath(args$out.dir),
                   '" && ', htmlwidgets:::pandoc(), 
-                  ' hopla.html --output hopla-sc.html --from markdown --self-contained --metadata title=Hopla'),
+                  ' hopla.html --output hopla-sc.html --from markdown --self-contained --metadata pagetitle=Hopla --css nocss.css'),
            ignore.stderr = T)
+    unlink(paste0(normalizePath(args$out.dir), '/nocss.css'), recursive = T)
     if (file.exists(paste0(normalizePath(args$out.dir), '/hopla-sc.html'))){
       unlink(paste0(normalizePath(args$out.dir), '/hopla_files'), recursive = T)
       unlink(paste0(normalizePath(args$out.dir), '/hopla.html'), recursive = T)
