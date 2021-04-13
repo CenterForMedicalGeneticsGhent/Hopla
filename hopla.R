@@ -2013,12 +2013,12 @@ get.html.list <- function(){
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
   
-  cat('  ... at number of variants (raw) \n')
+  cat('  ... at total number of variants (raw) \n')
   
-  html.list <- append.list(html.list, tags$h4("Number of variants"))
+  html.list <- append.list(html.list, tags$h4("Total number of variants"))
   nvars <- c()
   for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs[[s]])))
+    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs[[s]][vcfs[[s]]$GT != './.'])))
   }
   html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
 
@@ -2078,12 +2078,12 @@ get.html.list <- function(){
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
   
-  cat('  ... at number of variants (filter 1) \n')
+  cat('  ... at total number of variants (filter 1) \n')
   
-  html.list <- append.list(html.list, tags$h4("Number of variants"))
+  html.list <- append.list(html.list, tags$h4("Total number of variants"))
   nvars <- c()
   for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered[[s]])))
+    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered[[s]][vcfs.filtered[[s]]$GT != './.'])))
   }
   html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
   
@@ -2211,12 +2211,12 @@ get.html.list <- function(){
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
   
-  cat('  ... at number of variants (filter 2) \n')
+  cat('  ... at total number of variants (filter 2) \n')
   
-  html.list <- append.list(html.list, tags$h4("Number of variants"))
+  html.list <- append.list(html.list, tags$h4("Total number of variants"))
   nvars <- c()
   for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered2[[s]])))
+    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered2[[s]][vcfs.filtered2[[s]]$GT != './.'])))
   }
   html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
   
