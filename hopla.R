@@ -2017,7 +2017,7 @@ get.html.list <- function(){
   html.list <- append.list(html.list, tags$h4("Total number of variants"))
   nvars <- c()
   for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs[[s]][vcfs[[s]]$GT != './.',])))
+    nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs[[s]][vcfs[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
   }
   html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
 
@@ -2082,7 +2082,7 @@ get.html.list <- function(){
   html.list <- append.list(html.list, tags$h4("Total number of variants"))
   nvars <- c()
   for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered[[s]][vcfs.filtered[[s]]$GT != './.',])))
+    nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs.filtered[[s]][vcfs.filtered[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
   }
   html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
   
@@ -2215,7 +2215,7 @@ get.html.list <- function(){
   html.list <- append.list(html.list, tags$h4("Total number of variants"))
   nvars <- c()
   for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered2[[s]][vcfs.filtered2[[s]]$GT != './.',])))
+    nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs.filtered2[[s]][vcfs.filtered2[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
   }
   html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
   
