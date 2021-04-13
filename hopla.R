@@ -282,7 +282,6 @@ post.process.args <- function(args){
 }
 
 cmd.args <- commandArgs(trailingOnly=T)
-cmd.args <- commandArgs(trailingOnly=T)
 if (any(cmd.args == '--settings')){
   i = which(cmd.args == '--settings')
   args <- get.file.args(cmd.args[i+1])
