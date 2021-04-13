@@ -4,7 +4,7 @@
 #                                   Library/parameter/data loading/parsing
 # --------------------------------------------------------------------------------------------------------------
 
-version <- 'v0.1.3'
+version <- 'v0.1.4'
 
 # -----
 # Library
@@ -281,6 +281,7 @@ post.process.args <- function(args){
   return(args)
 }
 
+cmd.args <- commandArgs(trailingOnly=T)
 cmd.args <- commandArgs(trailingOnly=T)
 if (any(cmd.args == '--settings')){
   i = which(cmd.args == '--settings')
@@ -2012,6 +2013,15 @@ get.html.list <- function(){
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
   
+  cat('  ... at number of variants (raw) \n')
+  
+  html.list <- append.list(html.list, tags$h4("Number of variants"))
+  nvars <- c()
+  for (s in args$samples.no.u){
+    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs[[s]])))
+  }
+  html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
+
   cat('  ... at number of variants table (raw) \n')
   
   html.list <- append.list(html.list, tags$h4("Number of variants table"))
@@ -2067,6 +2077,15 @@ get.html.list <- function(){
   ## variant statistics
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
+  
+  cat('  ... at number of variants (filter 1) \n')
+  
+  html.list <- append.list(html.list, tags$h4("Number of variants"))
+  nvars <- c()
+  for (s in args$samples.no.u){
+    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered[[s]])))
+  }
+  html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
   
   cat('  ... at number of variants table (filter 1) \n')
   
@@ -2191,6 +2210,15 @@ get.html.list <- function(){
   ## variant statistics
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
+  
+  cat('  ... at number of variants (filter 2) \n')
+  
+  html.list <- append.list(html.list, tags$h4("Number of variants"))
+  nvars <- c()
+  for (s in args$samples.no.u){
+    nvars <- c(nvars, paste0(s, ': ', nrow(vcfs.filtered2[[s]])))
+  }
+  html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
   
   cat('  ... at number of variants table (filter 2) \n')
   
