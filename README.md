@@ -72,7 +72,8 @@ conda install -c conda-forge -c bioconda hopla
 - **`--min.seg.var.X [integer, default=--min.seg.var]`** The parameter `--min.seg.var` can be set separately for chromosome X
 - **`--window.size.voting [integer, default=5000000]`** Size (in bp) to correct haplotypes by 'weighted neighbourhood voting'; corrected haplotypes are shown using a circle symbol; will not be applied when set to 0
 - **`--window.size.voting.X [integer, default=--window.size.voting]`** The parameter `--window.size.voting` can be set separately for chromosome X
-- **`--skip.raw [boolean, default=T]`** Whether raw data points in haplotyping profiles, with the exception of the region(s) of interest, should be omitted; significantly lowers HTML size
+- **`--keep.chromosomes.only [boolean, default=T]`** Whether raw data points in haplotyping profiles, with the exception of the complete chromosomes in the region(s) of interest, should be omitted; significantly lowers HTML size
+- **`--keep.regions.only [boolean, default=F]`** Whether raw data points in haplotyping profiles, with the exception of the region(s) of interest, should be omitted; significantly lowers HTML size
 - **`--concordance.table [boolean, default=T]`** Whether a haplotyping strand-wise concordance table should be added; useful for validation purposes
 
 ### Remaining features
@@ -135,7 +136,7 @@ hopla --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.fil
 
 ```bash
 
-hopla --settings path/to/settings.txt --skip.raw F --limit.baf.to.25 T
+hopla --settings path/to/settings.txt --keep.chromosomes.only F --limit.baf.to.25 T
 ```
 
 # Running the example
@@ -215,7 +216,7 @@ Similar to previous 'Variant statistics' sections, but ADO/ADI is not calculated
 
 Merlin is executed if more than one sample is provided in `--sample.ids`, and `--run.merlin T` is given.  
 
-Different haplotypes are given by colors. Haplotypes are relative between individuals/strands within a family (i.e., same-haplotype colors are not constant between HTML output files). Details at each variant can be obtained by mouse hovering. By default, the latter is only enabled at regions given by `--regions`. This can be omitted by using `--skip.raw F`.  
+Different haplotypes are given by colors. Haplotypes are relative between individuals/strands within a family (i.e., same-haplotype colors are not constant between HTML output files). Details at each variant can be obtained by mouse hovering.  
 
 *Note 1*: 'raw' haplotypes from Merlin can be corrected using `--window.size.voting`. At each variant (e.g., variant X), haplotypes (e.g., haplotype A) can be 'corrected' in accordance to their neighbourhood, defined by argument `--window.size.voting`. The algorithm we created is dubbed 'weighted neighbourhood voting': the closer variant Y (with, e.g., haplotype B; located in the neighbourhood) is to the current variant X, the more votes (for haplotype B) variant Y has to influence the haplotype of variant X. All votes (for haplotype A and B) within the neighbourhood of X are summed; variant X is given the winning haplotype. The number of votes each variant has to influence the haplotype of variant X is proportional to: [((`--window.size.voting`) / (distance to variant X + `--window.size.voting`/2)) - 1]; this way, variants with a negative number of votes lay beyound the bounds of the neighbourhood defined by `--window.size.voting`, and are ignored. Corrected haplotypes are shown using a circle symbol. The raw uncorrected genotyping data can be consulted at any time by mouse hovering.  
 

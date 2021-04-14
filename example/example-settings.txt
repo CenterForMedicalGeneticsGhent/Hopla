@@ -85,7 +85,8 @@ min.seg.var.X=
 window.size.voting=
 window.size.voting.X=
 
-skip.raw=
+keep.chromosomes.only=
+keep.regions.only=T
 concordance.table=
 
 # ----------------------------

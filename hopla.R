@@ -4,7 +4,7 @@
 #                                   Library/parameter/data loading/parsing
 # --------------------------------------------------------------------------------------------------------------
 
-version <- 'v0.1.4'
+version <- 'v0.2.1'
 
 # -----
 # Library
@@ -67,7 +67,8 @@ args <- list(
   min.seg.var.X=c(),
   window.size.voting=5000000,
   window.size.voting.X=c(),
-  skip.raw=T,
+  keep.chromosomes.only=T,
+  keep.regions.only=F,
   concordance.table=T,
   
   ## remaining features
@@ -96,8 +97,8 @@ format.value <- function(arg, value){
                     'window.size.voting', 'window.size.voting.X',
                     'min.seg.var', 'min.seg.var.X', 'X.cutoff', 'Y.cutoff')
   boolean.args <- c('self.contained', 'cairo', 'limit.pm.to.25',
-                    'limit.baf.to.25', 'skip.raw', 'concordance.table',
-                    'run.merlin')
+                    'limit.baf.to.25', 'keep.chromosomes.only', 'keep.regions.only',
+                    'concordance.table', 'run.merlin')
   
   value = sapply(strsplit(value, ',')[[1]], function(x) trim(x))
   
@@ -1087,11 +1088,12 @@ get.haplo.profiles <- function(){
     return(list(breakpoints = breakpoints, colors = colors))
   }
   
-  filter.region <- function(frame, chr){
+  filter.region <- function(frame, chr, whole.chromosome = F){
     if (length(args$regions)){
       for (region in args$regions){
         r.split <- strsplit(region, ':')[[1]]
         if (chr == r.split[1]){
+          if (whole.chromosome) return(frame)
           s <- as.numeric(strsplit(r.split[2],'-')[[1]][1])
           s <- s - args$regions.flanking.size
           e <- as.numeric(strsplit(r.split[2],'-')[[1]][2])
@@ -1160,7 +1162,8 @@ get.haplo.profiles <- function(){
     
     colnames(haplo.frame) <- c('x', 'y', 'id', 'col', 'symbol', 'name')
     haplo.frame.for.plotly <- haplo.frame
-    if (args$skip.raw) haplo.frame.for.plotly <- filter.region(haplo.frame, c)
+    if (args$keep.chromosomes.only) haplo.frame.for.plotly <- filter.region(haplo.frame, c, whole.chromosome = T)
+    if (args$keep.regions.only) haplo.frame.for.plotly <- filter.region(haplo.frame, c)
     p <- plot_ly(haplo.frame.for.plotly, x =~x, y =~y, text =~id, name=~name, marker = list(color=~col,
                                                                                             symbol=~symbol,
                                                                                             size = args$dot.factor * 4,
@@ -1982,6 +1985,19 @@ get.html.list <- function(){
     return(paste0(adi, '%'))
   }
   
+  get.vars.in.region <- function(vcf.list, sample, region){
+    r.split <- strsplit(region, ':')[[1]]
+    c = r.split[1]
+    s <- as.numeric(strsplit(r.split[2],'-')[[1]][1])
+    e <- as.numeric(strsplit(r.split[2],'-')[[1]][2])
+    x <- vcf.list[[sample]]
+    n1 <- length(which(x$CHROM == c & x$POS >= s & x$POS <= e & x$GT %in% c('0/0', '0/1', '1/1')))
+    s <- s - args$regions.flanking.size
+    e <- e + args$regions.flanking.size
+    n2 <- length(which(x$CHROM == c & x$POS >= s & x$POS <= e & x$GT %in% c('0/0', '0/1', '1/1')))
+    return(list(n1 = n1, n2 = n2))
+  }
+  
   ## info
   
   if (length(args$info)){
@@ -2019,7 +2035,21 @@ get.html.list <- function(){
   for (s in args$samples.no.u){
     nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs[[s]][vcfs[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
   }
-  html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
+  html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
+  
+  for (region in args$regions){
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs, s, region)$n1, accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
+    
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs, s, region)$n2, accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (including flanks); ', paste0(nvars, collapse = ' | '))))
+  }
 
   cat('  ... at number of variants table (raw) \n')
   
@@ -2084,7 +2114,21 @@ get.html.list <- function(){
   for (s in args$samples.no.u){
     nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs.filtered[[s]][vcfs.filtered[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
   }
-  html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
+  html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
+  
+  for (region in args$regions){
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered, s, region)$n1, accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
+    
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered, s, region)$n2, accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (including flanks); ', paste0(nvars, collapse = ' | '))))
+  }
   
   cat('  ... at number of variants table (filter 1) \n')
   
@@ -2217,7 +2261,21 @@ get.html.list <- function(){
   for (s in args$samples.no.u){
     nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs.filtered2[[s]][vcfs.filtered2[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
   }
-  html.list <- append.list(html.list, tags$p(paste0(nvars, collapse = ' | ')))
+  html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
+  
+  for (region in args$regions){
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered2, s, region)$n1, accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
+    
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered2, s, region)$n2, accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (including flanks); ', paste0(nvars, collapse = ' | '))))
+  }
   
   cat('  ... at number of variants table (filter 2) \n')
   
@@ -2245,7 +2303,8 @@ get.html.list <- function(){
     cat('  ... at Merlin (filter 2) \n')
     
     html.list <- append.list(html.list, tags$h3("Haplotyping by Merlin"))
-    html.list <- append.list(html.list, do.subplot(get.haplo.profiles(), ncol = 2, panning = .015, margin = .007))
+    html.list <- append.list(html.list, do.subplot(get.haplo.profiles(), ncol = 2, panning = .015, margin = .007,
+                                                   overridehovermode = 'X unified'))
     
     if (args$concordance.table){
       html.list <- append.list(html.list, tags$h3("Haplotyping by Merlin: strand concordance"))
