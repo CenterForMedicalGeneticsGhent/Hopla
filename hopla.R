@@ -1756,7 +1756,7 @@ get.genome.baf <- function(s){
     baf <- plot_ly(dat, x = ~index, y = ~AF, text =~id,
                    marker = list(color = colors[1], alpha = .5, size = args$dot.factor * 2,
                                  line = list(color = colors[1], alpha = .5)),
-                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000)
+                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 2)
     
     yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,125), fixedrange = T)
     if (which(chrs == chr) %% 4 != 1) {
@@ -1985,19 +1985,6 @@ get.html.list <- function(){
     return(paste0(adi, '%'))
   }
   
-  get.vars.in.region <- function(vcf.list, sample, region){
-    r.split <- strsplit(region, ':')[[1]]
-    c = r.split[1]
-    s <- as.numeric(strsplit(r.split[2],'-')[[1]][1])
-    e <- as.numeric(strsplit(r.split[2],'-')[[1]][2])
-    x <- vcf.list[[sample]]
-    n1 <- length(which(x$CHROM == c & x$POS >= s & x$POS <= e & x$GT %in% c('0/0', '0/1', '1/1')))
-    s <- s - args$regions.flanking.size
-    e <- e + args$regions.flanking.size
-    n2 <- length(which(x$CHROM == c & x$POS >= s & x$POS <= e & x$GT %in% c('0/0', '0/1', '1/1')))
-    return(list(n1 = n1, n2 = n2))
-  }
-  
   ## info
   
   if (length(args$info)){
@@ -2028,29 +2015,54 @@ get.html.list <- function(){
   
   html.list <- append.list(html.list, tags$h3("Variant statistics"))
   
+  add.tot.number.of.variants <- function(html.list, vcf.list){
+    nvars <- c()
+    for (s in args$samples.no.u){
+      nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcf.list[[s]][vcf.list[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
+    }
+    html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
+    
+    get.vars.in.region <- function(vcf.list, sample, region){
+      r.split <- strsplit(region, ':')[[1]]
+      c = r.split[1]
+      s <- as.numeric(strsplit(r.split[2],'-')[[1]][1])
+      e <- as.numeric(strsplit(r.split[2],'-')[[1]][2])
+      x <- vcf.list[[sample]]
+      n1 <- length(which(x$CHROM == c & x$POS >= s & x$POS <= e & x$GT %in% c('0/0', '0/1', '1/1')))
+      s.flank <- s - args$regions.flanking.size
+      e.flank <- e + args$regions.flanking.size
+      n2 <- length(which(x$CHROM == c & x$POS >= s.flank & x$POS <= s & x$GT %in% c('0/0', '0/1', '1/1')))
+      n3 <- length(which(x$CHROM == c & x$POS >= e & x$POS <= e.flank & x$GT %in% c('0/0', '0/1', '1/1')))
+      return(list(n1 = n1, n2 = n2, n3 = n3))
+    }
+    
+    for (region in args$regions){
+      nvars <- c()
+      for (s in args$samples.no.u){
+        nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcf.list, s, region)$n1, accuracy = 1)))
+      }
+      html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
+      
+      nvars <- c()
+      for (s in args$samples.no.u){
+        nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcf.list, s, region)$n2, accuracy = 1)))
+      }
+      html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (left flank); ', paste0(nvars, collapse = ' | '))))
+      
+      nvars <- c()
+      for (s in args$samples.no.u){
+        nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcf.list, s, region)$n3, accuracy = 1)))
+      }
+      html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (right flank); ', paste0(nvars, collapse = ' | '))))
+    }
+    return(html.list)
+  }
+  
   cat('  ... at total number of variants (raw) \n')
   
   html.list <- append.list(html.list, tags$h4("Total number of variants"))
-  nvars <- c()
-  for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs[[s]][vcfs[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
-  }
-  html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
+  html.list <- add.tot.number.of.variants(html.list, vcfs)
   
-  for (region in args$regions){
-    nvars <- c()
-    for (s in args$samples.no.u){
-      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs, s, region)$n1, accuracy = 1)))
-    }
-    html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
-    
-    nvars <- c()
-    for (s in args$samples.no.u){
-      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs, s, region)$n2, accuracy = 1)))
-    }
-    html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (including flanks); ', paste0(nvars, collapse = ' | '))))
-  }
-
   cat('  ... at number of variants table (raw) \n')
   
   html.list <- append.list(html.list, tags$h4("Number of variants table"))
@@ -2110,25 +2122,7 @@ get.html.list <- function(){
   cat('  ... at total number of variants (filter 1) \n')
   
   html.list <- append.list(html.list, tags$h4("Total number of variants"))
-  nvars <- c()
-  for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs.filtered[[s]][vcfs.filtered[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
-  }
-  html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
-  
-  for (region in args$regions){
-    nvars <- c()
-    for (s in args$samples.no.u){
-      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered, s, region)$n1, accuracy = 1)))
-    }
-    html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
-    
-    nvars <- c()
-    for (s in args$samples.no.u){
-      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered, s, region)$n2, accuracy = 1)))
-    }
-    html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (including flanks); ', paste0(nvars, collapse = ' | '))))
-  }
+  html.list <- add.tot.number.of.variants(html.list, vcfs.filtered)
   
   cat('  ... at number of variants table (filter 1) \n')
   
@@ -2198,7 +2192,7 @@ get.html.list <- function(){
     }
     for (s in args$baf.ids){
       html.list <- append.list(html.list, tags$h4(args$samples.out[args$sample.ids == s]))
-      html.list <- append.list(html.list, do.subplot(get.genome.baf(s), ncol = 4))
+      html.list <- append.list(html.list, do.subplot(get.genome.baf(s), ncol = 2))
     }
   }
   
@@ -2257,25 +2251,7 @@ get.html.list <- function(){
   cat('  ... at total number of variants (filter 2) \n')
   
   html.list <- append.list(html.list, tags$h4("Total number of variants"))
-  nvars <- c()
-  for (s in args$samples.no.u){
-    nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcfs.filtered2[[s]][vcfs.filtered2[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
-  }
-  html.list <- append.list(html.list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
-  
-  for (region in args$regions){
-    nvars <- c()
-    for (s in args$samples.no.u){
-      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered2, s, region)$n1, accuracy = 1)))
-    }
-    html.list <- append.list(html.list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
-    
-    nvars <- c()
-    for (s in args$samples.no.u){
-      nvars <- c(nvars, paste0(s, ': ', scales::comma(get.vars.in.region(vcfs.filtered2, s, region)$n2, accuracy = 1)))
-    }
-    html.list <- append.list(html.list, tags$p(paste0('° in ', region, ' (including flanks); ', paste0(nvars, collapse = ' | '))))
-  }
+  html.list <- add.tot.number.of.variants(html.list, vcfs.filtered2)
   
   cat('  ... at number of variants table (filter 2) \n')
   
