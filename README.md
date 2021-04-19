@@ -81,8 +81,9 @@ conda install -c conda-forge -c bioconda hopla
 - **`--Y.cutoff [numeric, default = 0.5']`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
 - **`--window.size [integer, default=1000000]`** Several genome-wide profiles are made in a bin-wise manner; define size (in bp) of bin
 - **`--regions.flanking.size [integer, default=5000000]`** Flanking size (in bp) to mark region(s) of interest
-- **`--limit.baf.to.25 [boolean, default=F]`** Whether the genome-wide BAF profiles should be randomly sampled to include only 25% of the data; significantly lowers HTML output size
-- **`--limit.pm.to.25 [boolean, default=F]`** Whether the parent mapping profiles should be randomly sampled to include only 25% of the data; significantly lowers HTML output size
+- **`--limit.baf.to.P [boolean, default=F]`** Whether the genome-wide BAF profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
+- **`--limit.pm.to.P [boolean, default=F]`** Whether the parent mapping profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
+- **`--value.of.P [numeric (range 0-1), default=.25]`** Value of P (see two parameters above)
 - **`--color.palette [string, default=Paired]`** [Color palette](https://rdrr.io/cran/RColorBrewer/man/ColorBrewer.html) to be used in visualizations
 - **`--dot.factor [numeric, default=2]`** The size of every dot in the visualizations is multiplied by this number
 - **`--self.contained [boolean, default=F]`** Whether to generate a self-contained HTML; requires [Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
@@ -136,7 +137,7 @@ hopla --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.fil
 
 ```bash
 
-hopla --settings path/to/settings.txt --keep.chromosomes.only F --limit.baf.to.25 T
+hopla --settings path/to/settings.txt --keep.chromosomes.only F --limit.baf.to.X T
 ```
 
 # Running the example

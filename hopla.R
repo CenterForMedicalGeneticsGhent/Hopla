@@ -4,7 +4,7 @@
 #                                   Library/parameter/data loading/parsing
 # --------------------------------------------------------------------------------------------------------------
 
-version <- 'v0.2.1'
+version <- 'v0.3.1'
 
 # -----
 # Library
@@ -76,8 +76,9 @@ args <- list(
   Y.cutoff=.5,
   window.size=1000000,
   regions.flanking.size=5000000,
-  limit.baf.to.25=F,
-  limit.pm.to.25=F,
+  limit.baf.to.P=F,
+  limit.pm.to.P=F,
+  value.of.P=0.25,
   color.palette='Paired',
   dot.factor=2,
   self.contained=F,
@@ -95,9 +96,9 @@ format.value <- function(arg, value){
   numeric.args <- c('dot.factor', 'dp.hard.limit', 'af.hard.limit',
                     'dp.soft.limit', 'regions.flanking.size', 'window.size',
                     'window.size.voting', 'window.size.voting.X',
-                    'min.seg.var', 'min.seg.var.X', 'X.cutoff', 'Y.cutoff')
-  boolean.args <- c('self.contained', 'cairo', 'limit.pm.to.25',
-                    'limit.baf.to.25', 'keep.chromosomes.only', 'keep.regions.only',
+                    'min.seg.var', 'min.seg.var.X', 'X.cutoff', 'Y.cutoff', 'value.of.P')
+  boolean.args <- c('self.contained', 'cairo', 'limit.pm.to.P',
+                    'limit.baf.to.P', 'keep.chromosomes.only', 'keep.regions.only',
                     'concordance.table', 'run.merlin')
   
   value = sapply(strsplit(value, ',')[[1]], function(x) trim(x))
@@ -1749,7 +1750,7 @@ get.genome.baf <- function(s){
     colnames(dat) <- c('id', 'index', 'AF')
     dat <- dat[!is.na(dat$AF),]
     
-    if(args$limit.baf.to.25) dat <- dat[sort(sample(nrow(dat),round(nrow(dat)/4))),]
+    if(args$limit.baf.to.P) dat <- dat[sort(sample(nrow(dat),round(nrow(dat) * args$value.of.P))),]
     
     ## raw data
     
@@ -1848,7 +1849,7 @@ get.upds <- function(child, father, mother){
     colnames(dat) <- c('id', 'index', 'track', 'col')
     dat <- dat[!is.na(dat$track),]
     
-    if(args$limit.pm.to.25) dat <- dat[sort(sample(nrow(dat),round(nrow(dat)/4))),]
+    if(args$limit.pm.to.P) dat <- dat[sort(sample(nrow(dat),round(nrow(dat) * args$value.of.P))),]
     
     ## raw data
     
@@ -2184,9 +2185,9 @@ get.html.list <- function(){
   
   if (length(args$baf.ids)){
     cat('  ... at B-allele frequency (genome-wide; filter 1) \n')
-    if (args$limit.baf.to.25){
+    if (args$limit.baf.to.P){
       html.list <- append.list(html.list,
-                               tags$h3("B-allele frequency (BAF), genome-wide, only 25% of data"))
+                               tags$h3(paste0("B-allele frequency (BAF), genome-wide, only ", args$value.of.P * 100,"% of data")))
     } else {
       html.list <- append.list(html.list, tags$h3("B-allele frequency (BAF), genome-wide"))
     }
@@ -2221,8 +2222,8 @@ get.html.list <- function(){
   
   if (length(args$sample.ids) > 1){
     cat('  ... at parent mapping (filter 1) \n')
-    if (args$limit.pm.to.25){
-      html.list <- append.list(html.list, tags$h3("Parent mapping, only 25% of data"))
+    if (args$limit.pm.to.P){
+      html.list <- append.list(html.list, tags$h3(paste0("Parent mapping, only", args$value.of.P * 100,"% of data")))
     } else {
       html.list <- append.list(html.list, tags$h3("Parent mapping"))
     }
