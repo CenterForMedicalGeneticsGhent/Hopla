@@ -137,7 +137,7 @@ hopla --sample.ids sample_C,sample_B,sample_A --out.dir path/to/output --vcf.fil
 
 ```bash
 
-hopla --settings path/to/settings.txt --keep.chromosomes.only F --limit.baf.to.X T
+hopla --settings path/to/settings.txt --keep.chromosomes.only F --limit.baf.to.P T
 ```
 
 # Running the example
