@@ -1856,7 +1856,7 @@ get.upds <- function(child, father, mother){
     upd <- plot_ly(dat, x = ~index, y = ~track, text =~id,
                    marker = list(color =~ col, alpha = .5, size = args$dot.factor * 3,
                                  line = list(color =~ col, alpha = .5)),
-                   type = 'scattergl', mode = 'markers', hoverinfo = 'text', height = 1000,
+                   type = 'scatter', mode = 'markers', hoverinfo = 'text', height = 1000,
                    hoverlabel=list(bgcolor=~col))
     
     upd <- upd %>% layout(xaxis = list(title = list(text=chr, standoff = 1),
@@ -1889,7 +1889,7 @@ get.upds <- function(child, father, mother){
   
   upd <- plot_ly(dat[1,], x = ~index, y = ~track, text =~id,
                  marker = list(color =~ 'white'),
-                 type = 'scattergl', mode = 'markers', hoverinfo = 'none', height = 1000)
+                 type = 'scatter', mode = 'markers', hoverinfo = 'none', height = 1000)
   
   upd <- upd %>% layout(xaxis = list(title = list(text='', standoff = 1),
                                      showticklabels = F, zeroline = F, showgrid = F),
