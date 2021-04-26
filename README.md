@@ -15,7 +15,7 @@ conda install -c conda-forge -c bioconda hopla
 ```
 
 # Input
-- A (multisample) vcf.gz file (in our tests generated using gatk-haplotype & gatk-haplotype-joint through [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/); settings file: *example/example-bcbio.yaml*)
+- A (multisample) vcf.gz file (in our tests generated using gatk-haplotype & gatk-haplotype-joint through [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/), **with a predefined target**)
 - Several parameter arguments, required to, e.g., define the family pedigree structure, in form of a [settings file](#Settings-file) and/or command line arguments
 
 # Arguments
