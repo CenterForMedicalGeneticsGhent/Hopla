@@ -4,7 +4,7 @@
 #                                   Library/parameter/data loading/parsing
 # --------------------------------------------------------------------------------------------------------------
 
-version <- 'v0.3.2'
+version <- 'v0.3.3'
 
 # -----
 # Library
@@ -367,7 +367,7 @@ load.samples <- function(args){
   vcf.A$POS <- as.numeric(as.character(vcf.A$POS))
   for (x in c('CHROM', 'ID', 'REF', 'ALT')) vcf.A[[x]] <- as.character(vcf.A[[x]])
   
-  snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1
+  snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1 & vcf.A$CHROM %in% c(chrs, 'chrY')
   
   ## vcf.B (data)
   vcf.B.tmp <- as.data.frame(vcf@gt)
