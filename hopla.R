@@ -4,7 +4,7 @@
 #                                   Library/parameter/data loading/parsing
 # --------------------------------------------------------------------------------------------------------------
 
-version <- 'v0.3.3'
+version <- 'v0.3.4'
 
 # -----
 # Library
@@ -2200,9 +2200,7 @@ get.html.list <- function(){
   ## Mendelian errors
   
   if (length(args$sample.ids) > 1){
-    cat('  ... at mendelian errors (filter 1) \n')
     
-    html.list <- append.list(html.list, tags$h3("Mendelian errors"))
     men.err.plots <- list()
     for (s in args$samples.no.u){
       father <- args$father.ids[args$sample.ids == s]
@@ -2215,7 +2213,12 @@ get.html.list <- function(){
         men.err.plots[[s]] <- get.men.err.fig(s, father[has.father], mother[has.mother], n.rel)
       }
     }
-    html.list <- append.list(html.list, do.subplot(men.err.plots, ncol = 1))
+    if (length(men.err.plots)){
+      cat('  ... at mendelian errors (filter 1) \n')
+      
+      html.list <- append.list(html.list, tags$h3("Mendelian errors"))
+      html.list <- append.list(html.list, do.subplot(men.err.plots, ncol = 1))
+    }
   }
   
   ## Parent mapping
