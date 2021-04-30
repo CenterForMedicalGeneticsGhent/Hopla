@@ -63,7 +63,7 @@ conda install -c conda-forge -c bioconda hopla
 
 ### B-allele frequency (BAF) profiles
 
-- **`--baf.ids [string list, comma sep, last line children/embryos from --sample.ids]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
+- **`--baf.ids [string list, comma sep, no default]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
 
 ### Merlin haplotyping profiles
 - **`--merlin.model [string, default=best]`** Underlying [Merlin haplotyping model](http://csg.sph.umich.edu/abecasis/merlin/tour/haplotyping.html) to be used; choose between 'sample' and 'best'

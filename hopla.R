@@ -115,7 +115,6 @@ post.process.args <- function(args){
   if (!length(args$dp.hard.limit.ids)) args$dp.hard.limit.ids = not.last.in.line
   if (!length(args$af.hard.limit.ids)) args$af.hard.limit.ids = not.last.in.line
   if (!length(args$dp.soft.limit.ids)) args$dp.soft.limit.ids = last.in.line
-  if (!length(args$baf.ids)) args$dp.soft.limit.ids = last.in.line
   if (!length(args$window.size.voting.X)) args$window.size.voting.X = args$window.size.voting
   if (!length(args$min.seg.var.X)) args$min.seg.var.X = args$min.seg.var
   
