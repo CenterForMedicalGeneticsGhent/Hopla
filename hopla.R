@@ -2343,6 +2343,7 @@ args <- list(
 )
 
 cmd.args <- commandArgs(trailingOnly=T)
+cmd.args <- c('--settings', '/Users/leraman/Desktop/hopla/example/example-settings.txt')
 if (any(cmd.args == '--settings')){
   i = which(cmd.args == '--settings')
   args <- get.file.args(cmd.args[i+1])
@@ -2375,8 +2376,10 @@ chrs <- paste0('chr', c(1:22, 'X'))
 # Initialize
 # -----
 
-args$fam.id <- gsub("[[:punct:]]", ".", args$fam.id)
 dir.create(args$out.dir, showWarnings = F, recursive = T)
+args$out.dir <- normalizePath(args$out.dir)
+
+args$fam.id <- gsub("[[:punct:]]", ".", args$fam.id)
 args$out.bs <- paste0(args$out.dir, '/', args$fam.id, '-')
 args$merlin.dir <- paste0(args$out.bs, 'merlin/')
 if (length(args$cytoband.file)) cytobands <- get.cytobands(args$cytoband.file)
