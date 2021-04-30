@@ -1668,7 +1668,7 @@ get.genome.baf <- function(s){
     baf <- plot_ly(dat, x = ~index, y = ~AF, text =~id,
                    marker = list(color = colors[1], alpha = .5, size = args$dot.factor * 2,
                                  line = list(color = colors[1], alpha = .5)),
-                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 2)
+                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 4)
     
     yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,125), fixedrange = T)
     if (which(chrs == chr) %% 4 != 1) {
