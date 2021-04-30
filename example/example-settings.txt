@@ -93,7 +93,7 @@ concordance.table=
 # ----------------------------
 
 out.dir=example/
-fam.ID=
+fam.id=
 X.cutoff=
 Y.cutoff=
 window.size=
