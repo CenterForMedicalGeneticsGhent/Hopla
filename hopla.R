@@ -1668,7 +1668,7 @@ get.genome.baf <- function(s){
     baf <- plot_ly(dat, x = ~index, y = ~AF, text =~id,
                    marker = list(color = colors[1], alpha = .5, size = args$dot.factor * 2,
                                  line = list(color = colors[1], alpha = .5)),
-                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 4)
+                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 3)
     
     yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,125), fixedrange = T)
     if (which(chrs == chr) %% 4 != 1) {
@@ -1766,7 +1766,7 @@ get.pm <- function(child, father, mother){
     
     upd <- plot_ly(dat, x = ~index, y = ~track, text =~id,
                    marker = list(color =~ col, alpha = .5, size = args$dot.factor * 3,
-                                 line = list(color =~ col, alpha = .5)),
+                                 line = list(color =~ col, alpha = .5), symbol = 'cross-thin-open'),
                    type = 'scatter', mode = 'markers', hoverinfo = 'text', height = 1000,
                    hoverlabel=list(bgcolor=~col))
     
@@ -2333,8 +2333,8 @@ args <- list(
   window.size=1000000,
   regions.flanking.size=2000000,
   limit.baf.to.P=F,
-  limit.pm.to.P=T,
-  value.of.P=.1,
+  limit.pm.to.P=F,
+  value.of.P=.25,
   color.palette='Paired',
   dot.factor=2,
   self.contained=F,
