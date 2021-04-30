@@ -79,7 +79,7 @@ conda install -c conda-forge -c bioconda hopla
 - **`--out.dir [string, default = $PWD]`** Path to output folder
 - **`--fam.id [string, default = hopla]`** Family ID, used in output file names
 - **`--X.cutoff [numeric, default = 1.5]`** Used as 'X chromosome copy number cutoff' for gender prediction (one copy assumed in males, two in females)
-- **`--Y.cutoff [numeric, default = .6']`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
+- **`--Y.cutoff [numeric, default = .6]`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
 - **`--window.size [integer, default=1000000]`** Several genome-wide profiles are made in a bin-wise manner; define size (in bp) of bin
 - **`--regions.flanking.size [integer, default=2000000]`** Flanking size (in bp) to mark region(s) of interest
 - **`--limit.baf.to.P [boolean, default=F]`** Whether the genome-wide BAF profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
