@@ -63,7 +63,7 @@ conda install -c conda-forge -c bioconda hopla
 
 ### B-allele frequency (BAF) profiles
 
-- **`--baf.ids [string list, comma sep, last line children/embryos]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
+- **`--baf.ids [string list, comma sep, last line children/embryos from --sample.ids]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
 
 ### Merlin haplotyping profiles
 - **`--merlin.model [string, default=best]`** Underlying [Merlin haplotyping model](http://csg.sph.umich.edu/abecasis/merlin/tour/haplotyping.html) to be used; choose between 'sample' and 'best'
@@ -77,7 +77,7 @@ conda install -c conda-forge -c bioconda hopla
 
 ### Remaining features
 - **`--out.dir [string, default = $PWD]`** Path to output folder
-- **`--fam.ID [string, default = hopla]`** Family ID, used in output file names
+- **`--fam.id [string, default = hopla]`** Family ID, used in output file names
 - **`--X.cutoff [numeric, default = 1.5]`** Used as 'X chromosome copy number cutoff' for gender prediction (one copy assumed in males, two in females)
 - **`--Y.cutoff [numeric, default = .6']`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
 - **`--window.size [integer, default=1000000]`** Several genome-wide profiles are made in a bin-wise manner; define size (in bp) of bin
