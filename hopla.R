@@ -406,7 +406,7 @@ predict.genders <- function(genders){
 }
 
 # -----
-# Add ghost parents (if necessary), required non NA genders
+# Add ghost parents (if necessary), requires non-NA genders
 # -----
 
 add.ghosts <- function(args){
