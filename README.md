@@ -83,8 +83,8 @@ conda install -c conda-forge -c bioconda hopla
 - **`--window.size [integer, default=1000000]`** Several genome-wide profiles are made in a bin-wise manner; define size (in bp) of bin
 - **`--regions.flanking.size [integer, default=2000000]`** Flanking size (in bp) to mark region(s) of interest
 - **`--limit.baf.to.P [boolean, default=F]`** Whether the genome-wide BAF profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
-- **`--limit.pm.to.P [boolean, default=T]`** Whether the parent mapping profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
-- **`--value.of.P [numeric (range 0-1), default=.1]`** Value of P (see two parameters above)
+- **`--limit.pm.to.P [boolean, default=F]`** Whether the parent mapping profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
+- **`--value.of.P [numeric (range 0-1), default=.25]`** Value of P (see two parameters above)
 - **`--color.palette [string, default=Paired]`** [Color palette](https://rdrr.io/cran/RColorBrewer/man/ColorBrewer.html) to be used in visualizations
 - **`--dot.factor [numeric, default=2]`** The size of every dot in the visualizations is multiplied by this number
 - **`--self.contained [boolean, default=F]`** Whether to generate a self-contained HTML; requires [Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
