@@ -2343,7 +2343,6 @@ args <- list(
 )
 
 cmd.args <- commandArgs(trailingOnly=T)
-cmd.args <- c('--settings', '/Users/leraman/Desktop/hopla/example/example-settings.txt')
 if (any(cmd.args == '--settings')){
   i = which(cmd.args == '--settings')
   args <- get.file.args(cmd.args[i+1])
