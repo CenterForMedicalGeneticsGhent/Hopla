@@ -16,7 +16,6 @@
 # -------------------
 
 vcf.file=example/example-vcf.vcf.gz
-out.dir=example/
 sample.ids=sample_C,sample_B,sample_A
 
 # ----------------------------
@@ -93,6 +92,8 @@ concordance.table=
 # OPTIONAL: REMAINING FEATURES
 # ----------------------------
 
+out.dir=example/
+fam.ID=
 X.cutoff=
 Y.cutoff=
 window.size=

@@ -23,8 +23,7 @@ conda install -c conda-forge -c bioconda hopla
 ## Mandatory arguments
 
 - **`--vcf.file [string]`** Path to (multisample) vcf.gz file
-- **`--out.dir [string]`** Path to output folder
-- **`--sample.ids [string list, comma sep]`** Sample IDs as given in the file at `--vcf.file`; e.g., sample_C,sample_B,sample_A; missing samples can be added using 'unknown' IDs U1,U2,... which is useful to, e.g., define uncle/niece/... relations, by reusing these IDs in `--father.ids` and `--mother.ids`
+- **`--sample.ids [string list, comma sep]`** Sample IDs to be analyzed; must be included in `--vcf.file`; e.g., sample_C,sample_B,sample_A; missing samples can be added using 'unknown' IDs U1,U2,... which is useful to, e.g., define uncle/niece/... relations, by reusing these IDs in `--father.ids` and `--mother.ids`
 
 ## Optional arguments
 ### **Important** optional arguments
@@ -32,14 +31,14 @@ conda install -c conda-forge -c bioconda hopla
 - **`--father.ids [string list, comma sep, no default]`** Sample IDs fathers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_C
 - **`--mother.ids [string list, comma sep, no default]`** Sample IDs mothers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_B
 - **`--genders [char (M/F/NA) list, comma sep, no default]`** Sample genders; when not available, use NA, model will predict gender (see below); order matches `--sample.ids`; e.g., M,F,NA
-- **`--run.merlin [boolean, default = T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH, which should be automatically the case when using [Easy install](#easy-install); Merlin only runs in Linux**
+- **`--run.merlin [boolean, default = T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH, which is automatically the case when using [Easy install](#easy-install); Merlin only runs in Linux**
 - **`--cytoband.file [string, no default]`** [UCSC cytoband file](https://hgdownload.soe.ucsc.edu/downloads.html#human); when given, chromosome bands are shown on top of chromosome-wise figures; highly improves interpretability of figures; e.g., path/to/cytoband.hg38.txt
 
 ### **Important** optional variant inclusion arguments: filter 1
 
-- EVERY sample in **`--dp.hard.limit.samples [string list, comma sep, default=--sample.ids]`** should have variants with a coverage of at least **`--dp.hard.limit [integer, default=10]`**; applies hard filter: variants that do not comply will be removed from all samples
-- AT LEAST ONE sample in **`--af.hard.limit.samples [string list, comma sep, default=--sample.ids]`** should have variants with an allele fraction of at least **`--af.hard.limit [numeric (range 0-1), default=0]`**; applies hard filter: variants that do not comply will be removed from all samples
-- Variants from samples in **`--dp.soft.limit.samples [string list, comma sep, default=--sample.ids]`** should have a coverage of at least **`--dp.soft.limit [integer, default=15]`**; applies soft filter: variants that do not comply will be removed from the given samples only
+- EVERY sample in **`--dp.hard.limit.samples [string list, comma sep, default=all but last line children/embryos from --sample.ids]`** should have variants with a coverage of at least **`--dp.hard.limit [integer, default=10]`**; applies hard filter: variants that do not comply will be removed from all samples
+- AT LEAST ONE sample in **`--af.hard.limit.samples [string list, comma sep, default=all but last line children/embryos from --sample.ids]`** should have variants with an allele fraction of at least **`--af.hard.limit [numeric (range 0-1), default=0]`**; applies hard filter: variants that do not comply will be removed from all samples
+- Variants from samples in **`--dp.soft.limit.samples [string list, comma sep, default=last line children/embryos from --sample.ids]`** should have a coverage of at least **`--dp.soft.limit [integer, default=10]`**; applies soft filter: variants that do not comply will be removed from the given samples only
 
 ### **Important** optional variant inclusion arguments: filter 2
 
@@ -64,26 +63,28 @@ conda install -c conda-forge -c bioconda hopla
 
 ### B-allele frequency (BAF) profiles
 
-- **`--baf.ids [string list, comma sep, no default]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
+- **`--baf.ids [string list, comma sep, last line children/embryos]`** BAF profiles will be generated for the region(s) of interest for all samples; include samples here if a genome-wide BAF profile is desired; e.g., sample_B,sample_C; **WARNING**: this increases the HTML size significantly, which might decrease usability; and, the maximum number of plots per HTML output could be reached, which hides other plots
 
 ### Merlin haplotyping profiles
 - **`--merlin.model [string, default=best]`** Underlying [Merlin haplotyping model](http://csg.sph.umich.edu/abecasis/merlin/tour/haplotyping.html) to be used; choose between 'sample' and 'best'
 - **`--min.seg.var [integer, default=5]`** Minimum number of variants in a same-haplotype segment; haplotype segments that do not comply are corrected to neighbouring haplotype; corrected haplotypes are shown using a circle symbol; will not be applied when set to 0
-- **`--min.seg.var.X [integer, default=--min.seg.var]`** The parameter `--min.seg.var` can be set separately for chromosome X
-- **`--window.size.voting [integer, default=5000000]`** Size (in bp) to correct haplotypes by 'weighted neighbourhood voting'; corrected haplotypes are shown using a circle symbol; will not be applied when set to 0
+- **`--min.seg.var.X [integer, default=15]`** The parameter `--min.seg.var` can be set separately for chromosome X
+- **`--window.size.voting [integer, default=10000000]`** Size (in bp) to correct haplotypes by 'weighted neighbourhood voting'; corrected haplotypes are shown using a circle symbol; will not be applied when set to 0
 - **`--window.size.voting.X [integer, default=--window.size.voting]`** The parameter `--window.size.voting` can be set separately for chromosome X
 - **`--keep.chromosomes.only [boolean, default=T]`** Whether raw data points in haplotyping profiles, with the exception of the complete chromosomes in the region(s) of interest, should be omitted; significantly lowers HTML size
 - **`--keep.regions.only [boolean, default=F]`** Whether raw data points in haplotyping profiles, with the exception of the region(s) of interest, should be omitted; significantly lowers HTML size
 - **`--concordance.table [boolean, default=T]`** Whether a haplotyping strand-wise concordance table should be added; useful for validation purposes
 
 ### Remaining features
+- **`--out.dir [string, default = $PWD]`** Path to output folder
+- **`--fam.ID [string, default = hopla]`** Family ID, used in output file names
 - **`--X.cutoff [numeric, default = 1.5]`** Used as 'X chromosome copy number cutoff' for gender prediction (one copy assumed in males, two in females)
-- **`--Y.cutoff [numeric, default = 0.5']`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
+- **`--Y.cutoff [numeric, default = .6']`** Used as 'Y chromosome copy number cutoff' for gender prediction (one copy assumed in males, noise expected in females)
 - **`--window.size [integer, default=1000000]`** Several genome-wide profiles are made in a bin-wise manner; define size (in bp) of bin
-- **`--regions.flanking.size [integer, default=5000000]`** Flanking size (in bp) to mark region(s) of interest
+- **`--regions.flanking.size [integer, default=2000000]`** Flanking size (in bp) to mark region(s) of interest
 - **`--limit.baf.to.P [boolean, default=F]`** Whether the genome-wide BAF profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
-- **`--limit.pm.to.P [boolean, default=F]`** Whether the parent mapping profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
-- **`--value.of.P [numeric (range 0-1), default=.25]`** Value of P (see two parameters above)
+- **`--limit.pm.to.P [boolean, default=T]`** Whether the parent mapping profiles should be randomly sampled to include only a % (defined by P) of the data; significantly lowers HTML output size
+- **`--value.of.P [numeric (range 0-1), default=.1]`** Value of P (see two parameters above)
 - **`--color.palette [string, default=Paired]`** [Color palette](https://rdrr.io/cran/RColorBrewer/man/ColorBrewer.html) to be used in visualizations
 - **`--dot.factor [numeric, default=2]`** The size of every dot in the visualizations is multiplied by this number
 - **`--self.contained [boolean, default=F]`** Whether to generate a self-contained HTML; requires [Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)

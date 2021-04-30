@@ -1,89 +1,31 @@
 #!/usr/bin/env Rscript
 
-# --------------------------------------------------------------------------------------------------------------
-#                                   Library/parameter/data loading/parsing
-# --------------------------------------------------------------------------------------------------------------
+version <- 'v1.0.0'
 
-version <- 'v0.3.4'
+# Structure:
+## - Functions for ...
+### -> parameter & vcf loading and parsing
+### -> running Merlin & correcting Merlin haplotypes
+### -> running specific analyses & creating visualizations
+### -> writing to HTML output
+## - Main code
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#                                                  Functions: parameter & vcf loading and parsing
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # -----
-# Library
+# Parameter parsing
 # -----
-
-suppressMessages(library('vcfR'))
-suppressMessages(library('data.table'))
-suppressMessages(library('RColorBrewer'))
-suppressMessages(library('kinship2'))
-suppressMessages(library('plotly'))
-suppressMessages(library('htmltools'))
-suppressMessages(library('GenomicRanges'))
-suppressMessages(library('DNAcopy'))
-suppressMessages(library('knitr'))
-
-# -----
-# Param
-# -----
-
-args <- list(
-  
-  ## mandatory arguments
-  vcf.file=c(),
-  out.dir=c(),
-  sample.ids=c(),
-  
-  ## important optional arguments
-  father.ids=c(),
-  mother.ids=c(),
-  genders=c(),
-  run.merlin=T,
-  cytoband.file=c(),
-  
-  ## variant inclusion arguments: filter 1
-  dp.hard.limit.ids=c(),
-  dp.hard.limit=10,
-  af.hard.limit.ids=c(),
-  af.hard.limit=0,
-  dp.soft.limit.ids=c(),
-  dp.soft.limit=15,
-  
-  ## variant inclusion arguments: filter 2
-  keep.informative.ids=c(),
-  keep.hetero.ids=c(),
-  
-  ## sample/disease annotation
-  regions=c(),
-  reference.ids=c(),
-  carrier.ids=c(),
-  affected.ids=c(),
-  nonaffected.ids=c(),
-  info=c(),
-  
-  ## BAF profiles
-  baf.ids=c(),
-  
-  ## merlin profiles
-  merlin.model='best',
-  min.seg.var=5,
-  min.seg.var.X=c(),
-  window.size.voting=5000000,
-  window.size.voting.X=c(),
-  keep.chromosomes.only=T,
-  keep.regions.only=F,
-  concordance.table=T,
-  
-  ## remaining features
-  X.cutoff=1.5,
-  Y.cutoff=.5,
-  window.size=1000000,
-  regions.flanking.size=5000000,
-  limit.baf.to.P=F,
-  limit.pm.to.P=F,
-  value.of.P=0.25,
-  color.palette='Paired',
-  dot.factor=2,
-  self.contained=F,
-  cairo=F
-)
 
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
@@ -93,13 +35,13 @@ format.value <- function(arg, value){
     quit(status=0)
   }
   
-  numeric.args <- c('dot.factor', 'dp.hard.limit', 'af.hard.limit',
-                    'dp.soft.limit', 'regions.flanking.size', 'window.size',
-                    'window.size.voting', 'window.size.voting.X',
-                    'min.seg.var', 'min.seg.var.X', 'X.cutoff', 'Y.cutoff', 'value.of.P')
-  boolean.args <- c('self.contained', 'cairo', 'limit.pm.to.P',
-                    'limit.baf.to.P', 'keep.chromosomes.only', 'keep.regions.only',
-                    'concordance.table', 'run.merlin')
+  numeric.args <- c('dp.hard.limit', 'af.hard.limit', 'dp.soft.limit',
+                    'min.seg.var', 'min.seg.var.X', 'window.size.voting',
+                    'window.size.voting.X', 'X.cutoff', 'Y.cutoff', 'window.size',
+                    'regions.flanking.size', 'value.of.P', 'dot.factor')
+  boolean.args <- c('run.merlin', 'keep.chromosomes.only', 'keep.regions.only',
+                    'concordance.table', 'limit.baf.to.P', 'limit.pm.to.P',
+                    'self.contained', 'cairo')
   
   value = sapply(strsplit(value, ',')[[1]], function(x) trim(x))
   
@@ -122,6 +64,10 @@ get.cmd.args <- function(cmd.args){
 }
 
 get.file.args <- function(settings.file){
+  if (!file.exists(settings.file)){
+    cat('ERROR: File given by --settings does not exist. Please Correct.\n')
+    quit(status=0)
+  }
   at.info = F
   for (line in suppressWarnings(readLines(settings.file))){
     ## info parsing
@@ -150,19 +96,30 @@ post.process.args <- function(args){
   no.u.mask <- !sapply(args$sample.ids, function(x) toupper(substr(x,1,1)) == 'U' &
                          !is.na(suppressWarnings(as.numeric(substr(x,2,999)))))
   
-  args$samples.no.u <- args$sample.ids[no.u.mask]
-  args$samples.u <- args$sample.ids[!no.u.mask]
-  
   if (!length(args$genders)) args$genders = rep(NA, length(args$sample.ids))
   if (!length(args$mother.ids)) args$mother.ids = rep(NA, length(args$sample.ids))
   if (!length(args$father.ids)) args$father.ids = rep(NA, length(args$sample.ids))
-  if (!length(args$dp.hard.limit.ids)) args$dp.hard.limit.ids = args$samples.no.u
-  if (!length(args$af.hard.limit.ids)) args$af.hard.limit.ids = args$samples.no.u
-  if (!length(args$dp.soft.limit.ids)) args$dp.soft.limit.ids = args$samples.no.u
+  
+  args$samples.no.u <- args$sample.ids[no.u.mask]
+  args$samples.u <- args$sample.ids[!no.u.mask]
+  
+  not.last.in.line <- unique(c(args$mother.ids, args$father.ids))
+  not.last.in.line <- not.last.in.line[not.last.in.line %in% args$samples.no.u]
+  last.in.line <- args$samples.no.u[!args$samples.no.u %in% not.last.in.line]
+  
+  if (length(args$samples.no.u) == 1){
+    not.last.in.line = args$samples.no.u
+    last.in.line = args$samples.no.u
+  }
+  
+  if (!length(args$dp.hard.limit.ids)) args$dp.hard.limit.ids = not.last.in.line
+  if (!length(args$af.hard.limit.ids)) args$af.hard.limit.ids = not.last.in.line
+  if (!length(args$dp.soft.limit.ids)) args$dp.soft.limit.ids = last.in.line
+  if (!length(args$baf.ids)) args$dp.soft.limit.ids = last.in.line
   if (!length(args$window.size.voting.X)) args$window.size.voting.X = args$window.size.voting
   if (!length(args$min.seg.var.X)) args$min.seg.var.X = args$min.seg.var
   
-  man.args <- c('vcf.file', 'out.dir', 'sample.ids')
+  man.args <- c('vcf.file', 'sample.ids')
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man.args){
       cat(paste0('ERROR: Argument --', arg, ' is mandatory. Please provide.\n'))
@@ -261,6 +218,31 @@ post.process.args <- function(args){
         quit(status=0)
       }
     }
+    
+    if (arg == 'vcf.file'){
+      if (!file.exists(args$vcf.file)){
+        cat('ERROR: the file given by --vcf.file does not exist. Please correct.\n')
+        quit(status=0)
+      }
+    }
+    if (arg == 'cytoband.file'){
+      if (length(args$cytoband.file) & !file.exists(args$cytoband.file)){
+        cat('ERROR: the file given by --vcf.file does not exist. Please correct.\n')
+        quit(status=0)
+      }
+    }
+    if (arg == 'value.of.P'){
+      if (args$value.of.P <= 0 | args$value.of.P > 1){
+        cat('ERROR: --value.of.P should be within ]0, 1]. Please correct.\n')
+        quit(status=0)
+      }
+    }
+    if (arg == 'af.hard.limit'){
+      if (args$af.hard.limit < 0 | args$af.hard.limit >= 1){
+        cat('ERROR: --af.hard.limit should be within [0, 1[. Please correct.\n')
+        quit(status=0)
+      }
+    }
   }
   
   add.annot <- function(letter, annot = NULL){
@@ -282,47 +264,6 @@ post.process.args <- function(args){
   
   return(args)
 }
-
-cmd.args <- commandArgs(trailingOnly=T)
-if (any(cmd.args == '--settings')){
-  i = which(cmd.args == '--settings')
-  args <- get.file.args(cmd.args[i+1])
-  cmd.args <- cmd.args[-(i:(i+1))]
-  rm(i)
-}
-if ('--version' %in% cmd.args | '-v' %in% cmd.args){
-  cat(version, '\n')
-  quit(status=0)
-}
-
-if ('--help' %in% cmd.args | '-h' %in% cmd.args){
-  cat('Please consult https://github.com/leraman/Hopla\n')
-  quit(status=0)
-}
-args <- get.cmd.args(cmd.args)
-args <- post.process.args(args)
-
-rm(cmd.args, format.value, get.cmd.args, get.file.args, post.process.args)
-
-# -----
-# Overall options
-# -----
-
-options(scipen=999)
-if (args$cairo) options(bitmaptype='cairo')
-
-# -----
-# Overall variables
-# -----
-
-colors = brewer.pal(brewer.pal.info[args$color.palette,]$maxcolors, args$color.palette)
-chrs <- paste0('chr', c(1:22, 'X'))
-
-# -----
-# Create output dir
-# -----
-
-dir.create(args$out.dir, showWarnings = F, recursive = T)
 
 # -----
 # Cytobands
@@ -346,9 +287,6 @@ get.cytobands <- function(file){
   }
   return(cytobands)
 }
-
-if (length(args$cytoband.file)) cytobands <- get.cytobands(args$cytoband.file)
-rm(get.cytobands)
 
 # -----
 # Load
@@ -409,9 +347,6 @@ load.samples <- function(args){
   return(vcfs)
 }
 
-vcfs <- load.samples(args)
-rm(load.samples)
-
 # -----
 # Gender prediction
 # -----
@@ -470,20 +405,8 @@ predict.genders <- function(genders){
   return(genders)
 }
 
-if (any(is.na(args$genders))){
-  args$genders <- predict.genders(args$genders)
-}
-
-vcfs <- lapply(vcfs, function(x) x[vcfs[[1]]$CHROM %in% chrs,])
-for (s in args$sample.ids[args$genders == 'M']){
-  if (s %in% args$samples.u) next
-  vcfs[[s]]$GT[which(vcfs[[s]]$CHROM == 'chrX' & vcfs[[s]]$GT == '0/1')] <- './.'
-}
-
-rm(predict.genders, s)
-
 # -----
-# Add ghost parents if necessary
+# Add ghost parents (if necessary), required non NA genders
 # -----
 
 add.ghosts <- function(args){
@@ -509,8 +432,6 @@ add.ghosts <- function(args){
   }
   return(args)
 }
-args <- add.ghosts(args)
-rm(add.ghosts)
 
 # -----
 # Filtering
@@ -612,13 +533,20 @@ apply.filter2 <- function(vcf.list){
   return(vcf.list)
 }
 
-vcfs.filtered <- apply.filter1(vcfs)
-vcfs.filtered2 <- apply.filter2(vcfs.filtered)
-rm(apply.filter1, apply.filter2)
 
-# --------------------------------------------------------------------------------------------------------------
-#                                                 Merlin
-# --------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#                                               Functions: running Merlin & correcting Merlin haplotypes
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 run.merlin <- function(args, vcfs.filtered2){
   ## prepare run 1
@@ -640,41 +568,43 @@ run.merlin <- function(args, vcfs.filtered2){
   map <- cbind(map, vcfs.filtered2[[1]]$POS / 1000000)
   autosome.m <- map[,1] %in% as.character(1:22)
   
-  dir.create(paste0(args$out.dir, '/merlin'), showWarnings = F, recursive = T)
+  dir.create(args$merlin.dir, showWarnings = F, recursive = T)
   
-  suppressMessages(fwrite(cbind(ped.1, ped.2[,autosome.m]), paste0(args$out.dir, '/merlin/merlin.ped'),
+  suppressMessages(fwrite(cbind(ped.1, ped.2[,autosome.m]), paste0(args$merlin.dir, 'merlin.ped'),
                           col.names = F, row.names = F, quote = F, sep = '\t'))
-  write.table(dat[autosome.m,], paste0(args$out.dir, '/merlin/merlin.dat'), col.names = F,
+  write.table(dat[autosome.m,], paste0(args$merlin.dir, 'merlin.dat'), col.names = F,
               row.names = F, quote = F, sep = '\t')
-  write.table(map[autosome.m,], paste0(args$out.dir, '/merlin/merlin.map'), col.names = F,
+  write.table(map[autosome.m,], paste0(args$merlin.dir, 'merlin.map'), col.names = F,
               row.names = F, quote = F, sep = '\t')
-  suppressMessages(fwrite(cbind(ped.1, ped.2[,!autosome.m]), paste0(args$out.dir, '/merlin/merlinX.ped'),
+  suppressMessages(fwrite(cbind(ped.1, ped.2[,!autosome.m]), paste0(args$merlin.dir, 'merlinX.ped'),
                           col.names = F, row.names = F, quote = F, sep = '\t'))
-  write.table(dat[!autosome.m,], paste0(args$out.dir, '/merlin/merlinX.dat'), col.names = F,
+  write.table(dat[!autosome.m,], paste0(args$merlin.dir, 'merlinX.dat'), col.names = F,
               row.names = F, quote = F, sep = '\t')
-  write.table(map[!autosome.m,], paste0(args$out.dir, '/merlin/merlinX.map'), col.names = F,
+  write.table(map[!autosome.m,], paste0(args$merlin.dir, 'merlinX.map'), col.names = F,
               row.names = F, quote = F, sep = '\t')
   
   ## execute 1
   
   cat('Running Merlin --error ...\n')
   system(paste0('"', as.character(Sys.which("merlin")), '"',
-                ' -d "', args$out.dir, '/merlin/merlin.dat"',
-                ' -p "', args$out.dir, '/merlin/merlin.ped"',
-                ' -m "', args$out.dir, '/merlin/merlin.map"',
-                ' --error --prefix "', args$out.dir, '/merlin/merlin" > "', args$out.dir, '/merlin/merlin.o" && ',
+                ' -d "', args$merlin.dir, 'merlin.dat"',
+                ' -p "', args$merlin.dir, 'merlin.ped"',
+                ' -m "', args$merlin.dir, 'merlin.map"',
+                ' --error --prefix "',
+                args$merlin.dir, 'merlin" > "', args$merlin.dir, 'merlin.o" && ',
                 '"', as.character(Sys.which("minx")), '"',
-                ' -d "', args$out.dir, '/merlin/merlinX.dat"',
-                ' -p "', args$out.dir, '/merlin/merlinX.ped"',
-                ' -m "', args$out.dir, '/merlin/merlinX.map"',
-                ' --error --prefix "', args$out.dir, '/merlin/merlinX" > "', args$out.dir, '/merlin/merlinX.o"'))
+                ' -d "', args$merlin.dir, 'merlinX.dat"',
+                ' -p "', args$merlin.dir, 'merlinX.ped"',
+                ' -m "', args$merlin.dir, 'merlinX.map"',
+                ' --error --prefix "',
+                args$merlin.dir, 'merlinX" > "', args$merlin.dir, 'merlinX.o"'))
   
   ## prepare run 2
   
   cat('Parsing & removing unlikely variants ...\n')
   
-  unl.var <- as.character(read.table(paste0(args$out.dir, '/merlin/merlin.err'), header = T)[,3])
-  unl.var.X <- as.character(read.table(paste0(args$out.dir, '/merlin/merlinX.err'), header = T)[,3])
+  unl.var <- as.character(read.table(paste0(args$merlin.dir, 'merlin.err'), header = T)[,3])
+  unl.var.X <- as.character(read.table(paste0(args$merlin.dir, 'merlinX.err'), header = T)[,3])
   
   unl.mask <- !(map[,2] %in% unl.var)
   unl.mask.X <- !(map[,2] %in% unl.var.X)
@@ -690,18 +620,18 @@ run.merlin <- function(args, vcfs.filtered2){
   }
   
   suppressMessages(fwrite(cbind(ped.1, ped.2[,autosome.m & unl.mask]),
-                          paste0(args$out.dir, '/merlin/merlin.ped'),
+                          paste0(args$merlin.dir, 'merlin.ped'),
                           col.names = F, row.names = F, quote = F, sep = '\t'))
-  write.table(dat[autosome.m & unl.mask,], paste0(args$out.dir, '/merlin/merlin.dat'), col.names = F,
+  write.table(dat[autosome.m & unl.mask,], paste0(args$merlin.dir, 'merlin.dat'), col.names = F,
               row.names = F, quote = F, sep = '\t')
-  write.table(map[autosome.m & unl.mask,], paste0(args$out.dir, '/merlin/merlin.map'), col.names = F,
+  write.table(map[autosome.m & unl.mask,], paste0(args$merlin.dir, 'merlin.map'), col.names = F,
               row.names = F, quote = F, sep = '\t')
   suppressMessages(fwrite(cbind(ped.1, ped.2[,!autosome.m & unl.mask.X]),
-                          paste0(args$out.dir, '/merlin/merlinX.ped'),
+                          paste0(args$merlin.dir, 'merlinX.ped'),
                           col.names = F, row.names = F, quote = F, sep = '\t'))
-  write.table(dat[!autosome.m & unl.mask.X,], paste0(args$out.dir, '/merlin/merlinX.dat'),
+  write.table(dat[!autosome.m & unl.mask.X,], paste0(args$merlin.dir, 'merlinX.dat'),
               col.names = F, row.names = F, quote = F, sep = '\t')
-  write.table(map[!autosome.m & unl.mask.X,], paste0(args$out.dir, '/merlin/merlinX.map'),
+  write.table(map[!autosome.m & unl.mask.X,], paste0(args$merlin.dir, 'merlinX.map'),
               col.names = F, row.names = F, quote = F, sep = '\t')
   
   ## run 2
@@ -710,17 +640,17 @@ run.merlin <- function(args, vcfs.filtered2){
   cat(paste0('Running Merlin --', args$merlin.model,' ...\n'))
   
   system(paste0('"', as.character(Sys.which("merlin")), '"',
-                ' -d "', args$out.dir, '/merlin/merlin.dat"',
-                ' -p "', args$out.dir, '/merlin/merlin.ped"',
-                ' -m "', args$out.dir, '/merlin/merlin.map"',
+                ' -d "', args$merlin.dir, 'merlin.dat"',
+                ' -p "', args$merlin.dir, 'merlin.ped"',
+                ' -m "', args$merlin.dir, 'merlin.map"',
                 ' --', args$merlin.model,' --prefix "',
-                args$out.dir, '/merlin/merlin" > "',args$out.dir, '/merlin/merlin.o" && ',
+                args$merlin.dir, 'merlin" > "', args$merlin.dir, 'merlin.o" && ',
                 '"', as.character(Sys.which("minx")), '"',
-                ' -d "', args$out.dir, '/merlin/merlinX.dat"',
-                ' -p "', args$out.dir, '/merlin/merlinX.ped"',
-                ' -m "', args$out.dir, '/merlin/merlinX.map"',
+                ' -d "', args$merlin.dir, 'merlinX.dat"',
+                ' -p "', args$merlin.dir, 'merlinX.ped"',
+                ' -m "', args$merlin.dir, 'merlinX.map"',
                 ' --', args$merlin.model,' --prefix "',
-                args$out.dir, '/merlin/merlinX" > "', args$out.dir, '/merlin/merlinX.o"'))
+                args$merlin.dir, 'merlinX" > "', args$merlin.dir, 'merlinX.o"'))
   
   return(map.list)
 }
@@ -794,13 +724,13 @@ parse.merlin <- function(args){
     return(parsed)
   }
   
-  table.order = get.table.order(paste0(args$out.dir, '/merlin/merlin.chr'))
-  table.orderX = get.table.order(paste0(args$out.dir, '/merlin/merlinX.chr'))
+  table.order = get.table.order(paste0(args$merlin.dir, 'merlin.chr'))
+  table.orderX = get.table.order(paste0(args$merlin.dir, 'merlinX.chr'))
   
-  parsed.geno <- parse(paste0(args$out.dir, '/merlin/merlin.chr'), chrs[1:22], table.order)
-  parsed.flow <- parse(paste0(args$out.dir, '/merlin/merlin.flow'), chrs[1:22], table.order)
-  parsed.genoX <- parse(paste0(args$out.dir, '/merlin/merlinX.chr'), chrs[23], table.orderX)
-  parsed.flowX <- parse(paste0(args$out.dir, '/merlin/merlinX.flow'), chrs[23], table.orderX)
+  parsed.geno <- parse(paste0(args$merlin.dir, 'merlin.chr'), chrs[1:22], table.order)
+  parsed.flow <- parse(paste0(args$merlin.dir, 'merlin.flow'), chrs[1:22], table.order)
+  parsed.genoX <- parse(paste0(args$merlin.dir, 'merlinX.chr'), chrs[23], table.orderX)
+  parsed.flowX <- parse(paste0(args$merlin.dir, 'merlinX.flow'), chrs[23], table.orderX)
   
   for (i in which(args$genders == 'M')){
     parsed.genoX$chrX[,i] <- paste0(parsed.genoX$chrX[,i], 'X')
@@ -944,39 +874,21 @@ correct.profiles <- function(args, parsed.flow){
   return(list(parsed.flow = parsed.flow, is.corrected = is.corrected))
 }
 
-# -----
-# Run
-# -----
 
-if (args$run.merlin){
-  map.list <- run.merlin(args, vcfs.filtered2)
-  rm(run.merlin)
-  
-  merlin.out <- parse.merlin(args)
-  parsed.geno <- merlin.out$parsed.geno
-  parsed.flow <- merlin.out$parsed.flow
-  map.list <- merlin.out$map.list
-  rm(parse.merlin, merlin.out)
-  
-  parsed.geno <- update.geno(parsed.geno)
-  rm(update.geno)
-  
-  corrected.data <- correct.profiles(args, parsed.flow)
-  parsed.flow = corrected.data$parsed.flow
-  is.corrected = corrected.data$is.corrected
-  rm(correct.profiles, corrected.data)
-  
-  letters <- unique(unlist(strsplit(unique(unlist(parsed.flow)), '')))
-  letters <- letters[!(letters %in% c('|', 'X'))]
-  letter.colors <- c(colors[1:length(letters)], 'white')
-  names(letter.colors) <- c(letters, 'X')
-} else{
-  letters <- c('A', 'B', 'C', 'D')
-}
 
-# --------------------------------------------------------------------------------------------------------------
-#                                       Visualisation functions
-# --------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#                                           Functions: running specific analyses & creating visualizations
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # -----
 # Overall
@@ -1792,10 +1704,10 @@ get.genome.baf <- function(s){
 }
 
 # -----
-# UPD
+# Parent mapping
 # -----
 
-get.upds <- function(child, father, mother){
+get.pm <- function(child, father, mother){
   vcf.child <- vcfs.filtered[[child]]
   
   annot.list <- c('father 0/1 --- mother 0/0|1/1 --- child 0/1',
@@ -1915,9 +1827,23 @@ get.upds <- function(child, father, mother){
   return(upds)
 }
 
-# --------------------------------------------------------------------------------------------------------------
-#                                              Write HTML output
-# --------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#                                                       Functions: writing to HTML output
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 get.html.list <- function(){
   cat('Generating visualizations, working ...\n')
@@ -2001,10 +1927,11 @@ get.html.list <- function(){
     cat('  ... at pedigree \n')
     
     html.list <- add.main.header(html.list, "Family tree")
-    write.pedigree(paste0(args$out.dir, '/ped.tree.png'))
-    x <- htmltools::img(src = image_uri(paste0(args$out.dir, '/ped.tree.png')),
+    
+    write.pedigree(paste0(args$out.bs, 'ped.tree.png'))
+    x <- htmltools::img(src = image_uri(paste0(args$out.bs, 'ped.tree.png')),
                         style = paste0('height:',5*100,'px;width:',log(length(args$sample.ids)) * 4 * 100,'px'))
-    invisible(file.remove(paste0(args$out.dir, '/ped.tree.png')))
+    invisible(file.remove(paste0(args$out.bs, 'ped.tree.png')))
     html.list <- append.list(html.list, x)
   }
   
@@ -2239,7 +2166,7 @@ get.html.list <- function(){
       
       if (length(father[has.father]) | length(mother[has.mother])){
         html.list <- append.list(html.list, tags$h4(args$samples.out[args$sample.ids == s]))
-        html.list <- append.list(html.list, do.subplot(get.upds(s, father[has.father], mother[has.mother]), ncol = 4))
+        html.list <- append.list(html.list, do.subplot(get.pm(s, father[has.father], mother[has.mother]), ncol = 4))
       }
     }
   }
@@ -2295,51 +2222,236 @@ get.html.list <- function(){
   return(html.list)
 }
 
-html.list <- get.html.list()
-
-cat('Saving to HTML ...\n')
-
-save_html(html.list, file = paste0(normalizePath(args$out.dir), '/hopla.html'), libdir = 'hopla_files')
-
-if (args$self.contained){
+transform.to.selfcontained <- function(){
   cat('Converting to self-contained HTML ...\n')
   if (!htmlwidgets:::pandoc_available()) {
     cat(paste0("WARNING: Saving a widget with --self.contained T requires pandoc. For details see: https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md\n",
-        "Self-contained HTML will not be created.\n"))
+               "Self-contained HTML will not be created.\n"))
   }
   else {
     htmlwidgets:::find_pandoc()
-    system(paste0('cd ', normalizePath(args$out.dir), ' && touch nocss.css'))
+    system(paste0('touch ', args$out.bs, 'nocss.css'))
     system(paste0('cd "', normalizePath(args$out.dir),
                   '" && ', htmlwidgets:::pandoc(), 
-                  ' hopla.html --output hopla-sc.html --from markdown --self-contained --metadata pagetitle=Hopla --css nocss.css'),
-           ignore.stderr = T)
-    unlink(paste0(normalizePath(args$out.dir), '/nocss.css'), recursive = T)
-    if (file.exists(paste0(normalizePath(args$out.dir), '/hopla-sc.html'))){
-      unlink(paste0(normalizePath(args$out.dir), '/hopla_files'), recursive = T)
-      unlink(paste0(normalizePath(args$out.dir), '/hopla.html'), recursive = T)
-      tmp = file.rename(paste0(normalizePath(args$out.dir), '/hopla-sc.html'), paste0(normalizePath(args$out.dir), '/hopla.html'))
+                  ' ', args$out.bs, 'output.html --output ', args$out.bs, 'output.sc.html --from markdown --self-contained --metadata pagetitle=', args$fam.ID,' --css ',
+                  args$out.bs, 'nocss.css'), ignore.stderr = T)
+    unlink(paste0(args$out.bs, 'nocss.css'), recursive = T)
+    if (file.exists(paste0(args$out.bs, 'output.sc.html'))){
+      unlink(paste0(args$out.bs, 'output_files'), recursive = T)
+      unlink(paste0(args$out.bs, 'output.html'), recursive = T)
+      tmp = file.rename(paste0(args$out.bs, 'output.sc.html'), paste0(args$out.bs, 'output.html'))
     } else {
       cat('WARNING: pandoc error encountered, self-contained HTML could not be created.\n')
     }
   }
 }
 
-# --------------------------------------------------------------------------------------------------------------
-#                                              Write table output
-# --------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#                                                               Main code
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# -----
+# Library
+# -----
+
+suppressMessages(library('vcfR'))
+suppressMessages(library('data.table'))
+suppressMessages(library('RColorBrewer'))
+suppressMessages(library('kinship2'))
+suppressMessages(library('plotly'))
+suppressMessages(library('htmltools'))
+suppressMessages(library('GenomicRanges'))
+suppressMessages(library('DNAcopy'))
+suppressMessages(library('knitr'))
+
+# -----
+# Parameters
+# -----
+
+args <- list(
+  ## mandatory arguments
+  vcf.file=c(),
+  sample.ids=c(),
+  
+  ## important optional arguments
+  father.ids=c(),
+  mother.ids=c(),
+  genders=c(),
+  run.merlin=T,
+  cytoband.file=c(),
+  
+  ## variant inclusion arguments: filter 1
+  dp.hard.limit.ids=c(),
+  dp.hard.limit=10,
+  af.hard.limit.ids=c(),
+  af.hard.limit=0,
+  dp.soft.limit.ids=c(),
+  dp.soft.limit=10,
+  
+  ## variant inclusion arguments: filter 2
+  keep.informative.ids=c(),
+  keep.hetero.ids=c(),
+  
+  ## sample/disease annotation
+  regions=c(),
+  reference.ids=c(),
+  carrier.ids=c(),
+  affected.ids=c(),
+  nonaffected.ids=c(),
+  info=c(),
+  
+  ## BAF profiles
+  baf.ids=c(),
+  
+  ## merlin profiles
+  merlin.model='best',
+  min.seg.var=5,
+  min.seg.var.X=15,
+  window.size.voting=10000000,
+  window.size.voting.X=c(),
+  keep.chromosomes.only=T,
+  keep.regions.only=F,
+  concordance.table=T,
+  
+  ## remaining features
+  out.dir=c('./'),
+  fam.ID='hopla',
+  X.cutoff=1.5,
+  Y.cutoff=.6,
+  window.size=1000000,
+  regions.flanking.size=2000000,
+  limit.baf.to.P=F,
+  limit.pm.to.P=T,
+  value.of.P=.1,
+  color.palette='Paired',
+  dot.factor=2,
+  self.contained=F,
+  cairo=F
+)
+
+cmd.args <- commandArgs(trailingOnly=T)
+if (any(cmd.args == '--settings')){
+  i = which(cmd.args == '--settings')
+  args <- get.file.args(cmd.args[i+1])
+  cmd.args <- cmd.args[-(i:(i+1))]
+}
+if ('--version' %in% cmd.args | '-v' %in% cmd.args){
+  cat(version, '\n')
+  quit(status=0)
+}
+
+if ('--help' %in% cmd.args | '-h' %in% cmd.args){
+  cat('Please consult https://github.com/leraman/Hopla\n')
+  quit(status=0)
+}
+args <- get.cmd.args(cmd.args)
+args <- post.process.args(args)
+rm(cmd.args)
+
+# -----
+# Overall options & constants
+# -----
+
+options(scipen=999)
+if (args$cairo) options(bitmaptype='cairo')
+
+colors = brewer.pal(brewer.pal.info[args$color.palette,]$maxcolors, args$color.palette)
+chrs <- paste0('chr', c(1:22, 'X'))
+
+# -----
+# Initialize
+# -----
+
+args$fam.ID <- gsub("[[:punct:]]", ".", args$fam.ID)
+dir.create(args$out.dir, showWarnings = F, recursive = T)
+args$out.bs <- paste0(args$out.dir, '/', args$fam.ID, '-')
+args$merlin.dir <- paste0(args$out.bs, 'merlin/')
+if (length(args$cytoband.file)) cytobands <- get.cytobands(args$cytoband.file)
+
+# -----
+# Vcf loading & parsing
+# -----
+
+vcfs <- load.samples(args)
+
+if (any(is.na(args$genders))) args$genders <- predict.genders(args$genders)
+
+vcfs <- lapply(vcfs, function(x) x[vcfs[[1]]$CHROM %in% chrs,])
+for (s in args$sample.ids[args$genders == 'M']){
+  if (s %in% args$samples.u) next
+  vcfs[[s]]$GT[which(vcfs[[s]]$CHROM == 'chrX' & vcfs[[s]]$GT == '0/1')] <- './.'
+}
+
+args <- add.ghosts(args)
+
+vcfs.filtered <- apply.filter1(vcfs)
+vcfs.filtered2 <- apply.filter2(vcfs.filtered)
+
+# -----
+# Merlin
+# -----
+
+if (args$run.merlin){
+  map.list <- run.merlin(args, vcfs.filtered2)
+
+  merlin.out <- parse.merlin(args)
+  parsed.geno <- merlin.out$parsed.geno
+  parsed.flow <- merlin.out$parsed.flow
+  map.list <- merlin.out$map.list
+  rm(merlin.out)
+  
+  parsed.geno <- update.geno(parsed.geno)
+
+  corrected.data <- correct.profiles(args, parsed.flow)
+  parsed.flow = corrected.data$parsed.flow
+  is.corrected = corrected.data$is.corrected
+  rm(corrected.data)
+  
+  letters <- unique(unlist(strsplit(unique(unlist(parsed.flow)), '')))
+  letters <- letters[!(letters %in% c('|', 'X'))]
+  letter.colors <- c(colors[1:length(letters)], 'white')
+  names(letter.colors) <- c(letters, 'X')
+} else{
+  letters <- c('A', 'B', 'C', 'D') # no merlin -> four letters (ie, colors) required
+}
+
+# -----
+# Write output
+# -----
+
+html.list <- get.html.list()
+
+cat('Saving to HTML ...\n')
+save_html(html.list, file = paste0(args$out.bs, 'output.html'), libdir = paste0(args$out.bs, 'output_files'))
+if (args$self.contained) transform.to.selfcontained()
+
+# -----
+# tmp (for validation purposes)
+# -----
 
 if (args$run.merlin){
   cat('Saving Merlin output to tables ...\n')
   for (sample in args$samples.no.u){
-    dir.create(paste0(args$out.dir, '/tables'), showWarnings = F, recursive = T)
     i = which(args$samples.no.u == sample)
     geno.table <- cbind(unlist(sapply(chrs, function(chr) rep(chr, nrow(map.list[[chr]])))),
                         unlist(sapply(chrs, function(chr) map.list[[chr]]$pos)),
                         sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.geno[[chr]][,i])), '|', fixed = T), function(y) y[[1]]),
                         sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.geno[[chr]][,i])), '|', fixed = T), function(y) y[[2]]))
     colnames(geno.table) <- c('chr', 'pos', 'genoA', 'genoB')
-    write.table(geno.table, paste0(args$out.dir, '/tables/', sample, '-geno.txt'), sep = '\t', row.names = F, quote = F)
+    write.table(geno.table, paste0(args$merlin.dir, sample, '-geno.txt'), sep = '\t', row.names = F, quote = F)
     flow.table <- cbind(unlist(sapply(chrs, function(chr) rep(chr, nrow(map.list[[chr]])))),
                         unlist(sapply(chrs, function(chr) map.list[[chr]]$pos)),
                         sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[1]),
@@ -2350,6 +2462,6 @@ if (args$run.merlin){
                         as.character(letter.colors[sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[2])]),
                         unlist(sapply(chrs, function(chr) is.corrected[[chr]][,(i*2)])))
     colnames(flow.table) <- c('chr', 'pos', 'flowA', 'flowA.hexcol', 'flowA.iscorrected', 'flowB', 'flowB.hexcol', 'flowB.iscorrected')
-    write.table(flow.table, paste0(args$out.dir, '/tables/', sample, '-flow.txt'), sep = '\t', row.names = F, quote = F)
+    write.table(flow.table, paste0(args$merlin.dir, sample, '-flow.txt'), sep = '\t', row.names = F, quote = F)
   }
 }
