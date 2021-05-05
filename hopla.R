@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-version <- 'v1.0.0'
+version <- 'v1.0.1'
 
 # Structure:
 ## - Functions for ...
@@ -1483,11 +1483,11 @@ get.men.err.fig <- function(child, father, mother, n.rel){
     trio.error[m] <- 1
     trio.error[m][gt.child[m] %in% c('0/1', '1/1')] <- 2
     
-    m <- gt.parent1 == '0/1' & gt.parent2 == '0/0' | gt.parent1 == '0/0' & gt.parent2 == '0/1'
+    m <- (gt.parent1 == '0/1' & gt.parent2 == '0/0') | (gt.parent1 == '0/0' & gt.parent2 == '0/1')
     trio.error[m] <- 1
     trio.error[m][gt.child[m] %in% c('1/1')] <- 2
     
-    m <- gt.parent1 == '1/1' & gt.parent2 == '0/1' | gt.parent1 == '0/1' & gt.parent2 == '1/1'
+    m <- (gt.parent1 == '1/1' & gt.parent2 == '0/1') | (gt.parent1 == '0/1' & gt.parent2 == '1/1')
     trio.error[m] <- 1
     trio.error[m][gt.child[m] %in% c('0/0')] <- 2
     
@@ -1495,10 +1495,10 @@ get.men.err.fig <- function(child, father, mother, n.rel){
     trio.error[m] <- 1
     trio.error[m][gt.child[m] %in% c('0/0', '0/1')] <- 2
     
-    m <- gt.parent1 == '0/0' & gt.parent2 == '1/1' | gt.parent1 == '1/1' & gt.parent2 == '0/0'
+    m <- (gt.parent1 == '0/0' & gt.parent2 == '1/1') | (gt.parent1 == '1/1' & gt.parent2 == '0/0')
     trio.error[m] <- 1
     trio.error[m][gt.child[m] %in% c('0/0', '1/1')] <- 2
-    
+
     return(trio.error)
   }
   
