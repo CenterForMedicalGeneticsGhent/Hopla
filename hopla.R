@@ -392,7 +392,18 @@ predict.genders <- function(genders){
         cat(paste0('  ... defaulting to Y model: ', Y.gender, '\n'))
         genders[args$sample.ids == s] <- Y.gender
       }
-    } else {
+    }
+    if (is.na(Y.gender) & !is.na(X.gender)){
+      cat(paste0('WARNING: for ', s, ', there is not enough data to predict gender based on the Y model.\n'))
+      cat(paste0('  ... defaulting to X model: ', X.gender, '\n'))
+      genders[args$sample.ids == s] <- X.gender
+    }
+    if (!is.na(Y.gender) & is.na(X.gender)){
+      cat(paste0('WARNING: for ', s, ', there is not enough data to predict gender based on the X model.\n'))
+      cat(paste0('  ... defaulting to Y model: ', Y.gender, '\n'))
+      genders[args$sample.ids == s] <- Y.gender
+    }
+    if (is.na(Y.gender) & is.na(X.gender)){
       cat(paste0('ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using --genders.\n'))
       quit(status=0)
     }
