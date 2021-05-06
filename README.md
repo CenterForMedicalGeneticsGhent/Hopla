@@ -31,7 +31,7 @@ conda install -c conda-forge -c bioconda hopla
 - **`--father.ids [string list, comma sep, no default]`** Sample IDs fathers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_C
 - **`--mother.ids [string list, comma sep, no default]`** Sample IDs mothers; when not available, use NA; order matches `--sample.ids`; e.g., NA,NA,sample_B
 - **`--genders [char (M/F/NA) list, comma sep, no default]`** Sample genders; when not available, use NA, model will predict gender (see below); order matches `--sample.ids`; e.g., M,F,NA
-- **`--run.merlin [boolean, default = T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH, which is automatically the case when using [Easy install](#easy-install); Merlin only runs in Linux**
+- **`--run.merlin [boolean, default=T]`** Whether Merlin (i.e., haplotyping) should be executed; **Note that the Merlin executables folder (i.e., path/to/merlin-1.1.2/executables) should be located in $PATH, which is automatically the case when using [Easy install](#easy-install); Merlin only runs in Linux**
 - **`--cytoband.file [string, no default]`** [UCSC cytoband file](https://hgdownload.soe.ucsc.edu/downloads.html#human); when given, chromosome bands are shown on top of chromosome-wise figures; highly improves interpretability of figures; e.g., path/to/cytoband.hg38.txt
 
 ### **Important** optional variant inclusion arguments: filter 1
@@ -206,7 +206,7 @@ Useful for hetero/iso-uniparental disomy (UPD) detection, as an additional quali
 
 'Parent mapping' is executed for every sample when at least one parent is available. Useful for hetero/iso-uniparental disomy (UPD) detection and to analyze whether aberrations are meiotic or mitotic.  
 
-Variants of the child/embryo are distributed per parental origin. Dots above the chromosome bands represent informative variants of the father, while dots below represent informative variants of the mother. The top and bottom tracks per parental origin represent variants for which the embryo is heterozygous and homozygous, respectively.  
+Variants of the child/embryo are distributed per parental origin. Symbols above the chromosome bands represent informative variants of the father, while symbols below represent informative variants of the mother. The top and bottom tracks per parental origin represent variants for which the embryo is heterozygous and homozygous, respectively.  
 
 ## Filter 2: filter 0, filer 1, --keep.informative.ids and --keep.hetero.ids
 
