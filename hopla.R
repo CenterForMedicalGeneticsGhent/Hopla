@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-version <- 'v1.0.1'
+version <- 'v1.0.2'
 
 # Structure:
 ## - Functions for ...
