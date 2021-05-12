@@ -36,9 +36,9 @@ conda install -c conda-forge -c bioconda hopla
 
 ### **Important** optional variant inclusion arguments: filter 1
 
-- EVERY sample in **`--dp.hard.limit.samples [string list, comma sep, default=all but last line children/embryos from --sample.ids]`** should have variants with a coverage of at least **`--dp.hard.limit [integer, default=10]`**; applies hard filter: variants that do not comply will be removed from all samples
-- AT LEAST ONE sample in **`--af.hard.limit.samples [string list, comma sep, default=all but last line children/embryos from --sample.ids]`** should have variants with an allele fraction of at least **`--af.hard.limit [numeric (range 0-1), default=0]`**; applies hard filter: variants that do not comply will be removed from all samples
-- Variants from samples in **`--dp.soft.limit.samples [string list, comma sep, default=last line children/embryos from --sample.ids]`** should have a coverage of at least **`--dp.soft.limit [integer, default=10]`**; applies soft filter: variants that do not comply will be removed from the given samples only
+- EVERY sample in **`--dp.hard.limit.ids [string list, comma sep, default=all but last line children/embryos from --sample.ids]`** should have variants with a coverage of at least **`--dp.hard.limit [integer, default=10]`**; applies hard filter: variants that do not comply will be removed from all samples
+- AT LEAST ONE sample in **`--af.hard.limit.ids [string list, comma sep, default=all but last line children/embryos from --sample.ids]`** should have variants with an allele fraction of at least **`--af.hard.limit [numeric (range 0-1), default=0]`**; applies hard filter: variants that do not comply will be removed from all samples
+- Variants from samples in **`--dp.soft.limit.ids [string list, comma sep, default=last line children/embryos from --sample.ids]`** should have a coverage of at least **`--dp.soft.limit [integer, default=10]`**; applies soft filter: variants that do not comply will be removed from the given samples only
 
 ### **Important** optional variant inclusion arguments: filter 2
 
