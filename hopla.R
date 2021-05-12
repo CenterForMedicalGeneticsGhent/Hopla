@@ -1687,7 +1687,7 @@ get.genome.baf <- function(s){
     baf <- plot_ly(dat, x = ~index, y = ~AF, text =~id,
                    marker = list(color = colors[1], alpha = .5, size = args$dot.factor * 2,
                                  line = list(color = colors[1], alpha = .5)),
-                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 3)
+                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 1.5)
     
     yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,125), fixedrange = T)
     if (which(chrs == chr) %% 4 != 1) {
@@ -2138,7 +2138,7 @@ get.html.list <- function(){
     }
     for (s in args$baf.ids){
       html.list <- append.list(html.list, tags$h4(args$samples.out[args$sample.ids == s]))
-      html.list <- append.list(html.list, do.subplot(get.genome.baf(s), ncol = 2))
+      html.list <- append.list(html.list, do.subplot(get.genome.baf(s), ncol = 2, panning = .015, margin = .012))
     }
   }
   
