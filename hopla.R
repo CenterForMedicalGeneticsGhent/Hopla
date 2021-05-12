@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-version <- 'v1.0.4'
+version <- 'v1.0.5'
 
 # Structure:
 ## - Functions for ...
@@ -452,11 +452,19 @@ apply.filter1 <- function(vcf.list){
   
   ## hard filters
   ### AF
-  AF.filter.matrix <- sapply(vcf.list[args$af.hard.limit.ids], function(x) x$AF >= args$af.hard.limit)
-  keep.these.1 <- rowSums(AF.filter.matrix, na.rm = T) > 0
+  if (!length(args$af.hard.limit.ids)){
+    keep.these.1 <- rep(T, nrow(vcf.list[[1]]))
+  } else {
+    AF.filter.matrix <- sapply(vcf.list[args$af.hard.limit.ids], function(x) x$AF >= args$af.hard.limit)
+    keep.these.1 <- rowSums(AF.filter.matrix, na.rm = T) > 0
+  }
   ### DP
-  DP.filter.matrix <- sapply(vcf.list[args$dp.hard.limit.ids], function(x) x$DP >= args$dp.hard.limit)
-  keep.these.2 <- rowSums(DP.filter.matrix, na.rm = T) == length(args$dp.hard.limit.ids)
+  if (!length(args$dp.hard.limit.ids)){
+    keep.these.2 <- rep(T, nrow(vcf.list[[1]]))
+  } else {
+    DP.filter.matrix <- sapply(vcf.list[args$dp.hard.limit.ids], function(x) x$DP >= args$dp.hard.limit)
+    keep.these.2 <- rowSums(DP.filter.matrix, na.rm = T) == length(args$dp.hard.limit.ids)
+  }
   
   hard.mask <- keep.these.1 & keep.these.2
   if (!any(hard.mask)){
