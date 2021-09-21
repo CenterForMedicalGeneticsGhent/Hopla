@@ -1,0 +1,106 @@
+# --------
+# REMARKS
+# --------
+
+## For completeness, this settings file contains all possible parameters, even when left unset
+## For a detailed description of the parameters and the output file, please visit https://github.com/leraman/hopla
+
+## Rules:
+##      - Arguments (one line each, with the exception of the `--info` argument) can be provided using 'argument=value'
+##      - Unset (or unprovided) arguments will be given their respective default value (see https://github.com/leraman/hopla)
+##      - Every parameter in this file is overridden by command line arguments when given
+##      - Everything following '#' will be ignored, serving as a comment
+
+# -------------------
+# MANDATORY ARGUMENTS
+# -------------------
+
+vcf.file=directory to vcf.gz
+out.dir=directory for output
+sample.ids=DNA052961,U1,DNA052959,DNA052960,DNA052963,DNA052966
+
+# ----------------------------
+# IMPORTANT OPTIONAL ARGUMENTS
+# ----------------------------
+
+father.ids=NA,NA,U1,NA,DNA052960,DNA052960
+mother.ids=NA,NA,DNA052961,NA,DNA052959,DNA052959
+genders=F,M,F,M,NA,NA
+
+run.merlin=
+cytoband.file=directory for cytoband.hg38.txt
+
+# --------------------------------------------------------
+# IMPORTANT OPTIONAL VARIANT INCLUSION ARGUMENTS: FILTER 1
+# --------------------------------------------------------
+
+dp.hard.limit.ids=DNA052961,DNA052959,DNA052960
+dp.hard.limit=10
+
+af.hard.limit.ids=DNA052961,DNA052959,DNA052960
+af.hard.limit=.25
+
+dp.soft.limit.ids=DNA052963,DNA052966
+dp.soft.limit=10
+
+# --------------------------------------------------------
+# IMPORTANT OPTIONAL VARIANT INCLUSION ARGUMENTS: FILTER 2
+# --------------------------------------------------------
+
+keep.informative.ids=DNA052959,DNA052960
+keep.hetero.ids=
+
+# -----------------------------------
+# OPTIONAL: SAMPLE/DISEASE ANNOTATION
+# -----------------------------------
+
+regions=chr17:43044294-43125363
+
+reference.ids=
+carrier.ids=
+affected.ids=DNA052961,DNA052959
+nonaffected.ids=DNA052960
+
+start.info
+Disease: Breast cancer - BRCA1(Chr17:43,044,294-43,125,363)
+Inheritance: Autosomal Dominant
+Sequencing note: Embryo V17-V18
+end.info
+
+# -------------------------------------
+# OPTIONAL: B-ALLELE FREQUENCY PROFILES
+# -------------------------------------
+
+baf.ids=DNA052963,DNA052966
+
+# -------------------------
+# OPTIONAL: MERLIN PROFILES
+# -------------------------
+
+merlin.model=best
+
+min.seg.var=5
+min.seg.var.X=15
+
+window.size.voting=10000000
+window.size.voting.X=
+
+keep.chromosomes.only=T
+keep.regions.only=F
+concordance.table=
+
+# ----------------------------
+# OPTIONAL: REMAINING FEATURES
+# ----------------------------
+
+X.cutoff=1.5
+Y.cutoff=0.6
+window.size=
+regions.flanking.size=2000000
+limit.baf.to.P=F
+limit.pm.to.P=T
+value.of.P=.15
+color.palette=
+dot.factor=
+self.contained=T
+cairo=
