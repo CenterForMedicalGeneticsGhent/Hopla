@@ -16,7 +16,7 @@
       }
     },
     methods:{
-      handleInput: function(e){
+      handleInput: function(){
         this.$emit('input',this.config);
       }
     },
