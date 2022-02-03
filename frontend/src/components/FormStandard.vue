@@ -1,12 +1,12 @@
 <template>
-  <v-card-text> Some component </v-card-text>
+  <v-card-text> Form for Standard case </v-card-text>
 </template>
 
 <script lang="ts">
   import Vue from 'vue'
 
   export default Vue.extend({
-    name: 'SubForm',
+    name: 'FormStandard',
     data: function() {
       return {
       }

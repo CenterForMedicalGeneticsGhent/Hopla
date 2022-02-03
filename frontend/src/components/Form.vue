@@ -35,20 +35,24 @@
 
 <script lang="ts">
   import Vue from 'vue'
-  import SubForm from './SubForm.vue';
+  import FormStandard from './FormStandard.vue';
+  import FormSingleParent from './FormSingleParent.vue';
+  import FormDenovo from './FormDenovo.vue';
 
   export default Vue.extend({
     name: 'Form',
     components: {
-      SubForm,
+      FormStandard,
+      FormSingleParent,
+      FormDenovo,
     },
     data: function() {
       return {
         tab: null,
         items: [
-          {'tabName':'Standard', 'subForm':'SubForm' },
-          {'tabName':'Single Parent', 'subForm':'SubForm'}, 
-          {'tabName':'Denovo', 'subForm':'SubForm'},
+          {'tabName':'Standard', 'subForm':'FormStandard' },
+          {'tabName':'Single Parent', 'subForm':'FormSingleParent'}, 
+          {'tabName':'Denovo', 'subForm':'FormDenovo'},
         ],
       }
     },
