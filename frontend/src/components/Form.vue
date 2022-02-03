@@ -12,21 +12,21 @@
     >
       <v-tab
         v-for="item in items"
-        :key="item"
+        :key="item.tabName"
       >
-        {{ item }}
+        {{ item.tabName }}
       </v-tab>
     </v-tabs>
 
     <v-tabs-items v-model="tab">
       <v-tab-item
         v-for="item in items"
-        :key="item"
+        :key="item.tabName"
       >
         <v-card
           flat
         >
-          <v-card-text>{{ text }}</v-card-text>
+          <component :is="item.subForm" />
         </v-card>
       </v-tab-item>
     </v-tabs-items>
@@ -35,16 +35,21 @@
 
 <script lang="ts">
   import Vue from 'vue'
+  import SubForm from './SubForm.vue';
 
   export default Vue.extend({
     name: 'Form',
+    components: {
+      SubForm,
+    },
     data: function() {
       return {
         tab: null,
         items: [
-          'Standard', 'Single Parent', 'Denovo',
+          {'tabName':'Standard', 'subForm':'SubForm' },
+          {'tabName':'Single Parent', 'subForm':'SubForm'}, 
+          {'tabName':'Denovo', 'subForm':'SubForm'},
         ],
-        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
       }
     },
   })
