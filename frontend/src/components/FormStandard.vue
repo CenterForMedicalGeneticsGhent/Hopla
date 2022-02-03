@@ -1,5 +1,5 @@
 <template>
-  <v-card-text> Form for Standard case </v-card-text>
+  <v-card-text> {{ config }} </v-card-text>
 </template>
 
 <script lang="ts">
@@ -7,8 +7,17 @@
 
   export default Vue.extend({
     name: 'FormStandard',
+    props:{
+      value: Object,
+    },
     data: function() {
       return {
+        config: this.value,
+      }
+    },
+    methods:{
+      handleInput: function(e){
+        this.$emit('input',this.config);
       }
     },
   })

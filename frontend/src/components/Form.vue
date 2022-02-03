@@ -26,7 +26,10 @@
         <v-card
           flat
         >
-          <component :is="item.subForm" />
+          <component 
+          :is="item.subForm"
+          v-model="config"
+          />
         </v-card>
       </v-tab-item>
     </v-tabs-items>
@@ -49,8 +52,11 @@
     data: function() {
       return {
         tab: null,
+        config:{
+          'some':'value'
+        },
         items: [
-          {'tabName':'Standard', 'subForm':'FormStandard' },
+          {'tabName':'Standard', 'subForm':'FormStandard'},
           {'tabName':'Single Parent', 'subForm':'FormSingleParent'}, 
           {'tabName':'Denovo', 'subForm':'FormDenovo'},
         ],
