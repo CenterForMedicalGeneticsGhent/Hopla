@@ -2,102 +2,61 @@
 <v-container>
   <v-row>
     
-    <v-col class="d-flex justify-center align-center"><v-card
+    <v-col class="d-flex justify-center align-center">
+    <PedigreeGroup
     width="550px"
+    imgType='grandparents1'
+    title="Maternal Grandparents"
+    v-model="configGrandParentsMaternal"
     >
-      <v-card-title> 
-        <v-avatar 
-        size="48"
-        tile
-        >
-          <img
-            alt="user"
-            src="../assets/grandparents1.png"
-          >
-        </v-avatar>
-        <v-spacer />
-        Maternal Grandparents
-        <v-spacer />
-      </v-card-title>
-    </v-card></v-col>
+    </PedigreeGroup>
+    </v-col>
 
-    <v-col class="d-flex justify-center align-center"><v-card
+    <v-col class="d-flex justify-center align-center">
+    <PedigreeGroup
     width="550px"
+    imgType='grandparents2'
+    title="Paternal Grandparents"
+    v-model="configGrandParentsMaternal"
     >
-      <v-card-title> 
-        <v-avatar 
-        size="48"
-        tile
-        >
-          <img
-            alt="user"
-            src="../assets/grandparents2.png"
-          >
-        </v-avatar>
-        <v-spacer />
-        Paternal Grandparents 
-        <v-spacer />
-      </v-card-title>
-    </v-card></v-col>
+    </PedigreeGroup>
+    </v-col>
   </v-row>
   
   <v-row>
-    <v-col class="d-flex justify-center align-center"><v-card
+    <v-col class="d-flex justify-center align-center">
+    <PedigreeGroup
     width="550px"
+    imgType='parents'
+    title="Parents"
+    v-model="configParents"
     >
-      <v-card-title> 
-        <v-avatar 
-        size="48"
-        tile
-        >
-          <img
-            alt="user"
-            src="../assets/parents.png"
-          >
-        </v-avatar>
-        <v-spacer />
-        Parents 
-        <v-spacer />
-      </v-card-title>
-    </v-card></v-col>
+    </PedigreeGroup>
+    </v-col>
   </v-row>
 
   <v-row>
-    <v-col><v-card>
-      <v-card-title> 
-        <v-avatar 
-        size="48"
-        tile
-        >
-          <img
-            alt="user"
-            src="../assets/siblings.png"
-          >
-        </v-avatar>
-        <v-spacer />
-        Siblings
-        <v-spacer />
-      </v-card-title>
-    </v-card></v-col>
+    <v-col>
+    <PedigreeGroup
+    width="100%"
+    imgType='siblings'
+    title="Siblings"
+    v-model="configSiblings"
+    >
+    </PedigreeGroup>  
+    </v-col>
   </v-row>
 
   <v-row>
-    <v-col><v-card>
-      <v-card-title> 
-        <v-avatar 
-        size="48"
-        tile
-        >
-          <img
-            alt="user"
-            src="../assets/embryo.png"
-          >
-        </v-avatar>
-        <v-spacer />
-        Embryos
-        <v-spacer />
-      </v-card-title>
-    </v-card></v-col>
+    <v-col>
+    <PedigreeGroup
+    width="100%"
+    imgType='embryos'
+    title="Embryos"
+    v-model="configEmbryos"
+    >
+    </PedigreeGroup>
+    </v-col>
   </v-row>
 
 </v-container>
@@ -105,15 +64,24 @@
 
 <script lang="ts">
   import Vue from 'vue'
+  import PedigreeGroup from "./PedigreeGroup.vue";
 
   export default Vue.extend({
     name: 'Pedigree',
+    components:{
+      PedigreeGroup,
+    },
     props:{
       value: Object,
     },
     data: function() {
       return {
         config: this.value,
+        configGrandParentsMaternal: null,
+        configGrandParentsPaternal: null,
+        configParents: null,
+        configSiblings: null,
+        configEmbryos: null,
       }
     },
     methods:{
