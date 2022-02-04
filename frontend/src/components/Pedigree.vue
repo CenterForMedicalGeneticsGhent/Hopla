@@ -1,75 +1,53 @@
 <template>
 <v-container>
   <v-row>
+    <v-col class="d-flex justify-center align-center">
+      <PedigreeGroupGrandparentsPaternal v-model="configGrandParentsPaternal"/>
+    </v-col>
     
     <v-col class="d-flex justify-center align-center">
-    <PedigreeGroup
-    width="550px"
-    imgType='grandparents1'
-    title="Maternal Grandparents"
-    v-model="configGrandParentsMaternal"
-    >
-    </PedigreeGroup>
-    </v-col>
-
-    <v-col class="d-flex justify-center align-center">
-    <PedigreeGroup
-    width="550px"
-    imgType='grandparents2'
-    title="Paternal Grandparents"
-    v-model="configGrandParentsMaternal"
-    >
-    </PedigreeGroup>
+      <PedigreeGroupGrandparentsMaternal v-model="configGrandParentsMaternal"/>
     </v-col>
   </v-row>
   
   <v-row>
     <v-col class="d-flex justify-center align-center">
-    <PedigreeGroup
-    width="550px"
-    imgType='parents'
-    title="Parents"
-    v-model="configParents"
-    >
-    </PedigreeGroup>
+      <PedigreeGroupParents v-model="configParents"/>
     </v-col>
   </v-row>
 
   <v-row>
     <v-col>
-    <PedigreeGroup
-    width="100%"
-    imgType='siblings'
-    title="Siblings"
-    v-model="configSiblings"
-    >
-    </PedigreeGroup>  
+      <PedigreeGroupSiblings v-model="configSiblings"/>
     </v-col>
   </v-row>
 
   <v-row>
     <v-col>
-    <PedigreeGroup
-    width="100%"
-    imgType='embryos'
-    title="Embryos"
-    v-model="configEmbryos"
-    >
-    </PedigreeGroup>
+      <PedigreeGroupEmbryos v-model="configEmbryos"/>
     </v-col>
   </v-row>
-
 </v-container>
 </template>
 
 <script lang="ts">
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
+  import PedigreeGroupGrandparentsPaternal from "./PedigreeGroupGrandparentsPaternal.vue";
+  import PedigreeGroupGrandparentsMaternal from "./PedigreeGroupGrandparentsMaternal.vue";
+  import PedigreeGroupParents from "./PedigreeGroupParents.vue";
+  import PedigreeGroupSiblings from "./PedigreeGroupSiblings.vue";
+  import PedigreeGroupEmbryos from "./PedigreeGroupEmbryos.vue";
+
 
   export default Vue.extend({
     name: 'Pedigree',
     components:{
-      PedigreeGroup,
+      PedigreeGroupGrandparentsPaternal,
+      PedigreeGroupGrandparentsMaternal,
+      PedigreeGroupParents,
+      PedigreeGroupSiblings,
+      PedigreeGroupEmbryos,
     },
     props:{
       value: Object,
