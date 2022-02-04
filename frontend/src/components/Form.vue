@@ -37,17 +37,13 @@
 </template>
 
 <script lang="ts">
-  import Vue from 'vue'
-  import FormStandard from './FormStandard.vue';
-  import FormSingleParent from './FormSingleParent.vue';
-  import FormDenovo from './FormDenovo.vue';
+  import Vue from 'vue';
+  import Pedigree from "./Pedigree.vue";
 
   export default Vue.extend({
     name: 'Form',
     components: {
-      FormStandard,
-      FormSingleParent,
-      FormDenovo,
+      Pedigree,
     },
     data: function() {
       return {
@@ -101,9 +97,7 @@
           },
         },
         items: [
-          {'tabName':'Standard', 'subForm':'FormStandard'},
-          {'tabName':'Single Parent', 'subForm':'FormSingleParent'}, 
-          {'tabName':'Denovo', 'subForm':'FormDenovo'},
+          {'tabName':'Pedigree', 'subForm':'Pedigree'},
         ],
       }
     },
