@@ -32,7 +32,6 @@
 
 <script lang="ts">
   import Vue from 'vue'
-  import PedigreeGroup from "./PedigreeGroup.vue";
   import PedigreeGroupGrandparentsPaternal from "./PedigreeGroupGrandparentsPaternal.vue";
   import PedigreeGroupGrandparentsMaternal from "./PedigreeGroupGrandparentsMaternal.vue";
   import PedigreeGroupParents from "./PedigreeGroupParents.vue";
