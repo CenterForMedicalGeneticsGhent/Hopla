@@ -15,6 +15,7 @@
   {{ title }}
   <v-spacer />
   </v-card-title>
+  <slot></slot>
 </v-card>
 </template>
 
