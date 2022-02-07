@@ -14,6 +14,7 @@ width="250px"
   <v-spacer />
   Embryo 1
   <v-spacer />
+   <InputGender v-model="gender" />
   </v-card-title>
   <v-card-text>
     <InputSampleID v-model="sampleID" />
@@ -25,24 +26,28 @@ width="250px"
 <script lang="ts">
   import Vue from 'vue'
   import InputSampleID from "./InputSampleID.vue";
+  import InputGender from "./InputGender.vue";
 
   export default Vue.extend({
     name: 'PedigreeGroup',
     components: {
       InputSampleID,
+      InputGender,
     },
     props:{
       value: Object,
     },
     data: function() {
       return {
-        sampleID: null
+        sampleID: null,
+        gender: "NA",
       }
     },
     computed:{
       config: function(){
         return {
           sampleID: this.sampleID,
+          gender: this.gender,
         }
       }
     },
