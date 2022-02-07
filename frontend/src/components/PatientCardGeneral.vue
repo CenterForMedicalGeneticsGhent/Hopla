@@ -16,6 +16,7 @@ width="250px"
   <v-spacer />
   </v-card-title>
   <v-card-text>
+    <InputSampleID v-model="sampleID" />
     {{ config }}
   </v-card-text>
 </v-card>
@@ -23,9 +24,13 @@ width="250px"
 
 <script lang="ts">
   import Vue from 'vue'
+  import InputSampleID from "./InputSampleID.vue";
 
   export default Vue.extend({
     name: 'PedigreeGroup',
+    components: {
+      InputSampleID,
+    },
     props:{
       value: Object,
     },
