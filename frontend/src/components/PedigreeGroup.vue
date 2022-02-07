@@ -15,7 +15,10 @@
   {{ title }}
   <v-spacer />
   </v-card-title>
-  <slot></slot>
+  <v-card-text>
+    <slot></slot>
+    {{ config }}
+  </v-card-text>
 </v-card>
 </template>
 
