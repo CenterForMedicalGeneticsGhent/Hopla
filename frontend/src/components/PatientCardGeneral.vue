@@ -24,9 +24,20 @@ width="250px"
 </template>
 
 <script lang="ts">
+  // Imports
   import Vue from 'vue'
   import InputSampleID from "./InputSampleID.vue";
   import InputGender from "./InputGender.vue";
+
+  //interfaces
+  interface dataLayout {
+    sampleID: string;
+    gender: string;
+  }
+  interface configLayout {
+    sampleID: string;
+    gender: string;
+  }
 
   export default Vue.extend({
     name: 'PedigreeGroup',
@@ -38,17 +49,19 @@ width="250px"
       value: Object,
     },
     data: function() {
-      return {
-        sampleID: null,
+      var d: dataLayout = {
+        sampleID: "",
         gender: "NA",
       }
+      return d;
     },
     computed:{
       config: function(){
-        return {
+        var c: configLayout = {
           sampleID: this.sampleID,
           gender: this.gender,
         }
+        return c;
       }
     },
     methods:{
