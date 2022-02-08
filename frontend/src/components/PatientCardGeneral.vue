@@ -16,7 +16,9 @@ width="250px"
   <v-spacer />
    <InputGender v-model="gender" />
   </v-card-title>
-  <v-card-text>
+  <v-card-text
+  class=""
+  >
     <InputSampleID v-model="sampleID" />
     <InputInformativeIDs v-model="keepInformativeIDs" />
     <InputHeteroIDs v-model="keepHeteroIDs" />

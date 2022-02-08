@@ -1,5 +1,6 @@
 <template>
     <v-text-field
+    class="ma-0 pa-0"
     label="Sample ID"
     outlined
     v-model="sampleID"
