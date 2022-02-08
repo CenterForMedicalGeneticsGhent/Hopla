@@ -6,6 +6,7 @@ title="Embryos"
 v-model="config"
 >
   <PatientCardEmbryo v-model="patientInfo"/>
+  {{patientInfo}}
 </PedigreeGroup>
 </template>
 
@@ -13,6 +14,15 @@ v-model="config"
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardEmbryo from "../PatientCards/PatientCardEmbryo.vue";
+
+  // configEmbryoDefault
+  var configEmbryoDefault = {
+    sampleID: "",
+    gender: "NA",
+    keepInformativeIDs: false,
+    keepHeteroIDs: false,
+    diseaseStatus: "NA",
+  };
 
   export default Vue.extend({
     name: 'PedigreeGroupEmbryos',
@@ -26,7 +36,7 @@ v-model="config"
     data: function() {
       return {
         config: this.value,
-        patientInfo: null,
+        patientInfo: configEmbryoDefault,
       }
     },
     methods:{

@@ -54,11 +54,11 @@ width="250px"
     },
     data: function() {
       var d = {
-        sampleID: "",
-        gender: "NA",
-        keepInformativeIDs: false,
-        keepHeteroIDs: false,
-        diseaseStatus: "NA",
+        sampleID: this.value.sampleID,
+        gender: this.value.gender,
+        keepInformativeIDs: this.value.keepInformativeIDs,
+        keepHeteroIDs: this.value.keepHeteroIDs,
+        diseaseStatus: this.value.diseaseStatus,
       }
       return d;
     },
@@ -73,6 +73,13 @@ width="250px"
         }
         return c;
       },
+      configWatcher: {
+        get: function(){
+          return `
+            ${JSON.stringify(this.config)}
+          `;
+        }
+      },  
       color: function(){
         var diseaseStatus = this.diseaseStatus;
         if (diseaseStatus=="affected"){
@@ -104,6 +111,17 @@ width="250px"
     },
     mounted: function(){
       //CODE
-    }  
+    },
+    watch:{
+      configWatcher:{
+        handler: function(newVal,oldVal){
+          if (oldVal != newVal){
+            this.handleInput();
+          }
+        },
+        deep:false,
+        immediate:false,
+      },
+    },  
     })
 </script>

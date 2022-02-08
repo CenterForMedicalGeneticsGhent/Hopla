@@ -24,6 +24,15 @@ cardType="embryo"
         config: this.value
       };
     },
+    computed: {
+      configWatcher: {
+        get: function(){
+          return `
+            ${JSON.stringify(this.config)}
+          `;
+        }
+      },
+    },
     methods:{
       handleInput: function(){
         this.$emit('input',this.config);
@@ -31,6 +40,17 @@ cardType="embryo"
     },
     mounted: function(){
       //CODE
-    }  
+    },
+    watch:{
+      configWatcher:{
+        handler: function(newVal,oldVal){
+          if (oldVal != newVal){
+            this.handleInput();
+          }
+        },
+        deep:false,
+        immediate:false,
+      },
+    },
     })
 </script>
