@@ -13,7 +13,7 @@ width="250px"
     />
   </v-avatar>
   <v-spacer />
-  Embryo 1
+  {{title}}
   <v-spacer />
    <InputGender v-model="gender" />
   </v-card-title>
@@ -49,6 +49,8 @@ width="250px"
     },
     props:{
       value: Object,
+      title: String,
+      cardType: String,
     },
     data: function() {
       var d = {
@@ -88,7 +90,7 @@ width="250px"
         return "";
       },
       imgSrc: function(){
-        var cardType="embryo";
+        var cardType=this.cardType;
         if (cardType=="embryo"){
           return require("../../assets/embryos.png")
         }

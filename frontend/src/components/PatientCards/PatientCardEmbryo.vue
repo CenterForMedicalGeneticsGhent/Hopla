@@ -1,6 +1,8 @@
 <template>
 <PatientCardGeneral
 v-model="config"
+title="Embryo 1"
+cardType="embryo"
 />
 </template>
 
