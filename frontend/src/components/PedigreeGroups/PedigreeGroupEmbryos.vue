@@ -5,20 +5,20 @@ imgType='embryos'
 title="Embryos"
 v-model="config"
 >
-  <PatientCardGeneral v-model="patientInfo"/>
+  <PatientCardEmbryo v-model="patientInfo"/>
 </PedigreeGroup>
 </template>
 
 <script lang="ts">
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
-  import PatientCardGeneral from "../PatientCards/PatientCardGeneral.vue";
+  import PatientCardEmbryo from "../PatientCards/PatientCardEmbryo.vue";
 
   export default Vue.extend({
     name: 'PedigreeGroupEmbryos',
     components:{
       PedigreeGroup,
-      PatientCardGeneral,
+      PatientCardEmbryo,
     },
     props:{
       value: Object,

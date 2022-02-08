@@ -9,7 +9,7 @@ width="250px"
   tile
   >
     <v-img
-      src="../../assets/embryos.png"
+      :src="imgSrc"
     />
   </v-avatar>
   <v-spacer />
@@ -29,7 +29,7 @@ width="250px"
 </v-card>
 </template>
 
-<script lang="ts">
+<script>
   // Imports
   import Vue from 'vue'
   import InputSampleID from "../Inputs/InputSampleID.vue";
@@ -38,24 +38,8 @@ width="250px"
   import InputHeteroIDs from "../Inputs/InputHeteroIDs.vue";
   import InputAffected from "../Inputs/InputAffected.vue";
 
-  //interfaces
-  interface dataLayout {
-    sampleID: string;
-    gender: string;
-    keepInformativeIDs: boolean;
-    keepHeteroIDs: boolean;
-    diseaseStatus: string;
-  }
-  interface configLayout {
-    sampleID: string;
-    gender: string;
-    keepInformativeIDs: boolean;
-    keepHeteroIDs: boolean;
-    diseaseStatus: string;
-  }
-
   export default Vue.extend({
-    name: 'PedigreeGroup',
+    name: 'PatientCardGeneral',
     components: {
       InputSampleID,
       InputGender,
@@ -67,7 +51,7 @@ width="250px"
       value: Object,
     },
     data: function() {
-      var d: dataLayout = {
+      var d = {
         sampleID: "",
         gender: "NA",
         keepInformativeIDs: false,
@@ -78,7 +62,7 @@ width="250px"
     },
     computed:{
       config: function(){
-        var c: configLayout = {
+        var c = {
           sampleID: this.sampleID,
           gender: this.gender,
           keepInformativeIDs: this.keepInformativeIDs,
@@ -103,6 +87,13 @@ width="250px"
         }
         return "";
       },
+      imgSrc: function(){
+        var cardType="embryo";
+        if (cardType=="embryo"){
+          return require("../../assets/embryos.png")
+        }
+        return "";
+      }
     },
     methods:{
       handleInput: function(){
