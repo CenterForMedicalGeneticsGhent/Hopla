@@ -32,11 +32,11 @@ width="250px"
 <script lang="ts">
   // Imports
   import Vue from 'vue'
-  import InputSampleID from "./InputSampleID.vue";
-  import InputGender from "./InputGender.vue";
-  import InputInformativeIDs from "./InputInformativeIDs.vue";
-  import InputHeteroIDs from "./InputHeteroIDs.vue";
-  import InputAffected from "./InputAffected.vue";
+  import InputSampleID from "./Inputs/InputSampleID.vue";
+  import InputGender from "./Inputs/InputGender.vue";
+  import InputInformativeIDs from "./Inputs/InputInformativeIDs.vue";
+  import InputHeteroIDs from "./Inputs/InputHeteroIDs.vue";
+  import InputAffected from "./Inputs/InputAffected.vue";
 
   //interfaces
   interface dataLayout {

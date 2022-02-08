@@ -41,13 +41,13 @@ export default {
         imgSrc: function(){
             var gender=this.gender;
             if (gender==="M"){
-                return require("../assets/male.png");
+                return require("../../assets/male.png");
             }
             else if (gender==="F"){
-                return require("../assets/female.png");
+                return require("../../assets/female.png");
             }
             else if (gender==="NA"){
-                return require("../assets/genderUnknown.png");
+                return require("../../assets/genderUnknown.png");
             }
             return false;
         },
