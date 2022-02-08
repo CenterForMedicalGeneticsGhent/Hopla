@@ -32,11 +32,11 @@
 
 <script lang="ts">
   import Vue from 'vue'
-  import PedigreeGroupGrandparentsPaternal from "./PedigreeGroupGrandparentsPaternal.vue";
-  import PedigreeGroupGrandparentsMaternal from "./PedigreeGroupGrandparentsMaternal.vue";
-  import PedigreeGroupParents from "./PedigreeGroupParents.vue";
-  import PedigreeGroupSiblings from "./PedigreeGroupSiblings.vue";
-  import PedigreeGroupEmbryos from "./PedigreeGroupEmbryos.vue";
+  import PedigreeGroupGrandparentsPaternal from "../PedigreeGroups/PedigreeGroupGrandparentsPaternal.vue";
+  import PedigreeGroupGrandparentsMaternal from "../PedigreeGroups/PedigreeGroupGrandparentsMaternal.vue";
+  import PedigreeGroupParents from "../PedigreeGroups/PedigreeGroupParents.vue";
+  import PedigreeGroupSiblings from "../PedigreeGroups/PedigreeGroupSiblings.vue";
+  import PedigreeGroupEmbryos from "../PedigreeGroups/PedigreeGroupEmbryos.vue";
 
 
   export default Vue.extend({

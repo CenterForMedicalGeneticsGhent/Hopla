@@ -43,19 +43,19 @@
     computed:{
       imgPath: function(){
         if (this.imgType=="grandparents1"){
-          return require('../assets/grandparents1.png');
+          return require('../../assets/grandparents1.png');
         }
         else if (this.imgType=="grandparents2"){
-          return require('../assets/grandparents2.png');
+          return require('../../assets/grandparents2.png');
         }
         else if (this.imgType=="parents"){
-          return require('../assets/parents.png');
+          return require('../../assets/parents.png');
         }
         else if (this.imgType=="siblings"){
-          return require('../assets/siblings.png');
+          return require('../../assets/siblings.png');
         }
         else if (this.imgType=="embryos"){
-          return require('../assets/embryos.png');
+          return require('../../assets/embryos.png');
         }
         return false;
       }

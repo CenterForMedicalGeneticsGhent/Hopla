@@ -9,7 +9,7 @@ width="250px"
   tile
   >
     <v-img
-      src="../assets/embryos.png"
+      src="../../assets/embryos.png"
     />
   </v-avatar>
   <v-spacer />
@@ -32,11 +32,11 @@ width="250px"
 <script lang="ts">
   // Imports
   import Vue from 'vue'
-  import InputSampleID from "./Inputs/InputSampleID.vue";
-  import InputGender from "./Inputs/InputGender.vue";
-  import InputInformativeIDs from "./Inputs/InputInformativeIDs.vue";
-  import InputHeteroIDs from "./Inputs/InputHeteroIDs.vue";
-  import InputAffected from "./Inputs/InputAffected.vue";
+  import InputSampleID from "../Inputs/InputSampleID.vue";
+  import InputGender from "../Inputs/InputGender.vue";
+  import InputInformativeIDs from "../Inputs/InputInformativeIDs.vue";
+  import InputHeteroIDs from "../Inputs/InputHeteroIDs.vue";
+  import InputAffected from "../Inputs/InputAffected.vue";
 
   //interfaces
   interface dataLayout {

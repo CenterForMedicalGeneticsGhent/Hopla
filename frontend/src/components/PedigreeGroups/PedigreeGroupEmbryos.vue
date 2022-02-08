@@ -12,7 +12,7 @@ v-model="config"
 <script lang="ts">
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
-  import PatientCardGeneral from "./PatientCardGeneral.vue";
+  import PatientCardGeneral from "../PatientCards/PatientCardGeneral.vue";
 
   export default Vue.extend({
     name: 'PedigreeGroupEmbryos',

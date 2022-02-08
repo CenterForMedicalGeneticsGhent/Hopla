@@ -38,7 +38,7 @@
 
 <script lang="ts">
   import Vue from 'vue';
-  import Pedigree from "./Pedigree.vue";
+  import Pedigree from "../Tabs/Pedigree.vue";
 
   export default Vue.extend({
     name: 'Form',

@@ -6,7 +6,7 @@
 
 <script lang="ts">
   import Vue from 'vue'
-  import Form from '../components/Form.vue';
+  import Form from '../components/Forms/FormHopla.vue';
 
   export default Vue.extend({
     name: 'Home',
