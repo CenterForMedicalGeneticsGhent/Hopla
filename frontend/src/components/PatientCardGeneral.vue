@@ -18,6 +18,7 @@ width="250px"
   </v-card-title>
   <v-card-text>
     <InputSampleID v-model="sampleID" />
+    <InputInformativeIDs v-model="keepInformativeIDs" />
     {{ config }}
   </v-card-text>
 </v-card>
@@ -28,15 +29,18 @@ width="250px"
   import Vue from 'vue'
   import InputSampleID from "./InputSampleID.vue";
   import InputGender from "./InputGender.vue";
+  import InputInformativeIDs from "./InputInformativeIDs.vue";
 
   //interfaces
   interface dataLayout {
     sampleID: string;
     gender: string;
+    keepInformativeIDs: boolean;
   }
   interface configLayout {
     sampleID: string;
     gender: string;
+    keepInformativeIDs: boolean;
   }
 
   export default Vue.extend({
@@ -44,6 +48,7 @@ width="250px"
     components: {
       InputSampleID,
       InputGender,
+      InputInformativeIDs,
     },
     props:{
       value: Object,
@@ -52,6 +57,7 @@ width="250px"
       var d: dataLayout = {
         sampleID: "",
         gender: "NA",
+        keepInformativeIDs: false,
       }
       return d;
     },
@@ -60,6 +66,7 @@ width="250px"
         var c: configLayout = {
           sampleID: this.sampleID,
           gender: this.gender,
+          keepInformativeIDs: this.keepInformativeIDs,
         }
         return c;
       }
