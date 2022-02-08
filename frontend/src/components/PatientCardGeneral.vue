@@ -1,6 +1,7 @@
 <template>
 <v-card
 width="250px"
+:color="color"
 >
   <v-card-title> 
   <v-avatar 
@@ -85,7 +86,23 @@ width="250px"
           diseaseStatus: this.diseaseStatus,
         }
         return c;
-      }
+      },
+      color: function(){
+        var diseaseStatus = this.diseaseStatus;
+        if (diseaseStatus=="affected"){
+          return "rgba(255,0,0,0.1)";
+        }
+        else if (diseaseStatus=="nonaffected"){
+          return "rgba(0,255,0,0.1)";
+        }
+        else if (diseaseStatus=="NA"){
+          return "rgba(0,0,255,0.1)";
+        }
+        else if (diseaseStatus=="carrier"){
+          return "rgba(255,255,0,0.1)";
+        }
+        return "";
+      },
     },
     methods:{
       handleInput: function(){
