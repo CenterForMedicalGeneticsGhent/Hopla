@@ -6,11 +6,20 @@ title="Embryos"
 :addBtn="true"
 v-model="config"
 >
-  <PatientCardEmbryo 
-  v-for="(item,index) in config"
-  :key="index"
-  v-model="config[index]"
-  />
+  <v-row
+  v-for="row in countRows()"
+  :key="row"
+  >
+    <v-col
+    v-for="col in colsMax"
+    :key="col"
+    >
+      <PatientCardEmbryo
+      v-if="((row-1)*colsMax + col)<=countEmbryos()" 
+      v-model="config[(row-1)*colsMax + col-1]"
+      />
+    </v-col>
+  </v-row>
 </PedigreeGroup>
 </template>
 
@@ -40,7 +49,15 @@ v-model="config"
     },
     data: function() {
       return {
-        config: [cloneDeep(configEmbryosDefault),cloneDeep(configEmbryosDefault)],
+        config: [
+          cloneDeep(configEmbryosDefault),
+          cloneDeep(configEmbryosDefault),
+          cloneDeep(configEmbryosDefault),
+          cloneDeep(configEmbryosDefault),
+          cloneDeep(configEmbryosDefault),
+          cloneDeep(configEmbryosDefault),
+        ],
+        colsMax: 4,
       }
     },
     computed:{
@@ -56,9 +73,15 @@ v-model="config"
       handleInput: function(){
         this.$emit('input',this.config);
       },
+      countEmbryos: function(){
+        return this.config.length;
+      },
+      countRows: function(){
+        return Math.ceil(this.countEmbryos()/this.colsMax);
+      },
     },
     mounted: function(){
-      //CODE
+      //code
     },
     watch:{
       configWatcher:{
