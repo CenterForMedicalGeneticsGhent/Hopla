@@ -28,17 +28,27 @@
         >
           <component 
           :is="item.subForm"
-          v-model="config"
+          v-model="configPedigree"
           />
         </v-card>
       </v-tab-item>
     </v-tabs-items>
+    {{ config }}
   </v-card>
 </template>
 
 <script lang="ts">
   import Vue from 'vue';
   import Pedigree from "../Tabs/Pedigree.vue";
+
+  // configEmbryoDefault
+  var configEmbryosDefault = {
+    sampleID: "",
+    gender: "NA",
+    keepInformativeIDs: false,
+    keepHeteroIDs: false,
+    diseaseStatus: "NA",
+  };
 
   export default Vue.extend({
     name: 'Form',
@@ -48,58 +58,24 @@
     data: function() {
       return {
         tab: null,
-        config:{
-          mandatory:{
-            vcfFile:"",
-            sampleIDs:"",
-          },
-          optionalImportant:{
-            fatherIDs:"",
-            motherIDs:"",
-            genders:"",
-            cytobandFile:"/home/projects/coPGT-M/ref/cytoBand_hg38.txt",
-          },
-          optionalVariantInclusionFilter1:{
-            dpHardLimitIDs:"",
-            afHardLimitIDs:"",
-            afHardLimit:0.25,
-            dpSoftLimitIDs:"",
-          },
-          optionalVariantInclusionFilter2:{
-            keepInformativeIDs:"",
-            keepHeteroIDs:"",
-          },
-          optionalSampleDiseaseAnnotation:{
-            regions:"",
-            referenceIDs:"",
-            carrierIDs:"",
-            affectedIDs:"",
-            nonAffectedIDs:"",
-            disease:"",
-            inheritance:"",
-            sequencingNote:"",
-          },
-          optionalBAlleleFrequencyProfiles:{
-            bafIDs:"",
-          },
-          optionalMerlinProfiles:{
-            windowSizeVoting:"",
-            keepChromosomesOnly:true,
-            keepRegionsOnly:false,
-          },
-          optionalRemainingFeatures:{
-            famID:"",
-            limitBafToP:false,
-            limitPmToP:true,
-            valueOfP:0.15,
-            selfContained:true,
-            regionsFlankingSize:"",
-          },
+        configPedigree:{
+          configGrandParentsMaternal: null,
+          configGrandParentsPaternal: null,
+          configParents: null,
+          configSiblings: null,
+          configEmbryos: configEmbryosDefault,
         },
         items: [
           {'tabName':'Pedigree', 'subForm':'Pedigree'},
         ],
       }
+    },
+    computed:{
+      config: function(){
+        return {
+          configPedigree: this.configPedigree,
+        };
+      },
     },
   })
 </script>

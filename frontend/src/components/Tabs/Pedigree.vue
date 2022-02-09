@@ -27,7 +27,6 @@
       <PedigreeGroupEmbryos v-model="configEmbryos"/>
     </v-col>
   </v-row>
-  {{config}}
 </v-container>
 </template>
 
@@ -38,16 +37,6 @@
   import PedigreeGroupParents from "../PedigreeGroups/PedigreeGroupParents.vue";
   import PedigreeGroupSiblings from "../PedigreeGroups/PedigreeGroupSiblings.vue";
   import PedigreeGroupEmbryos from "../PedigreeGroups/PedigreeGroupEmbryos.vue";
-  
-  
-  // configEmbryoDefault
-  var configEmbryosDefault = {
-    sampleID: "",
-    gender: "NA",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
-    diseaseStatus: "NA",
-  };
 
 
   export default Vue.extend({
@@ -64,11 +53,11 @@
     },
     data: function() {
       return {
-        configGrandParentsMaternal: null,
-        configGrandParentsPaternal: null,
-        configParents: null,
-        configSiblings: null,
-        configEmbryos: configEmbryosDefault,
+        configGrandParentsMaternal: this.value.configGrandParentsMaternal,
+        configGrandParentsPaternal: this.value.configGrandParentsPaternal,
+        configParents: this.value.configParents,
+        configSiblings: this.value.configSiblings,
+        configEmbryos: this.value.configEmbryos,
       }
     },
     computed:{
