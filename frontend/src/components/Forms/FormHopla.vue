@@ -37,18 +37,9 @@
   </v-card>
 </template>
 
-<script lang="ts">
+<script>
   import Vue from 'vue';
   import Pedigree from "../Tabs/Pedigree.vue";
-
-  // configEmbryoDefault
-  var configEmbryosDefault = {
-    sampleID: "",
-    gender: "NA",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
-    diseaseStatus: "NA",
-  };
 
   export default Vue.extend({
     name: 'Form',
@@ -59,11 +50,11 @@
       return {
         tab: null,
         configPedigree:{
-          configGrandParentsMaternal: null,
-          configGrandParentsPaternal: null,
-          configParents: null,
-          configSiblings: null,
-          configEmbryos: configEmbryosDefault,
+          configGrandParentsMaternal: [],
+          configGrandParentsPaternal: [],
+          configParents: [],
+          configSiblings: [],
+          configEmbryos: [],
         },
         items: [
           {'tabName':'Pedigree', 'subForm':'Pedigree'},

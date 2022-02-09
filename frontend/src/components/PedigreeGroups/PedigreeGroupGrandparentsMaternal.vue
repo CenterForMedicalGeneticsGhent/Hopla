@@ -22,7 +22,7 @@
       PedigreeGroup,
     },
     props:{
-      value: Object,
+      value: Array,
     },
     data: function() {
       return {

@@ -6,14 +6,28 @@ title="Embryos"
 :addBtn="true"
 v-model="config"
 >
-  <PatientCardEmbryo v-model="config"/>
+  <PatientCardEmbryo 
+  v-for="(item,index) in config"
+  :key="index"
+  v-model="config[index]"
+  />
 </PedigreeGroup>
 </template>
 
 <script>
-  import Vue from 'vue'
+  import Vue from 'vue';
+  import cloneDeep from 'lodash/cloneDeep';
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardEmbryo from "../PatientCards/PatientCardEmbryo.vue";
+
+  // configEmbryoDefault
+  var configEmbryosDefault = {
+    sampleID: "",
+    gender: "NA",
+    keepInformativeIDs: false,
+    keepHeteroIDs: false,
+    diseaseStatus: "NA",
+  };
 
   export default Vue.extend({
     name: 'PedigreeGroupEmbryos',
@@ -22,11 +36,11 @@ v-model="config"
       PatientCardEmbryo,
     },
     props:{
-      value: Object,
+      value: Array,
     },
     data: function() {
       return {
-        config: this.value,
+        config: [cloneDeep(configEmbryosDefault),cloneDeep(configEmbryosDefault)],
       }
     },
     computed:{
@@ -54,7 +68,7 @@ v-model="config"
           }
         },
         deep:false,
-        immediate:false,
+        immediate:true,
       },
     },  
     })
