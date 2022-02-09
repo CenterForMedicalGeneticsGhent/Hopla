@@ -21,7 +21,9 @@ v-model="config"
     </v-col>
   </v-row>
   <v-row> <v-col class="d-flex justify-center align-center"> 
-    <v-btn>
+    <v-btn
+    @click="addEmbryo()"
+    >
       <v-icon>
         mdi-plus
       </v-icon>
@@ -64,14 +66,7 @@ v-model="config"
     },
     data: function() {
       return {
-        config: [
-          cloneDeep(configEmbryosDefault),
-          cloneDeep(configEmbryosDefault),
-          cloneDeep(configEmbryosDefault),
-          cloneDeep(configEmbryosDefault),
-          cloneDeep(configEmbryosDefault),
-          cloneDeep(configEmbryosDefault),
-        ],
+        config: [],
         colsMax: 4,
       }
     },
@@ -94,6 +89,9 @@ v-model="config"
       countRows: function(){
         return Math.ceil(this.countEmbryos()/this.colsMax);
       },
+      addEmbryo: function(){
+        this.config.push(cloneDeep(configEmbryosDefault));
+      }
     },
     mounted: function(){
       //code
