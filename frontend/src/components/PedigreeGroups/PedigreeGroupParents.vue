@@ -4,6 +4,7 @@
     imgType='parents'
     title="Parents"
     v-model="config"
+    :addBtn="false"
     >
 
   content

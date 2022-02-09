@@ -3,17 +3,32 @@
 :width="width"
 >
   <v-card-title> 
-  <v-avatar 
-  size="48"
-  tile
-  >
-    <v-img
-      :src="imgPath"
-    />
-  </v-avatar>
-  <v-spacer />
-  {{ title }}
-  <v-spacer />
+    <v-avatar 
+    size="48"
+    tile
+    >
+      <v-img
+        :src="imgPath"
+      />
+    </v-avatar>
+    <v-spacer />
+    {{ title }}
+    <v-spacer />
+    <v-btn
+    v-if="addBtn"
+    >
+      <v-icon>
+        mdi-plus
+      </v-icon>
+      <v-avatar 
+      size="32"
+      tile
+      >
+        <v-img
+          :src="imgPath"
+        />
+      </v-avatar>
+    </v-btn>
   </v-card-title>
   <v-card-text>
     <slot></slot>
@@ -31,6 +46,7 @@
       title: String,
       imgType: String,
       width:String,
+      addBtn: Boolean,
     },
     data: function() {
       return {
@@ -63,6 +79,9 @@
           `;
         }
       },
+      btnText: function(){
+        return `Add ${this.title.slice(0,-1)}`;
+      }
     },
     methods:{
       handleInput: function(){

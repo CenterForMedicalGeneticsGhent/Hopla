@@ -4,6 +4,7 @@
     imgType='grandparents2'
     title="Maternal Grandparents"
     v-model="config"
+    :addBtn="false"
     >
 
   content

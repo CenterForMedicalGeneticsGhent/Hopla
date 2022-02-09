@@ -3,6 +3,7 @@
 width="100%"
 imgType='embryos'
 title="Embryos"
+:addBtn="true"
 v-model="config"
 >
   <PatientCardEmbryo v-model="config"/>
