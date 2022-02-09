@@ -17,6 +17,7 @@ v-model="config"
       <PatientCardEmbryo
       v-if="((row-1)*colsMax + col)<=countEmbryos()" 
       v-model="config[(row-1)*colsMax + col-1]"
+      :i="(row-1)*colsMax + col-1"
       />
     </v-col>
   </v-row>

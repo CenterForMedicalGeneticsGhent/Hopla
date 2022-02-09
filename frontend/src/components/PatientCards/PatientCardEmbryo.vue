@@ -1,7 +1,7 @@
 <template>
 <PatientCardGeneral
 v-model="config"
-title="Embryo 1"
+:title="title"
 cardType="embryo"
 />
 </template>
@@ -18,6 +18,7 @@ cardType="embryo"
     },
     props:{
       value: Object,
+      i: Number,
     },
     data: function() {
       return {
@@ -31,6 +32,9 @@ cardType="embryo"
             ${JSON.stringify(this.config)}
           `;
         }
+      },
+      title: function(){
+        return `Embryo ${this.i+1}`;
       },
     },
     methods:{
