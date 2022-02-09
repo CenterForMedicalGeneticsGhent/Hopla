@@ -17,6 +17,7 @@ v-model="config"
       v-if="((row-1)*colsMax + col)<=countEmbryos()" 
       v-model="config[(row-1)*colsMax + col-1]"
       :i="(row-1)*colsMax + col-1"
+      @removeCard="removeEmbryo((row-1)*colsMax + col-1)"
       />
     </v-col>
   </v-row>
@@ -91,7 +92,16 @@ v-model="config"
       },
       addEmbryo: function(){
         this.config.push(cloneDeep(configEmbryosDefault));
-      }
+      },
+      removeEmbryo: function(j){
+        var newConfig = [];
+        for (let i=0; i<this.config.length;i++){
+          if (i!=j){
+            newConfig.push(cloneDeep(this.config[i]));
+          }
+        }
+        this.config = [];
+      },
     },
     mounted: function(){
       //code

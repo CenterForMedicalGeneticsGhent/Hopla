@@ -3,6 +3,7 @@
 v-model="config"
 :title="title"
 cardType="embryo"
+@removeCard="removeCard()"
 />
 </template>
 
@@ -41,6 +42,9 @@ cardType="embryo"
       handleInput: function(){
         this.$emit('input',this.config);
       },
+      removeCard:function(){
+        this.$emit('removeCard');
+      }
     },
     mounted: function(){
       //CODE

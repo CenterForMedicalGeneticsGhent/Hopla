@@ -24,6 +24,13 @@ width="250px"
     <InputInformativeIDs v-model="keepInformativeIDs" />
     <InputHeteroIDs v-model="keepHeteroIDs" />
     <InputAffected v-model="diseaseStatus" />
+   <v-btn
+    depressed
+    color="error"
+    @click="removeCard()"
+    >
+      Remove
+    </v-btn>
   </v-card-text>
 </v-card>
 </template>
@@ -106,6 +113,9 @@ width="250px"
     methods:{
       handleInput: function(){
         this.$emit('input',this.config);
+      },
+      removeCard: function(){
+        this.$emit('removeCard',null);
       },
     },
     mounted: function(){
