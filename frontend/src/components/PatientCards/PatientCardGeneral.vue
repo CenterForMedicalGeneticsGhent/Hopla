@@ -24,7 +24,6 @@ width="250px"
     <InputInformativeIDs v-model="keepInformativeIDs" />
     <InputHeteroIDs v-model="keepHeteroIDs" />
     <InputAffected v-model="diseaseStatus" />
-    {{ config }}
   </v-card-text>
 </v-card>
 </template>

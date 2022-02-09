@@ -5,24 +5,14 @@ imgType='embryos'
 title="Embryos"
 v-model="config"
 >
-  <PatientCardEmbryo v-model="patientInfo"/>
-  {{patientInfo}}
+  <PatientCardEmbryo v-model="config"/>
 </PedigreeGroup>
 </template>
 
-<script lang="ts">
+<script>
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardEmbryo from "../PatientCards/PatientCardEmbryo.vue";
-
-  // configEmbryoDefault
-  var configEmbryoDefault = {
-    sampleID: "",
-    gender: "NA",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
-    diseaseStatus: "NA",
-  };
 
   export default Vue.extend({
     name: 'PedigreeGroupEmbryos',
@@ -36,8 +26,16 @@ v-model="config"
     data: function() {
       return {
         config: this.value,
-        patientInfo: configEmbryoDefault,
       }
+    },
+    computed:{
+      configWatcher: {
+        get: function(){
+          return `
+            ${JSON.stringify(this.config)}
+          `;
+        }
+      },
     },
     methods:{
       handleInput: function(){
@@ -46,6 +44,17 @@ v-model="config"
     },
     mounted: function(){
       //CODE
-    }  
+    },
+    watch:{
+      configWatcher:{
+        handler: function(newVal,oldVal){
+          if (oldVal != newVal){
+            this.handleInput();
+          }
+        },
+        deep:false,
+        immediate:false,
+      },
+    },  
     })
 </script>

@@ -27,16 +27,27 @@
       <PedigreeGroupEmbryos v-model="configEmbryos"/>
     </v-col>
   </v-row>
+  {{config}}
 </v-container>
 </template>
 
-<script lang="ts">
+<script>
   import Vue from 'vue'
   import PedigreeGroupGrandparentsPaternal from "../PedigreeGroups/PedigreeGroupGrandparentsPaternal.vue";
   import PedigreeGroupGrandparentsMaternal from "../PedigreeGroups/PedigreeGroupGrandparentsMaternal.vue";
   import PedigreeGroupParents from "../PedigreeGroups/PedigreeGroupParents.vue";
   import PedigreeGroupSiblings from "../PedigreeGroups/PedigreeGroupSiblings.vue";
   import PedigreeGroupEmbryos from "../PedigreeGroups/PedigreeGroupEmbryos.vue";
+  
+  
+  // configEmbryoDefault
+  var configEmbryosDefault = {
+    sampleID: "",
+    gender: "NA",
+    keepInformativeIDs: false,
+    keepHeteroIDs: false,
+    diseaseStatus: "NA",
+  };
 
 
   export default Vue.extend({
@@ -53,18 +64,46 @@
     },
     data: function() {
       return {
-        config: this.value,
         configGrandParentsMaternal: null,
         configGrandParentsPaternal: null,
         configParents: null,
         configSiblings: null,
-        configEmbryos: null,
+        configEmbryos: configEmbryosDefault,
       }
+    },
+    computed:{
+      config: function(){
+        return {
+          configGrandParentsMaternal: this.configGrandParentsMaternal,
+          configGrandParentsPaternal: this.configGrandParentsPaternal,
+          configParents: this.configParents,
+          configSiblings: this.configSiblings,
+          configEmbryos: this.configEmbryos,
+        };
+      },
+      configWatcher: {
+        get: function(){
+          return `
+            ${JSON.stringify(this.config)}
+          `;
+        }
+      },
     },
     methods:{
       handleInput: function(){
         this.$emit('input',this.config);
       }
+    },
+    watch:{
+      configWatcher:{
+        handler: function(newVal,oldVal){
+          if (oldVal != newVal){
+            this.handleInput();
+          }
+        },
+        deep:false,
+        immediate:false,
+      },
     },  
     })
 </script>

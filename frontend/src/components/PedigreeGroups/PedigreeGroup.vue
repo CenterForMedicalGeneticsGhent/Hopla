@@ -17,14 +17,11 @@
   </v-card-title>
   <v-card-text>
     <slot></slot>
-    {{ config }}
   </v-card-text>
 </v-card>
 </template>
 
-<script lang="ts">
-  declare var require: any
-
+<script>
   import Vue from 'vue'
 
   export default Vue.extend({
@@ -58,7 +55,14 @@
           return require('../../assets/embryos.png');
         }
         return false;
-      }
+      },
+      configWatcher: {
+        get: function(){
+          return `
+            ${JSON.stringify(this.config)}
+          `;
+        }
+      },
     },
     methods:{
       handleInput: function(){
@@ -67,6 +71,17 @@
     },
     mounted: function(){
       //CODE
-    }  
+    },
+    watch:{
+      configWatcher:{
+        handler: function(newVal,oldVal){
+          if (oldVal != newVal){
+            this.handleInput();
+          }
+        },
+        deep:false,
+        immediate:false,
+      },
+    },  
     })
 </script>
