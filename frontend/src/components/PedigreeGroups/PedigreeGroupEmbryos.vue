@@ -3,7 +3,6 @@
 width="100%"
 imgType='embryos'
 title="Embryos"
-:addBtn="true"
 v-model="config"
 >
   <v-row
@@ -21,6 +20,21 @@ v-model="config"
       />
     </v-col>
   </v-row>
+  <v-row> <v-col class="d-flex justify-center align-center"> 
+    <v-btn>
+      <v-icon>
+        mdi-plus
+      </v-icon>
+      <v-avatar 
+      size="32"
+      tile
+      >
+        <v-img
+          src="../../assets/embryos.png"
+        />
+      </v-avatar>
+    </v-btn>
+  </v-col></v-row>
 </PedigreeGroup>
 </template>
 

@@ -14,21 +14,6 @@
     <v-spacer />
     {{ title }}
     <v-spacer />
-    <v-btn
-    v-if="addBtn"
-    >
-      <v-icon>
-        mdi-plus
-      </v-icon>
-      <v-avatar 
-      size="32"
-      tile
-      >
-        <v-img
-          :src="imgPath"
-        />
-      </v-avatar>
-    </v-btn>
   </v-card-title>
   <v-card-text>
     <slot></slot>
@@ -46,7 +31,6 @@
       title: String,
       imgType: String,
       width:String,
-      addBtn: Boolean,
     },
     data: function() {
       return {
