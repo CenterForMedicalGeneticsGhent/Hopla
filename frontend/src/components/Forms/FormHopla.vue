@@ -41,11 +41,13 @@
 <script>
   import Vue from 'vue';
   import Pedigree from "../Tabs/Pedigree.vue";
+  import Parameters from "../Tabs/Parameters.vue";
 
   export default Vue.extend({
     name: 'Form',
     components: {
       Pedigree,
+      Parameters,
     },
     data: function() {
       return {
@@ -59,6 +61,7 @@
         },
         items: [
           {'tabName':'Pedigree', 'subForm':'Pedigree'},
+          {'tabName':'Parameters', 'subForm':'Parameters'},
         ],
       }
     },
