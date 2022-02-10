@@ -1,6 +1,6 @@
 <template>
 <PedigreeGroup
-width="610px"
+width="550px"
 imgType='parents'
 title="Parents"
 v-model="config"
