@@ -1,16 +1,18 @@
 <template>
-  <hello-world />
+<v-container>
+  <Form />
+</v-container>
 </template>
 
 <script lang="ts">
   import Vue from 'vue'
-  import HelloWorld from '../components/HelloWorld.vue'
+  import Form from '../components/Forms/FormHopla.vue';
 
   export default Vue.extend({
     name: 'Home',
 
     components: {
-      HelloWorld,
+      Form,
     },
   })
 </script>
