@@ -1,10 +1,11 @@
 <template>
 <v-card
-width="250px"
+width="220px"
 :color="color"
 >
-  <v-card-title> 
-  <v-avatar 
+  <v-card-title class="text-subtitle-1"> 
+  <v-avatar
+  dense 
   size="48"
   tile
   >
@@ -18,13 +19,15 @@ width="250px"
    <InputGender v-model="gender" :genderLocked="genderLocked" />
   </v-card-title>
   <v-card-text
+  dense
   class=""
   >
     <InputSampleID v-model="sampleID" />
     <InputInformativeIDs v-model="keepInformativeIDs" />
     <InputHeteroIDs v-model="keepHeteroIDs" />
     <InputAffected v-model="diseaseStatus" />
-   <v-btn
+    <v-btn
+    dense
     depressed
     color="error"
     @click="removeCard()"

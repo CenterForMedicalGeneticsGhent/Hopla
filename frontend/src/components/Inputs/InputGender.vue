@@ -1,5 +1,6 @@
 <template>
     <v-avatar 
+    dense
     size="32"
     :color="color"
     @mouseover="hover = true"

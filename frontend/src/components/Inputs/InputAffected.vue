@@ -3,10 +3,12 @@
     class="ma-0 pa-0"
     v-model="diseaseStatus2RadioBtnNr"
     v-on:change="handleInput()"
+    dense
     >
       <v-radio
         label="Not Affected"
         :value="0"
+        class=""
       ></v-radio>
       <v-radio
         label="Affected"

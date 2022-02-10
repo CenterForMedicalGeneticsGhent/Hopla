@@ -2,6 +2,7 @@
     <v-text-field
     class="ma-0 pa-0"
     label="Sample ID"
+    dense
     outlined
     v-model="sampleID"
     v-on:input="handleInput()"
