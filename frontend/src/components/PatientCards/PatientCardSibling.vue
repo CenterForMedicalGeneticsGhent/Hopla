@@ -4,6 +4,7 @@ v-model="config"
 :title="title"
 :cardType="cardType"
 @removeCard="removeCard()"
+:genderLocked="false"
 />
 </template>
 
