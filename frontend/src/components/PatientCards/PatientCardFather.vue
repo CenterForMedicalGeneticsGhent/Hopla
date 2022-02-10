@@ -2,9 +2,9 @@
 <PatientCardGeneral
 v-model="config"
 :title="title"
-cardType="embryo"
+:cardType="cardType"
 @removeCard="removeCard()"
-:genderLocked="false"
+:genderLocked="true"
 />
 </template>
 
@@ -12,19 +12,34 @@ cardType="embryo"
   // Imports
   import Vue from 'vue'
   import PatientCardGeneral from "./PatientCardGeneral.vue";
+  import cloneDeep from 'lodash/cloneDeep';
+  
+  var configFatherDefault = {
+    sampleID: "",
+    gender: "M",
+    keepInformativeIDs: false,
+    keepHeteroIDs: false,
+    diseaseStatus: "NA",
+  };
+  var configFatherAbsentDefault = {
+    sampleID: "U1",
+    gender: "M",
+    keepInformativeIDs: false,
+    keepHeteroIDs: false,
+    diseaseStatus: "NA",
+  };
 
   export default Vue.extend({
-    name: 'PatientCardEmbryo',
+    name: 'PatientCardFather',
     components: {
       PatientCardGeneral,
     },
     props:{
       value: Object,
-      i: Number,
     },
     data: function() {
       return {
-        config: this.value
+        config: cloneDeep(configFatherAbsentDefault),
       };
     },
     computed: {
@@ -36,8 +51,11 @@ cardType="embryo"
         }
       },
       title: function(){
-        return `Embryo ${this.i+1}`;
+        return `Father`;
       },
+      cardType: function(){
+        return "father";
+      }
     },
     methods:{
       handleInput: function(){
@@ -58,7 +76,7 @@ cardType="embryo"
           }
         },
         deep:false,
-        immediate:false,
+        immediate:true,
       },
     },
     })

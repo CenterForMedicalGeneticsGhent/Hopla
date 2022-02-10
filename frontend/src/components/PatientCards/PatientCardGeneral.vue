@@ -15,7 +15,7 @@ width="250px"
   <v-spacer />
   {{title}}
   <v-spacer />
-   <InputGender v-model="gender" />
+   <InputGender v-model="gender" :genderLocked="genderLocked" />
   </v-card-title>
   <v-card-text
   class=""
@@ -57,6 +57,7 @@ width="250px"
       value: Object,
       title: String,
       cardType: String,
+      genderLocked:Boolean,
     },
     data: function() {
       var d = {
@@ -115,6 +116,12 @@ width="250px"
         }
         else if (cardType=="siblingGirl"){
           return require("../../assets/siblingGirl.png")
+        }
+        else if (cardType=="father"){
+          return require("../../assets/father.png")
+        }
+        else if (cardType=="mother"){
+          return require("../../assets/father.png")
         }
         return "";
       }

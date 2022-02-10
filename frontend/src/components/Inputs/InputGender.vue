@@ -23,6 +23,7 @@ const genderOptions = [
 export default {
     props:{
         value: String,
+        genderLocked: Boolean,
     },
     data: function(){
         return{
@@ -68,8 +69,10 @@ export default {
             return 0;
       },
       goToNextOption: function(){
-          this.genderOptionChosen = (this.genderOptionChosen+1) % genderOptions.length;
-          this.handleInput();
+          if (!this.genderLocked){
+            this.genderOptionChosen = (this.genderOptionChosen+1) % genderOptions.length;
+            this.handleInput();
+          }    
       }
     },
     mounted: function(){
