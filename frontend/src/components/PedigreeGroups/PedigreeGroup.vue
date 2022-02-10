@@ -27,7 +27,7 @@
   export default Vue.extend({
     name: 'PedigreeGroup',
     props:{
-      value: Array,
+      value: null,
       title: String,
       imgType: String,
       width:String,

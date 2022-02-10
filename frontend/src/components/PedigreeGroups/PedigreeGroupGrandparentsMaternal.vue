@@ -7,7 +7,7 @@
     :addBtn="false"
     >
 
-  content
+  {{ config }}
 
 </PedigreeGroup>
 </template>
@@ -22,7 +22,7 @@
       PedigreeGroup,
     },
     props:{
-      value: Array,
+      value: Object,
     },
     data: function() {
       return {
