@@ -5,20 +5,17 @@ imgType='embryos'
 title="Embryos"
 v-model="config"
 >
-  <v-row
-  v-for="row in countRows()"
-  :key="row"
-  >
+  <v-row>
     <v-col
-    v-for="col in colsMax"
+    v-for="col in countEmbryos()"
     :key="col"
     >
       <PatientCardEmbryo
       :key="children_reload"
-      v-if="((row-1)*colsMax + col)<=countEmbryos()" 
-      v-model="config[(row-1)*colsMax + col-1]"
-      :i="(row-1)*colsMax + col-1"
-      @removeCard="removeEmbryo((row-1)*colsMax + col-1)"
+      v-if="col<=countEmbryos()" 
+      v-model="config[col-1]"
+      :i="col-1"
+      @removeCard="removeEmbryo(col-1)"
       />
     </v-col>
   </v-row>

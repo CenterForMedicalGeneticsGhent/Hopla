@@ -4,7 +4,6 @@
     imgType='siblings'
     title="Siblings"
     v-model="config"
-    :addBtn="true"
     >
 
   content
