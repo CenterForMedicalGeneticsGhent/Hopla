@@ -20,9 +20,6 @@ v-model="config"
       />
     </v-col>
   </v-row>
-
-  {{ config }}
-
 </PedigreeGroup>
 </template>
 
