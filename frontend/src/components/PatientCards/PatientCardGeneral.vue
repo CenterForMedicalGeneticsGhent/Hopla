@@ -107,6 +107,15 @@ width="250px"
         if (cardType=="embryo"){
           return require("../../assets/embryos.png")
         }
+        else if (cardType=="siblingNA"){
+          return require("../../assets/siblingNA.png")
+        }
+        else if (cardType=="siblingBoy"){
+          return require("../../assets/siblingBoy.png")
+        }
+        else if (cardType=="siblingGirl"){
+          return require("../../assets/siblingGirl.png")
+        }
         return "";
       }
     },

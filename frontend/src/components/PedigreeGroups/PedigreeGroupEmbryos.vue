@@ -7,11 +7,12 @@ v-model="config"
 >
   <v-row>
     <v-col
+    class="d-flex justify-center align-center"
     v-for="col in countEmbryos()"
     :key="col"
     >
       <PatientCardEmbryo
-      :key="children_reload"
+      :key="JSON.stringify(config[col-1])"
       v-if="col<=countEmbryos()" 
       v-model="config[col-1]"
       :i="col-1"
@@ -66,8 +67,6 @@ v-model="config"
     data: function() {
       return {
         config: [],
-        colsMax: 4,
-        children_reload: 0, // https://dev.to/grahammorby/rerender-a-child-component-in-vue-1462
       }
     },
     computed:{
@@ -94,7 +93,6 @@ v-model="config"
       },
       removeEmbryo: function(j){
         this.config = this.config.filter((_, index) => index != j);
-        this.children_reload++;
       },
     },
     mounted: function(){
