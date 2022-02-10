@@ -93,8 +93,8 @@ v-model="config"
         this.config.push(cloneDeep(configEmbryosDefault));
       },
       removeEmbryo: function(j){
-        this.config = this.config.filter((_, index) => index != j)
-        this.children_reload++
+        this.config = this.config.filter((_, index) => index != j);
+        this.children_reload++;
       },
     },
     mounted: function(){
