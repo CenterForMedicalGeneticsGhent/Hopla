@@ -1,11 +1,38 @@
 <template>
-<PatientCardGeneral
-v-model="config"
-:title="title"
-:cardType="cardType"
-@removeCard="removeCard()"
-:genderLocked="true"
-/>
+<div>
+<v-col 
+class="d-flex justify-center align-center"
+v-if="config['sampleID']=='U1'"
+>
+  <v-btn
+  @click="addFather()"
+  >
+    <v-icon>
+      mdi-plus
+    </v-icon>
+    <v-avatar 
+    size="32"
+    tile
+    >
+      <v-img
+        src="../../assets/father.png"
+      />
+    </v-avatar>
+  </v-btn>
+</v-col>
+<v-col 
+class="d-flex justify-center align-center"
+v-else
+>
+  <PatientCardGeneral
+  v-model="config"
+  :title="title"
+  :cardType="cardType"
+  @removeCard="removeFather()"
+  :genderLocked="true"
+  />
+</v-col>
+</div>
 </template>
 
 <script>
@@ -61,9 +88,12 @@ v-model="config"
       handleInput: function(){
         this.$emit('input',this.config);
       },
-      removeCard:function(){
-        this.$emit('removeCard');
-      }
+      addFather:function(){
+        this.config=cloneDeep(configFatherDefault);
+      },
+      removeFather:function(){
+        this.config=cloneDeep(configFatherAbsentDefault);
+      },
     },
     mounted: function(){
       //CODE

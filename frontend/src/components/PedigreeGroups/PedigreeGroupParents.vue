@@ -6,7 +6,7 @@ title="Parents"
 v-model="config"
 >
   <v-row>
-    <v-col class="d-flex justify-center align-center">
+    <v-col>
       <PatientCardFather 
       v-model="config['Father']"
       />
