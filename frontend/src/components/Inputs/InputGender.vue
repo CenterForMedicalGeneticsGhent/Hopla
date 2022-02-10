@@ -1,7 +1,7 @@
 <template>
     <v-avatar 
     dense
-    size="32"
+    size="30"
     :color="color"
     @mouseover="hover = true"
     @mouseleave="hover = false"

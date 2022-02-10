@@ -1,6 +1,6 @@
 <template>
 <PedigreeGroup
-    width="560px"
+    width="550px"
     imgType='grandparents2'
     title="Maternal Grandparents"
     v-model="config"

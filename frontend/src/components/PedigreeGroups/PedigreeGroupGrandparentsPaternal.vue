@@ -15,14 +15,11 @@ v-model="config"
       />
     </v-col>
     <v-col>
-      <PatientCardPaternalGrandfather 
-      v-model="config['paternalGrandfather']"
+      <PatientCardPaternalGrandmother 
+      v-model="config['paternalGrandmother']"
       />
     </v-col>
   </v-row>
-
-  {{ config }}
-
 </PedigreeGroup>
 </template>
 
@@ -30,12 +27,14 @@ v-model="config"
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardPaternalGrandfather from "../PatientCards/PatientCardPaternalGrandfather.vue";
+  import PatientCardPaternalGrandmother from "../PatientCards/PatientCardPaternalGrandmother.vue";
 
   export default Vue.extend({
     name: 'PedigreeGroupGrandparentsPaternal',
     components:{
       PedigreeGroup,
       PatientCardPaternalGrandfather,
+      PatientCardPaternalGrandmother,
     },
     props:{
       value: Object,
