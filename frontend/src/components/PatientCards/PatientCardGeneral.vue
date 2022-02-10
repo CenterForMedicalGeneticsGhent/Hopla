@@ -123,6 +123,18 @@ width="250px"
         else if (cardType=="mother"){
           return require("../../assets/mother.png")
         }
+        else if (cardType=="paternalGrandfather"){
+          return require("../../assets/paternalGrandfather.png")
+        }
+        else if (cardType=="paternalGrandmother"){
+          return require("../../assets/paternalGrandmother.png")
+        }
+        else if (cardType=="maternalGrandfather"){
+          return require("../../assets/maternalGrandfather.png")
+        }
+        else if (cardType=="maternalGrandmother"){
+          return require("../../assets/maternalGrandmother.png")
+        }
         return "";
       }
     },
