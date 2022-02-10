@@ -121,7 +121,7 @@ width="250px"
           return require("../../assets/father.png")
         }
         else if (cardType=="mother"){
-          return require("../../assets/father.png")
+          return require("../../assets/mother.png")
         }
         return "";
       }

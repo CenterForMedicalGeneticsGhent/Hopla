@@ -1,17 +1,23 @@
 <template>
 <PedigreeGroup
-width="600px"
+width="610px"
 imgType='parents'
 title="Parents"
 v-model="config"
 >
-  <v-row>
+  <v-row
+  align="center"
+  justify="center"
+  >
     <v-col>
       <PatientCardFather 
-      v-model="config['Father']"
+      v-model="config['father']"
       />
     </v-col>
-    <v-col class="d-flex justify-center align-center">
+    <v-col>
+      <PatientCardMother 
+      v-model="config['mother']"
+      />
     </v-col>
   </v-row>
 
@@ -24,12 +30,14 @@ v-model="config"
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardFather from "../PatientCards/PatientCardFather.vue";
+  import PatientCardMother from "../PatientCards/PatientCardMother.vue";
 
   export default Vue.extend({
     name: 'PedigreeGroupParents',
     components:{
       PedigreeGroup,
       PatientCardFather,
+      PatientCardMother,
     },
     props:{
       value: Object,

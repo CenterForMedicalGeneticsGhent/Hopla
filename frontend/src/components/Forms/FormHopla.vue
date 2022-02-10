@@ -50,9 +50,9 @@
       return {
         tab: null,
         configPedigree:{
-          configGrandParentsMaternal: {"MaternalGrandfather": null, "MaternalGrandmother": null},
-          configGrandParentsPaternal: {"PaternalGrandfather": null, "PaternalGrandmother": null},
-          configParents: {"Father": null, "Mother": null},
+          configGrandParentsMaternal: {"maternalGrandfather": null, "maternalGrandmother": null},
+          configGrandParentsPaternal: {"paternalGrandfather": null, "paternalGrandmother": null},
+          configParents: {"father": null, "mother": null},
           configSiblings: [],
           configEmbryos: [],
         },
