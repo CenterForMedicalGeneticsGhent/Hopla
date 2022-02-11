@@ -54,7 +54,8 @@
           configEmbryos: [],
         },
         configParameters: {
-          fileVCF:"/path/to/vcf/file.vcf",
+          fileVCF:"/path/to/file.vcf",
+          fileCytoband:"/path/to/cytoBand_hg38.txt",
         },
       }
     },
