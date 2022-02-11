@@ -59,6 +59,7 @@
           regions:[],
           disease: "",
           inheritance: "AD",
+          sequencingNote:"",
         },
       }
     },

@@ -5,6 +5,7 @@
   <InputRegions v-model="regions" />
   <InputDisease v-model="disease" />
   <InputInheritance v-model="inheritance" />
+  <InputSequencingNote v-model="sequencingNote" />
   {{ config }}
 </v-container>
 </template>
@@ -16,6 +17,7 @@
   import InputRegions from "../Inputs/InputRegions.vue";
   import InputDisease from "../Inputs/InputDisease.vue";
   import InputInheritance from "../Inputs/InputInheritance.vue";
+  import InputSequencingNote from "../Inputs/InputSequencingNote.vue";
 
 
   export default Vue.extend({
@@ -26,6 +28,7 @@
       InputRegions,
       InputDisease,
       InputInheritance,
+      InputSequencingNote,
     },
     props:{
       value: Object,
@@ -37,6 +40,7 @@
         regions:this.value.regions,
         disease: this.value.disease,
         inheritance: this.value.inheritance,
+        sequencingNote: this.value.sequencingNote,
       }
     },
     computed:{
@@ -47,6 +51,7 @@
           regions: this.regions,
           disease: this.disease,
           inheritance: this.inheritance,
+          sequencingNote: this.sequencingNote,
         };
       },
       configWatcher: {
