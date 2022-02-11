@@ -3,6 +3,7 @@
   <InputFileVCF v-model="fileVCF" />
   <InputFileCytoband v-model="fileCytoband" />
   <InputRegions v-model="regions" />
+  <InputDisease v-model="disease" />
   {{ config }}
 </v-container>
 </template>
@@ -11,7 +12,8 @@
   import Vue from 'vue'
   import InputFileVCF from "../Inputs/InputFileVCF.vue";
   import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
-  import InputRegions from "../Inputs/InputRegions.vue"
+  import InputRegions from "../Inputs/InputRegions.vue";
+  import InputDisease from "../Inputs/InputDisease.vue";
 
 
   export default Vue.extend({
@@ -20,6 +22,7 @@
       InputFileVCF,
       InputFileCytoband,
       InputRegions,
+      InputDisease,
     },
     props:{
       value: Object,
@@ -29,6 +32,7 @@
         fileVCF: this.value.fileVCF,
         fileCytoband: this.value.fileCytoband,
         regions:this.value.regions,
+        disease: this.value.disease,
       }
     },
     computed:{
@@ -37,6 +41,7 @@
           fileVCF: this.fileVCF,
           fileCytoband: this.fileCytoband,
           regions: this.regions,
+          disease: this.disease,
         };
       },
       configWatcher: {

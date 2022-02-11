@@ -1,4 +1,5 @@
 <template>
+<v-container>
     <v-text-field
     class="ma-0 pa-0"
     label="Cytband file absolute path"
@@ -8,6 +9,7 @@
     v-on:input="handleInput()"
     type="text"
     />
+</v-container>
 </template>
 
 

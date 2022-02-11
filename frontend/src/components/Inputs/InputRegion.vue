@@ -1,4 +1,5 @@
 <template>
+<v-container>
 <v-row>
     <v-col
     class="d-flex justify-center align-center"
@@ -18,6 +19,7 @@
         <InputChrEnd v-model="chrEnd" />
     </v-col>
 </v-row>
+</v-container>
 </template>
 
 

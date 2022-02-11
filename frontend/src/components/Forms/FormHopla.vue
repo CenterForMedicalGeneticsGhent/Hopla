@@ -57,6 +57,7 @@
           fileVCF:"/path/to/file.vcf",
           fileCytoband:"/path/to/cytoBand_hg38.txt",
           regions:[],
+          disease: "",
         },
       }
     },
