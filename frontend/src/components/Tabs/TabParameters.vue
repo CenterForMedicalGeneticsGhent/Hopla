@@ -2,6 +2,7 @@
 <v-container>
   <InputFileVCF v-model="fileVCF" />
   <InputFileCytoband v-model="fileCytoband" />
+  <InputChr v-model="chr" />
   {{ config }}
 </v-container>
 </template>
@@ -10,6 +11,7 @@
   import Vue from 'vue'
   import InputFileVCF from "../Inputs/InputFileVCF.vue";
   import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
+  import InputChr from "../Inputs/InputChr.vue";
 
 
   export default Vue.extend({
@@ -17,6 +19,7 @@
     components:{
       InputFileVCF,
       InputFileCytoband,
+      InputChr,
     },
     props:{
       value: Object,
@@ -25,6 +28,7 @@
       return {
         fileVCF: this.value.fileVCF,
         fileCytoband: this.value.fileCytoband,
+        chr: "chr1",
       }
     },
     computed:{
@@ -32,6 +36,7 @@
         return {
           fileVCF: this.fileVCF,
           fileCytoband: this.fileCytoband,
+          chr: this.chr,
         };
       },
       configWatcher: {
