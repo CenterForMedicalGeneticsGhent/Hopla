@@ -2,7 +2,7 @@
 <v-container>
   <InputFileVCF v-model="fileVCF" />
   <InputFileCytoband v-model="fileCytoband" />
-  <InputRegion v-model="region" />
+  <InputRegions v-model="regions" />
   {{ config }}
 </v-container>
 </template>
@@ -11,7 +11,7 @@
   import Vue from 'vue'
   import InputFileVCF from "../Inputs/InputFileVCF.vue";
   import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
-  import InputRegion from "../Inputs/InputRegion.vue"
+  import InputRegions from "../Inputs/InputRegions.vue"
 
 
   export default Vue.extend({
@@ -19,7 +19,7 @@
     components:{
       InputFileVCF,
       InputFileCytoband,
-      InputRegion,
+      InputRegions,
     },
     props:{
       value: Object,
@@ -28,11 +28,7 @@
       return {
         fileVCF: this.value.fileVCF,
         fileCytoband: this.value.fileCytoband,
-        region:{
-          chr: "chr1",
-          chrStart: 1,
-          chrEnd: 99999999999,
-        },
+        regions:this.value.regions,
       }
     },
     computed:{
@@ -40,7 +36,7 @@
         return {
           fileVCF: this.fileVCF,
           fileCytoband: this.fileCytoband,
-          region: this.region,
+          regions: this.regions,
         };
       },
       configWatcher: {
