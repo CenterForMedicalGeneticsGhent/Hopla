@@ -54,7 +54,7 @@
           configEmbryos: [],
         },
         configParameters: {
-
+          fileVCF:"/path/to/vcf/file.vcf",
         },
       }
     },
