@@ -2,9 +2,7 @@
 <v-container>
   <InputFileVCF v-model="fileVCF" />
   <InputFileCytoband v-model="fileCytoband" />
-  <InputChr v-model="chr" />
-  <InputChrStart v-model="chrStart" />
-  <InputChrEnd v-model="chrEnd" />
+  <InputRegion v-model="region" />
   {{ config }}
 </v-container>
 </template>
@@ -13,9 +11,7 @@
   import Vue from 'vue'
   import InputFileVCF from "../Inputs/InputFileVCF.vue";
   import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
-  import InputChr from "../Inputs/InputChr.vue";
-  import InputChrStart from "../Inputs/InputChrStart.vue";
-  import InputChrEnd from "../Inputs/InputChrEnd.vue";
+  import InputRegion from "../Inputs/InputRegion.vue"
 
 
   export default Vue.extend({
@@ -23,9 +19,7 @@
     components:{
       InputFileVCF,
       InputFileCytoband,
-      InputChr,
-      InputChrStart,
-      InputChrEnd,
+      InputRegion,
     },
     props:{
       value: Object,
@@ -34,9 +28,11 @@
       return {
         fileVCF: this.value.fileVCF,
         fileCytoband: this.value.fileCytoband,
-        chr: "chr1",
-        chrStart: 1,
-        chrEnd: 99999999999,
+        region:{
+          chr: "chr1",
+          chrStart: 1,
+          chrEnd: 99999999999,
+        },
       }
     },
     computed:{
@@ -44,9 +40,7 @@
         return {
           fileVCF: this.fileVCF,
           fileCytoband: this.fileCytoband,
-          chr: this.chr,
-          chrStart: this.chrStart,
-          chrEnd: this.chrEnd,
+          region: this.region,
         };
       },
       configWatcher: {
