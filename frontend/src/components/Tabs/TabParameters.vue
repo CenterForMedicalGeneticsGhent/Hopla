@@ -9,7 +9,7 @@
 
 
   export default Vue.extend({
-    name: 'Parameters',
+    name: 'TabParameters',
     components:{
     },
     props:{

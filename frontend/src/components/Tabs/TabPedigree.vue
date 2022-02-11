@@ -41,7 +41,7 @@
 
 
   export default Vue.extend({
-    name: 'Pedigree',
+    name: 'TabPedigree',
     components:{
       PedigreeGroupGrandparentsPaternal,
       PedigreeGroupGrandparentsMaternal,
