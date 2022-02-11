@@ -58,6 +58,7 @@
           fileCytoband:"/path/to/cytoBand_hg38.txt",
           regions:[],
           disease: "",
+          inheritance: "AD",
         },
       }
     },

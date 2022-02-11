@@ -4,6 +4,7 @@
   <InputFileCytoband v-model="fileCytoband" />
   <InputRegions v-model="regions" />
   <InputDisease v-model="disease" />
+  <InputInheritance v-model="inheritance" />
   {{ config }}
 </v-container>
 </template>
@@ -14,6 +15,7 @@
   import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
   import InputRegions from "../Inputs/InputRegions.vue";
   import InputDisease from "../Inputs/InputDisease.vue";
+  import InputInheritance from "../Inputs/InputInheritance.vue";
 
 
   export default Vue.extend({
@@ -23,6 +25,7 @@
       InputFileCytoband,
       InputRegions,
       InputDisease,
+      InputInheritance,
     },
     props:{
       value: Object,
@@ -33,6 +36,7 @@
         fileCytoband: this.value.fileCytoband,
         regions:this.value.regions,
         disease: this.value.disease,
+        inheritance: this.value.inheritance,
       }
     },
     computed:{
@@ -42,6 +46,7 @@
           fileCytoband: this.fileCytoband,
           regions: this.regions,
           disease: this.disease,
+          inheritance: this.inheritance,
         };
       },
       configWatcher: {
