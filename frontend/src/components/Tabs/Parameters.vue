@@ -1,5 +1,6 @@
 <template>
 <v-container>
+  {{ config }}
 </v-container>
 </template>
 

@@ -1,41 +1,11 @@
 <template>
-  <v-card
-  >
-    <v-card-title class="text-center justify-center py-6">
-      <h1 class="font-weight-bold text-h2">
-        HOPLA 
-      </h1>
-    </v-card-title>
+<v-container>
+  <Pedigree v-model="configPedigree" />
+  <Parameters v-model="configParameters" />
 
-    <v-tabs
-      v-model="tab"
-      grow
-    >
-      <v-tab
-        v-for="item in items"
-        :key="item.tabName"
-      >
-        {{ item.tabName }}
-      </v-tab>
-    </v-tabs>
 
-    <v-tabs-items v-model="tab">
-      <v-tab-item
-        v-for="item in items"
-        :key="item.tabName"
-      >
-        <v-card
-          flat
-        >
-          <component 
-          :is="item.subForm"
-          v-model="configPedigree"
-          />
-        </v-card>
-      </v-tab-item>
-    </v-tabs-items>
-    {{ config }}
-  </v-card>
+  {{ config }}
+</v-container>
 </template>
 
 <script>
@@ -59,18 +29,18 @@
           configSiblings: [],
           configEmbryos: [],
         },
-        items: [
-          {'tabName':'Pedigree', 'subForm':'Pedigree'},
-          {'tabName':'Parameters', 'subForm':'Parameters'},
-        ],
+        configParameters: {
+
+        },
       }
     },
     computed:{
       config: function(){
         return {
           configPedigree: this.configPedigree,
+          configParameters: this.configParameters,
         };
-      },
+      }
     },
   })
 </script>
