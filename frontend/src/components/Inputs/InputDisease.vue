@@ -1,7 +1,7 @@
 <template>
 <v-container>
     <v-text-field
-    label="Disease (breast cancer)"  
+    label="Disease (e.g. breast cancer)"  
     dense
     outlined
     v-model="disease"

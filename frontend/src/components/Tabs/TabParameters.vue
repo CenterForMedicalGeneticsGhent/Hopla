@@ -11,11 +11,12 @@
       <InputArgumentsVariantInclusion v-model="afHardLimit" />
     </v-col>
   </v-row>
-  
-  <InputRegions v-model="regions" />
-  <InputDisease v-model="disease" />
-  <InputInheritance v-model="inheritance" />
-  <InputSequencingNote v-model="sequencingNote" />
+
+  <v-row>
+    <v-col class="d-flex justify-center align-center">
+      <InputArgumentsSampleDisease v-model="sampleDisease" />
+    </v-col>
+  </v-row>
   {{ config }}
 </v-container>
 </template>
@@ -25,10 +26,7 @@
   import InputArgumentsMandatory from "../Inputs/InputArgumentsMandatory.vue";
   import InputArgumentsOptional from "../Inputs/InputArgumentsOptional.vue";
   import InputArgumentsVariantInclusion from "../Inputs/InputArgumentsVariantInclusion.vue";
-  import InputRegions from "../Inputs/InputRegions.vue";
-  import InputDisease from "../Inputs/InputDisease.vue";
-  import InputInheritance from "../Inputs/InputInheritance.vue";
-  import InputSequencingNote from "../Inputs/InputSequencingNote.vue";
+  import InputArgumentsSampleDisease from "../Inputs/InputArgumentsSampleDisease.vue";
 
 
   export default Vue.extend({
@@ -37,10 +35,7 @@
       InputArgumentsMandatory,
       InputArgumentsOptional,
       InputArgumentsVariantInclusion,
-      InputRegions,
-      InputDisease,
-      InputInheritance,
-      InputSequencingNote,
+      InputArgumentsSampleDisease,
     },
     props:{
       value: Object,
@@ -50,10 +45,7 @@
         fileVCF: this.value.fileVCF,
         fileCytoband: this.value.fileCytoband,
         afHardLimit: this.value.afHardLimit,
-        regions:this.value.regions,
-        disease: this.value.disease,
-        inheritance: this.value.inheritance,
-        sequencingNote: this.value.sequencingNote,
+        sampleDisease: this.value.sampleDisease,
       }
     },
     computed:{
@@ -62,10 +54,7 @@
           fileVCF: this.fileVCF,
           fileCytoband: this.fileCytoband,
           afHardLimit: this.afHardLimit,
-          regions: this.regions,
-          disease: this.disease,
-          inheritance: this.inheritance,
-          sequencingNote: this.sequencingNote,
+          sampleDisease: this.sampleDisease,
         };
       },
       configWatcher: {

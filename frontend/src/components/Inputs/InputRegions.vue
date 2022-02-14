@@ -1,6 +1,25 @@
 <template>
 <v-container>
-<v-card>
+<v-card
+flat
+>
+    <v-row
+    align="center"
+    justify="center"
+    v-if="regions.length==0"
+    >
+        <v-col class="d-flex justify-center align-center">
+            <v-btn
+            dense
+            depressed
+            color="green"
+            @click="addRegion()"
+            >
+                Add Region
+            </v-btn>
+        </v-col>
+    </v-row>
+
     <v-row
     align="center"
     justify="center"
@@ -22,16 +41,6 @@
             @click="removeRegion()"
             >
                 Remove Region
-            </v-btn>
-
-            <v-btn
-            v-if="regions.length==0"
-            dense
-            depressed
-            color="green"
-            @click="addRegion()"
-            >
-                Add Region
             </v-btn>
         </v-col>
     </v-row>
