@@ -1,7 +1,14 @@
 <template>
 <v-container>
-  <InputArgumentsMandatory v-model="fileVCF" />
-  <InputFileCytoband v-model="fileCytoband" />
+  <v-row>
+    <v-col class="d-flex justify-center align-center">
+      <InputArgumentsMandatory v-model="fileVCF" />
+    </v-col>
+    <v-col class="d-flex justify-center align-center">
+      <InputArgumentsOptional v-model="fileCytoband" />
+    </v-col>
+  </v-row>
+  
   <InputRegions v-model="regions" />
   <InputDisease v-model="disease" />
   <InputInheritance v-model="inheritance" />
@@ -13,7 +20,7 @@
 <script>
   import Vue from 'vue'
   import InputArgumentsMandatory from "../Inputs/InputArgumentsMandatory.vue";
-  import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
+  import InputArgumentsOptional from "../Inputs/InputArgumentsOptional.vue";
   import InputRegions from "../Inputs/InputRegions.vue";
   import InputDisease from "../Inputs/InputDisease.vue";
   import InputInheritance from "../Inputs/InputInheritance.vue";
@@ -24,7 +31,7 @@
     name: 'TabParameters',
     components:{
       InputArgumentsMandatory,
-      InputFileCytoband,
+      InputArgumentsOptional,
       InputRegions,
       InputDisease,
       InputInheritance,
