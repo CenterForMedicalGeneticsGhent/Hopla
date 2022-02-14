@@ -1,6 +1,6 @@
 <template>
 <v-container>
-  <InputFileVCF v-model="fileVCF" />
+  <InputArgumentsMandatory v-model="fileVCF" />
   <InputFileCytoband v-model="fileCytoband" />
   <InputRegions v-model="regions" />
   <InputDisease v-model="disease" />
@@ -12,7 +12,7 @@
 
 <script>
   import Vue from 'vue'
-  import InputFileVCF from "../Inputs/InputFileVCF.vue";
+  import InputArgumentsMandatory from "../Inputs/InputArgumentsMandatory.vue";
   import InputFileCytoband from "../Inputs/InputFileCytoband.vue";
   import InputRegions from "../Inputs/InputRegions.vue";
   import InputDisease from "../Inputs/InputDisease.vue";
@@ -23,7 +23,7 @@
   export default Vue.extend({
     name: 'TabParameters',
     components:{
-      InputFileVCF,
+      InputArgumentsMandatory,
       InputFileCytoband,
       InputRegions,
       InputDisease,
