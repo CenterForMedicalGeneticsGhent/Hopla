@@ -1,39 +1,40 @@
 <template>
 <v-container>
 <v-card>
-    <v-card-title>
-        Regions
+    <v-row
+    align="center"
+    justify="center"
+    >
+        <v-col>
+            <InputRegion
+            v-for="(region,index) in regions"
+            :key="JSON.stringify(region)"
+            v-model="regions[index]"
+            />
+        </v-col>
 
-        <v-spacer />
+        <v-col align="right" class="mr-3">
+            <v-btn
+            v-if="regions.length>0"
+            dense
+            depressed
+            color="error"
+            @click="removeRegion()"
+            >
+                Remove Region
+            </v-btn>
 
-        <v-btn
-        v-if="regions.length>0"
-        dense
-        depressed
-        color="error"
-        @click="removeRegion()"
-        >
-            Remove Region
-        </v-btn>
-
-        <v-btn
-        v-if="regions.length==0"
-        dense
-        depressed
-        color="green"
-        @click="addRegion()"
-        >
-            Add Region
-        </v-btn>
-
-    </v-card-title>
-    <v-card-text>
-        <InputRegion
-        v-for="(region,index) in regions"
-        :key="JSON.stringify(region)"
-        v-model="regions[index]"
-        />
-    </v-card-text>
+            <v-btn
+            v-if="regions.length==0"
+            dense
+            depressed
+            color="green"
+            @click="addRegion()"
+            >
+                Add Region
+            </v-btn>
+        </v-col>
+    </v-row>
 </v-card>
 </v-container>
 </template>
