@@ -56,6 +56,7 @@
         configParameters: {
           fileVCF:"/path/to/file.vcf",
           fileCytoband:"/path/to/cytoBand_hg38.txt",
+          afHardLimit: 0.25,
           regions:[],
           disease: "",
           inheritance: "AD",

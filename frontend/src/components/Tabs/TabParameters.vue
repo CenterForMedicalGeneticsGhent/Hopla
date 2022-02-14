@@ -7,6 +7,9 @@
     <v-col class="d-flex justify-center align-center">
       <InputArgumentsOptional v-model="fileCytoband" />
     </v-col>
+    <v-col class="d-flex justify-center align-center">
+      <InputArgumentsVariantInclusion v-model="afHardLimit" />
+    </v-col>
   </v-row>
   
   <InputRegions v-model="regions" />
@@ -21,6 +24,7 @@
   import Vue from 'vue'
   import InputArgumentsMandatory from "../Inputs/InputArgumentsMandatory.vue";
   import InputArgumentsOptional from "../Inputs/InputArgumentsOptional.vue";
+  import InputArgumentsVariantInclusion from "../Inputs/InputArgumentsVariantInclusion.vue";
   import InputRegions from "../Inputs/InputRegions.vue";
   import InputDisease from "../Inputs/InputDisease.vue";
   import InputInheritance from "../Inputs/InputInheritance.vue";
@@ -32,6 +36,7 @@
     components:{
       InputArgumentsMandatory,
       InputArgumentsOptional,
+      InputArgumentsVariantInclusion,
       InputRegions,
       InputDisease,
       InputInheritance,
@@ -44,6 +49,7 @@
       return {
         fileVCF: this.value.fileVCF,
         fileCytoband: this.value.fileCytoband,
+        afHardLimit: this.value.afHardLimit,
         regions:this.value.regions,
         disease: this.value.disease,
         inheritance: this.value.inheritance,
@@ -55,6 +61,7 @@
         return {
           fileVCF: this.fileVCF,
           fileCytoband: this.fileCytoband,
+          afHardLimit: this.afHardLimit,
           regions: this.regions,
           disease: this.disease,
           inheritance: this.inheritance,
