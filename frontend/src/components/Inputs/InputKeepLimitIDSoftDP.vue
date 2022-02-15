@@ -2,30 +2,32 @@
     <v-checkbox
     dense
     class="ma-0 pa-0"
-    v-model="keepInformativeIDs"
-    label="Informative ID"
+    v-model="keepID"
+    :label="label"
     @click="handleInput()"
     />
 </template>
 
 
-<script lang>
+<script>
 
 export default {
     props:{
         value: Boolean,
     },
     data: function(){
-        let d  = {
-            keepInformativeIDs: this.value,
+        return {
+            keepID: this.value,
         };
-        return d;
     },
     computed:{
+        label: function(){
+            return `DP Soft Limit ID`;
+        }
     },
     methods:{
       handleInput: function(){
-        this.$emit('input',this.keepInformativeIDs);
+        this.$emit('input',this.keepID);
       },
     },
     mounted: function(){

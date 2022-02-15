@@ -50,9 +50,11 @@ v-model="config"
   var configEmbryosDefault = {
     sampleID: "",
     gender: "NA",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
+    keepInformativeIDs: "hide",
     diseaseStatus: "NA",
+    keepLimitIDHardDP: "hide",
+    keepLimitIDHardAF: "hide",
+    keepLimitIDSoftDP: true,
   };
 
   export default Vue.extend({

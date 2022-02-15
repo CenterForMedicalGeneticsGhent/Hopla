@@ -50,9 +50,11 @@ v-model="config"
   var configSiblingsDefault = {
     sampleID: "",
     gender: "NA",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
+    keepInformativeIDs: true,
     diseaseStatus: "NA",
+    keepLimitIDHardDP: true,
+    keepLimitIDHardAF: true,
+    keepLimitIDSoftDP: "hide",
   };
 
   export default Vue.extend({

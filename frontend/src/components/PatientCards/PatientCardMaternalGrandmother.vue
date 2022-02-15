@@ -44,16 +44,20 @@ v-else
   var configMaternalGrandmotherDefault = {
     sampleID: "",
     gender: "F",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
+    keepInformativeIDs: true,
     diseaseStatus: "NA",
+    keepLimitIDHardDP: true,
+    keepLimitIDHardAF: true,
+    keepLimitIDSoftDP: "hide",
   };
   var configMaternalGrandmotherAbsentDefault = {
     sampleID: "U6",
     gender: "F",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
+    keepInformativeIDs: "hide",
     diseaseStatus: "NA",
+    keepLimitIDHardDP: "hide",
+    keepLimitIDHardAF: "hide",
+    keepLimitIDSoftDP: "hide",
   };
 
   export default Vue.extend({

@@ -23,10 +23,10 @@ width="220px"
   class=""
   >
     <InputSampleID v-model="sampleID" />
-    <InputKeepLimitIDHardDP v-model="keepLimitIDHardDP" />
-    <InputKeepLimitIDHardAF v-model="keepLimitIDHardAF" />
-    <InputInformativeIDs v-model="keepInformativeIDs" />
-    <InputHeteroIDs v-model="keepHeteroIDs" />
+    <InputKeepLimitIDHardDP v-model="keepLimitIDHardDP" v-if="keepLimitIDHardDP!='hide'"/>
+    <InputKeepLimitIDHardAF v-model="keepLimitIDHardAF" v-if="keepLimitIDHardAF!='hide'"/>
+    <InputKeepLimitIDSoftDP v-model="keepLimitIDSoftDP" v-if="keepLimitIDSoftDP!='hide'"/>
+    <InputInformativeIDs v-model="keepInformativeIDs" v-if="keepInformativeIDs!='hide'"/>
     <InputAffected v-model="diseaseStatus" />
     <v-btn
     dense
@@ -46,10 +46,10 @@ width="220px"
   import InputSampleID from "../Inputs/InputSampleID.vue";
   import InputGender from "../Inputs/InputGender.vue";
   import InputInformativeIDs from "../Inputs/InputInformativeIDs.vue";
-  import InputHeteroIDs from "../Inputs/InputHeteroIDs.vue";
   import InputAffected from "../Inputs/InputAffected.vue";
   import InputKeepLimitIDHardDP from "../Inputs/InputKeepLimitIDHardDP.vue";
   import InputKeepLimitIDHardAF from "../Inputs/InputKeepLimitIDHardAF.vue";
+  import InputKeepLimitIDSoftDP from "../Inputs/InputKeepLimitIDSoftDP.vue";
 
   export default Vue.extend({
     name: 'PatientCardGeneral',
@@ -57,9 +57,9 @@ width="220px"
       InputSampleID,
       InputKeepLimitIDHardDP,
       InputKeepLimitIDHardAF,
+      InputKeepLimitIDSoftDP,
       InputGender,
       InputInformativeIDs,
-      InputHeteroIDs,
       InputAffected,
     },
     props:{
@@ -73,10 +73,10 @@ width="220px"
         sampleID: this.value.sampleID,
         gender: this.value.gender,
         keepInformativeIDs: this.value.keepInformativeIDs,
-        keepHeteroIDs: this.value.keepHeteroIDs,
         diseaseStatus: this.value.diseaseStatus,
         keepLimitIDHardDP: this.value.keepLimitIDHardDP,
         keepLimitIDHardAF: this.value.keepLimitIDHardAF,
+        keepLimitIDSoftDP: this.value.keepLimitIDSoftDP,
       }
       return d;
     },
@@ -86,10 +86,10 @@ width="220px"
           sampleID: this.sampleID,
           gender: this.gender,
           keepInformativeIDs: this.keepInformativeIDs,
-          keepHeteroIDs: this.keepHeteroIDs,
           diseaseStatus: this.diseaseStatus,
           keepLimitIDHardDP: this.keepLimitIDHardDP,
           keepLimitIDHardAF: this.keepLimitIDHardAF,
+          keepLimitIDSoftDP: this.keepLimitIDSoftDP,
         }
         return c;
       },

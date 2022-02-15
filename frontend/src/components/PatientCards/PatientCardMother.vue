@@ -44,16 +44,20 @@ v-else
   var configMotherDefault = {
     sampleID: "",
     gender: "F",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
+    keepInformativeIDs: true,
     diseaseStatus: "NA",
+    keepLimitIDHardDP: true,
+    keepLimitIDHardAF: true,
+    keepLimitIDSoftDP: "hide",
   };
   var configMotherAbsentDefault = {
     sampleID: "U2",
     gender: "F",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
+    keepInformativeIDs: "hide",
     diseaseStatus: "NA",
+    keepLimitIDHardDP: "hide",
+    keepLimitIDHardAF: "hide",
+    keepLimitIDSoftDP: "hide",
   };
 
   export default Vue.extend({
