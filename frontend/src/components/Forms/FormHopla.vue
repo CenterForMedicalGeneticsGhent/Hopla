@@ -47,6 +47,7 @@
       return {
         tab: null,
         configPedigree:{
+          famID: "",
           configGrandParentsMaternal: {"maternalGrandfather": null, "maternalGrandmother": null},
           configGrandParentsPaternal: {"paternalGrandfather": null, "paternalGrandmother": null},
           configParents: {"father": null, "mother": null},
