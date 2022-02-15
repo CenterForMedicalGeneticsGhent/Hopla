@@ -4,7 +4,7 @@ v-model="config"
 :title="title"
 cardType="embryo"
 @removeCard="removeCard()"
-:genderLocked="false"
+:genderLocked="true"
 />
 </template>
 
