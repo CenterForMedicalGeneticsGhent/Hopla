@@ -2,7 +2,7 @@
     <v-checkbox
     dense
     class="ma-0 pa-0"
-    v-model="keepLimitID"
+    v-model="keepID"
     :label="label"
     @click="handleInput()"
     />
@@ -14,22 +14,20 @@
 export default {
     props:{
         value: Boolean,
-        limitType: String,
     },
     data: function(){
-        let d  = {
-            keepLimitID: this.value,
+        return {
+            keepID: this.value,
         };
-        return d;
     },
     computed:{
         label: function(){
-            return `Keep ${this.limitType} Limit ID`;
+            return `Keep DP Hard Limit IDs`;
         }
     },
     methods:{
       handleInput: function(){
-        this.$emit('input',this.keepLimitID);
+        this.$emit('input',this.keepID);
       },
     },
     mounted: function(){

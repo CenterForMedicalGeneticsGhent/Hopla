@@ -23,6 +23,7 @@ width="220px"
   class=""
   >
     <InputSampleID v-model="sampleID" />
+    <InputKeepLimitIDHardDP v-model="keepLimitIDHardDP" />
     <InputInformativeIDs v-model="keepInformativeIDs" />
     <InputHeteroIDs v-model="keepHeteroIDs" />
     <InputAffected v-model="diseaseStatus" />
@@ -46,11 +47,13 @@ width="220px"
   import InputInformativeIDs from "../Inputs/InputInformativeIDs.vue";
   import InputHeteroIDs from "../Inputs/InputHeteroIDs.vue";
   import InputAffected from "../Inputs/InputAffected.vue";
+  import InputKeepLimitIDHardDP from "../Inputs/InputKeepLimitIDHardDP.vue";
 
   export default Vue.extend({
     name: 'PatientCardGeneral',
     components: {
       InputSampleID,
+      InputKeepLimitIDHardDP,
       InputGender,
       InputInformativeIDs,
       InputHeteroIDs,
@@ -69,6 +72,7 @@ width="220px"
         keepInformativeIDs: this.value.keepInformativeIDs,
         keepHeteroIDs: this.value.keepHeteroIDs,
         diseaseStatus: this.value.diseaseStatus,
+        keepLimitIDHardDP: this.value.keepLimitIDHardDP,
       }
       return d;
     },
@@ -80,6 +84,7 @@ width="220px"
           keepInformativeIDs: this.keepInformativeIDs,
           keepHeteroIDs: this.keepHeteroIDs,
           diseaseStatus: this.diseaseStatus,
+          keepLimitIDHardDP: this.keepLimitIDHardDP,
         }
         return c;
       },
