@@ -5,8 +5,12 @@
   justify="center"
   class="pb-0 pt-0"
   >
-    <v-col class="justify-left align-left" :cols="4">
+    <v-col class="justify-center align-center">
+    </v-col>
+    <v-col class="justify-center align-center">
       <InputFamilyID v-model="famID"/>
+    </v-col>
+    <v-col class="justify-center align-center">
     </v-col>
   </v-row>
   <v-row
