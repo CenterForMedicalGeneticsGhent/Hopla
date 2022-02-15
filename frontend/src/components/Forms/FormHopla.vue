@@ -63,6 +63,13 @@
             inheritance: "AD",
             sequencingNote:"",
           },
+          merlinProfiles:{
+            windowSizeVoting: 10000000,
+            keepChromosomesRegionsOnly:{
+              keepChromosomesOnly:true,
+              keepRegionsOnly:false,
+            }
+          }
         },
       }
     },
