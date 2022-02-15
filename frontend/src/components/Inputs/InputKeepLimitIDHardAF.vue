@@ -1,7 +1,7 @@
 <template>
     <v-checkbox
     dense
-    class="InputKeepLimitIDHardDP ma-0 pa-0"
+    class="ma-0 pa-0"
     v-model="keepID"
     :label="label"
     @click="handleInput()"
@@ -22,7 +22,7 @@ export default {
     },
     computed:{
         label: function(){
-            return `DP Hard Limit ID`;
+            return `AF Hard Limit ID`;
         }
     },
     methods:{
