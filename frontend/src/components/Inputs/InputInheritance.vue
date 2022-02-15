@@ -21,8 +21,9 @@ export default {
             inheritance: this.value,
             options: [
                 'AD',
-                'DP',
-                'GT',
+                'AR',
+                'XLD',
+                'XLR',
             ],
         }
     },
