@@ -5,24 +5,27 @@
     dense
     >
       <v-radio
-        label="Keep Chromosomes Only"
+        label="Show everything"
         :value="0"
       ></v-radio>
       <v-radio
-        label="Keep Regions Only"
+        label="Only show chromosome of interest"
         :value="1"
+      ></v-radio>
+      <v-radio
+        label="Only show region of interest"
+        :value="2"
       ></v-radio>
     </v-radio-group>
 </template>
 
 
 <script>
-var options = [
-  "keepChromosomesOnly",
-  "keepRegionsOnly",
-];
+import Vue from 'vue';
 
-export default {
+
+export default Vue.extend({
+    name:"InputKeepChromosomesRegionsOnly",
     props:{
         value: Object,
     },
@@ -35,18 +38,27 @@ export default {
     computed:{
       optionChosen:{
         get: function(){
-          if (this.keepChromosomesOnly){
+          if ((!this.keepChromosomesOnly) && (!this.keepRegionsOnly)){
             return 0;
           } 
-          else {
+          else if ((this.keepChromosomesOnly) && (!this.keepRegionsOnly)){
             return 1;
+          }
+          else if ((!this.keepChromosomesOnly) && (this.keepRegionsOnly)){
+            return 2;
+          }
+          else {
+            return 0;
           }
         },
         set: function(i){
           if (i==0){
+            [this.keepChromosomesOnly, this.keepRegionsOnly] = [false,false];
+          }
+          else if (i==1){
             [this.keepChromosomesOnly, this.keepRegionsOnly] = [true,false];
           }
-          else {
+          else if (i==2){
             [this.keepChromosomesOnly, this.keepRegionsOnly] = [false,true];
           }
         }
@@ -84,5 +96,5 @@ export default {
         immediate:true,
       },
     }, 
-}
+})
 </script>

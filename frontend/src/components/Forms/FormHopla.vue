@@ -70,7 +70,7 @@
           merlinProfiles:{
             windowSizeVoting: 10000000,
             keepChromosomesRegionsOnly:{
-              keepChromosomesOnly:true,
+              keepChromosomesOnly:false,
               keepRegionsOnly:false,
             }
           }
