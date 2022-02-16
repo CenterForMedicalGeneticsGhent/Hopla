@@ -9,13 +9,16 @@
 </template>
 
 
-<script lang>
+<script lang='typescript'>
+import Vue from 'vue';
 
-export default {
+
+export default Vue.extend({
+    name:"InputInformativeIDs",
     props:{
         value: Boolean,
     },
-    data: function(){
+    data: function() {
         let d  = {
             keepInformativeIDs: this.value,
         };
@@ -31,5 +34,5 @@ export default {
     mounted: function(){
         //CODE
     }
-}
+})
 </script>
