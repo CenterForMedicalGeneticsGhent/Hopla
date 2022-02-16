@@ -5,17 +5,8 @@
       Remaining Features
   </v-card-title>
   <v-card-text>
-    <v-row
-    align="center"
-    justify="center"
-    >
-    </v-row>
-
-    <v-row
-    align="center"
-    justify="center"
-    >
-    </v-row>
+    <InputLimitPmToP v-model="limitPmToP" />
+    
   </v-card-text>
 </v-card>
 </v-container>
@@ -25,12 +16,15 @@
 <script>
 import Vue from 'vue';
 
+import InputLimitPmToP from "../Inputs/InputLimitPmToP.vue";
+
 export default Vue.extend({
     name: 'InputArgumentsRemainingFeatures',
     props:{
         value: Object,
     },
     components:{
+      InputLimitPmToP,
     },
     data: function(){
         return{
