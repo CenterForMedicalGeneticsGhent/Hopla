@@ -6,6 +6,7 @@
     <ParseSectionVariantInclusionFilter2 :config="config" />
     <ParseSectionSampleDiseaseAnnotation :config="config" />
     <ParseSectionBAlleleFrequencyProfiles :config="config" />
+    <ParseSectionMerlinProfiles :config="config" />
 </div>
 </template>
 
@@ -19,6 +20,7 @@ import ParseSectionVariantInclusionFilter1 from "../Parsers/ParseSectionVariantI
 import ParseSectionVariantInclusionFilter2 from "../Parsers/ParseSectionVariantInclusionFilter2.vue";
 import ParseSectionSampleDiseaseAnnotation from "../Parsers/ParseSectionSampleDiseaseAnnotation.vue";
 import ParseSectionBAlleleFrequencyProfiles from "../Parsers/ParseSectionBAlleleFrequencyProfiles.vue";
+import ParseSectionMerlinProfiles from "../Parsers/ParseSectionMerlinProfiles.vue";
 
 export default Vue.extend({    
     props:{
@@ -31,6 +33,7 @@ export default Vue.extend({
         ParseSectionVariantInclusionFilter2,
         ParseSectionSampleDiseaseAnnotation,
         ParseSectionBAlleleFrequencyProfiles,
+        ParseSectionMerlinProfiles,
     },
     data: function(){
         return {
