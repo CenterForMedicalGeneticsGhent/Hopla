@@ -1,6 +1,6 @@
 <template>
 <span>
-    {{content}}<br>
+    vcf.file={{content}}<br>
 </span>
 </template>
 
@@ -20,7 +20,7 @@ export default Vue.extend({
     },
     computed:{
         content: function(){
-            return `vcf.file=${this.filePath}`;
+            return `${this.filePath}`;
         }
     },
     methods:{
