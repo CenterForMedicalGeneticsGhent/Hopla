@@ -5,6 +5,7 @@
   justify="center"  
   >
     <v-col class="d-flex justify-center align-center">
+      <InputArgumentsRemaining v-model="remainingFeatures" />
     </v-col>
     <v-col class="d-flex justify-center align-center">
     </v-col>
@@ -17,21 +18,26 @@
 
 <script>
   import Vue from 'vue'
+  
+  import InputArgumentsRemaining from "../Inputs/InputArgumentsRemaining.vue";
 
   export default Vue.extend({
     name: 'TabAdvanced',
     components:{
+      InputArgumentsRemaining,
     },
     props:{
       value: Object,
     },
     data: function() {
       return {
+        remainingFeatures: this.value.remainingFeatures,
       }
     },
     computed:{
       config: function(){
         return {
+          remainingFeatures: this.remainingFeatures,
         };
       },
       configWatcher: {

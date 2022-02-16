@@ -84,7 +84,13 @@
           }
         },
         configAdvanced:{
-
+          remainingFeatures: {
+            limitPmToP: true,
+            valueOfP: 0.15,
+            limitBafToP: false,
+            selfContained: true,
+            regionsFlankingSize: 1000000,
+          },
         },
       }
     },
