@@ -3,7 +3,7 @@
 width="100%"
 imgType='embryos'
 title="Embryos"
-v-model="config"
+v-model="embryoList"
 >
   <v-row>
     <v-col
@@ -12,31 +12,42 @@ v-model="config"
     :key="col"
     >
       <PatientCardEmbryo
-      :key="JSON.stringify(config[col-1])"
+      :key="JSON.stringify(embryoList[col-1])"
       v-if="col<=countEmbryos()" 
-      v-model="config[col-1]"
+      v-model="embryoList[col-1]"
       :i="col-1"
       @removeCard="removeEmbryo(col-1)"
       />
     </v-col>
   </v-row>
-  <v-row> <v-col class="d-flex justify-center align-center"> 
-    <v-btn
-    @click="addEmbryo()"
-    >
-      <v-icon>
-        mdi-plus
-      </v-icon>
-      <v-avatar 
-      size="32"
-      tile
+  <v-row
+  align="center"
+  justify="center"
+  >
+    <v-col class="d-flex justify-center align-center">
+    </v-col> 
+    <v-col class="d-flex justify-center align-center"> 
+      <v-btn
+      @click="addEmbryo()"
       >
-        <v-img
-          src="../../assets/embryos.png"
-        />
-      </v-avatar>
-    </v-btn>
-  </v-col></v-row>
+        <v-icon>
+          mdi-plus
+        </v-icon>
+        <v-avatar 
+        size="32"
+        tile
+        >
+          <v-img
+            src="../../assets/embryos.png"
+          />
+        </v-avatar>
+      </v-btn>
+    </v-col>
+
+    <v-col class="d-flex justify-center align-center">
+      <InputHeteroIDs v-model="keepHeteroIDs" />
+    </v-col>
+  </v-row>
 </PedigreeGroup>
 </template>
 
@@ -45,6 +56,7 @@ v-model="config"
   import cloneDeep from 'lodash/cloneDeep';
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardEmbryo from "../PatientCards/PatientCardEmbryo.vue";
+  import InputHeteroIDs from "../Inputs/InputHeteroIDs.vue";
 
   // configEmbryoDefault
   var configEmbryosDefault = {
@@ -62,16 +74,24 @@ v-model="config"
     components:{
       PedigreeGroup,
       PatientCardEmbryo,
+      InputHeteroIDs,
     },
     props:{
-      value: Array,
+      value: Object,
     },
     data: function() {
       return {
-        config: [],
+        embryoList: this.value.embryoList,
+        keepHeteroIDs: this.value.keepHeteroIDs,
       }
     },
     computed:{
+      config: function(){
+        return {
+          embryoList: this.embryoList,
+          keepHeteroIDs: this.keepHeteroIDs,
+        }
+      },
       configWatcher: {
         get: function(){
           return `
@@ -85,16 +105,16 @@ v-model="config"
         this.$emit('input',this.config);
       },
       countEmbryos: function(){
-        return this.config.length;
+        return this.embryoList.length;
       },
       countRows: function(){
         return Math.ceil(this.countEmbryos()/this.colsMax);
       },
       addEmbryo: function(){
-        this.config.push(cloneDeep(configEmbryosDefault));
+        this.embryoList.push(cloneDeep(configEmbryosDefault));
       },
       removeEmbryo: function(j){
-        this.config = this.config.filter((_, index) => index != j);
+        this.embryoList = this.embryoList.filter((_, index) => index != j);
       },
     },
     mounted: function(){

@@ -52,7 +52,10 @@
           configGrandParentsPaternal: {"paternalGrandfather": null, "paternalGrandmother": null},
           configParents: {"father": null, "mother": null},
           configSiblings: [],
-          configEmbryos: [],
+          configEmbryos: {
+            embryoList: [],
+            keepHeteroIDs: true,
+          },
         },
         configParameters: {
           fileVCF:"/path/to/file.vcf",

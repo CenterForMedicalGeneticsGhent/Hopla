@@ -3,7 +3,7 @@
     dense
     class="ma-0 pa-0"
     v-model="keepHeteroIDs"
-    label="Heterogenous ID"
+    label="Keep Heterogenous IDs"
     @click="handleInput()"
     />
 </template>
