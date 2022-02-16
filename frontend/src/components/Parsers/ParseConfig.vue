@@ -3,6 +3,7 @@
     <ParseSectionMandatory :config="config" />
     <ParseSectionImportant :config="config" />
     <ParseSectionVariantInclusionFilter1 :config="config" />
+    <ParseSectionVariantInclusionFilter2 :config="config" />
 </div>
 </template>
 
@@ -13,6 +14,7 @@ import Vue from "vue";
 import ParseSectionMandatory from "../Parsers/ParseSectionMandatory.vue";
 import ParseSectionImportant from "../Parsers/ParseSectionImportant.vue";
 import ParseSectionVariantInclusionFilter1 from "../Parsers/ParseSectionVariantInclusionFilter1.vue"
+import ParseSectionVariantInclusionFilter2 from "../Parsers/ParseSectionVariantInclusionFilter2.vue"
 
 export default Vue.extend({    
     props:{
@@ -22,6 +24,7 @@ export default Vue.extend({
         ParseSectionMandatory,
         ParseSectionImportant,
         ParseSectionVariantInclusionFilter1,
+        ParseSectionVariantInclusionFilter2,
     },
     data: function(){
         return {
