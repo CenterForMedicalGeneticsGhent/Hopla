@@ -13,7 +13,10 @@
       Parameters
     </v-tab>
     <v-tab>
-      Config File
+      Advanced
+    </v-tab>
+    <v-tab>
+      Config
     </v-tab>
     
     <v-tab-item>
@@ -21,6 +24,9 @@
     </v-tab-item>
     <v-tab-item>
       <TabParameters v-model="configParameters" />
+    </v-tab-item>
+    <v-tab-item>
+      <TabAdvanced v-model="configAdvanced" />
     </v-tab-item>
     <v-tab-item>
       <TabConfigFile :config="config" />
@@ -34,6 +40,7 @@
   import Vue from 'vue';
   import TabPedigree from "../Tabs/TabPedigree.vue";
   import TabParameters from "../Tabs/TabParameters.vue";
+  import TabAdvanced from "../Tabs/TabAdvanced.vue";
   import TabConfigFile from "../Tabs/TabConfigFile.vue";
 
   export default Vue.extend({
@@ -41,6 +48,7 @@
     components: {
       TabPedigree,
       TabParameters,
+      TabAdvanced,
       TabConfigFile,
     },
     data: function() {
@@ -75,6 +83,9 @@
             }
           }
         },
+        configAdvanced:{
+
+        },
       }
     },
     computed:{
@@ -82,6 +93,7 @@
         return {
           configPedigree: this.configPedigree,
           configParameters: this.configParameters,
+          configAdvanced: this.configAdvanced,
         };
       }
     },
