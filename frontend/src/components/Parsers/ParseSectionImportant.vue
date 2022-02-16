@@ -1,6 +1,6 @@
 <template>
 <span>
-    <ParseSectionMandatoryTitle />
+    <ParseSectionImportantTitle />
 </span>
 </template>
 
@@ -8,14 +8,14 @@
 <script>
 import Vue from "vue";
 
-import ParseSectionMandatoryTitle from "../Parsers/ParseSectionMandatoryTitle.vue";
+import ParseSectionImportantTitle from "./ParseSectionImportantTitle.vue";
 
 export default Vue.extend({    
     props:{
         config: Object,
     },
     components:{
-        ParseSectionMandatoryTitle,
+        ParseSectionImportantTitle,
     },
     data: function(){
         return {

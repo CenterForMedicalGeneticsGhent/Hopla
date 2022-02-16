@@ -19,10 +19,9 @@ export default Vue.extend({
     data: function(){
         return {
             titleContent: [
-                "# -------------------",
-                "# MANDATORY ARGUMENTS",
-                "# -------------------",
-                "# OPGELET, DIT MOET EEN FILE ZIJN, GEEN MAP NAAM"
+                "# ----------------------------",
+                "# IMPORTANT OPTIONAL ARGUMENTS",
+                "# ----------------------------",
             ],
         }
     },
