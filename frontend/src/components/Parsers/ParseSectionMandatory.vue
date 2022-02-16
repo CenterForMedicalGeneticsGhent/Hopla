@@ -1,6 +1,7 @@
 <template>
 <span>
     <ParseSectionMandatoryTitle />
+    <ParseFileVCF :filePath="config.configParameters.fileVCF" />
 </span>
 </template>
 
@@ -9,6 +10,7 @@
 import Vue from "vue";
 
 import ParseSectionMandatoryTitle from "../Parsers/ParseSectionMandatoryTitle.vue";
+import ParseFileVCF from "./ParseFileVCF.vue";
 
 export default Vue.extend({    
     props:{
@@ -16,6 +18,7 @@ export default Vue.extend({
     },
     components:{
         ParseSectionMandatoryTitle,
+        ParseFileVCF,
     },
     data: function(){
         return {
