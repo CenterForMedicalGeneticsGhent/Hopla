@@ -6,7 +6,8 @@
   </v-card-title>
   <v-card-text>
     <InputLimitPmToP v-model="limitPmToP" />
-    
+    <InputValueOfP :disabled="!limitPmToP" v-model="valueOfP" />
+
   </v-card-text>
 </v-card>
 </v-container>
@@ -17,6 +18,7 @@
 import Vue from 'vue';
 
 import InputLimitPmToP from "../Inputs/InputLimitPmToP.vue";
+import InputValueOfP from "../Inputs/InputValueOfP.vue";
 
 export default Vue.extend({
     name: 'InputArgumentsRemainingFeatures',
@@ -25,11 +27,15 @@ export default Vue.extend({
     },
     components:{
       InputLimitPmToP,
+      InputValueOfP,
     },
     data: function(){
         return{
           limitPmToP: this.value.limitPmToP,
           valueOfP: this.value.valueOfP,
+          limitBafToP: this.value.limitBafToP,
+          selfContained: this.value.selfContained,
+          regionsFlankingSize: this.value.regionsFlankingSize,
         }
     },
     computed:{
@@ -37,7 +43,10 @@ export default Vue.extend({
         get: function(){
           return {
             limitPmToP: this.limitPmToP,
-          valueOfP: this.valueOfP,
+            valueOfP: this.valueOfP,
+            limitBafToP: this.limitBafToP,
+            selfContained: this.selfContained,
+            regionsFlankingSize: this.regionsFlankingSize,
           };
         },
       },
