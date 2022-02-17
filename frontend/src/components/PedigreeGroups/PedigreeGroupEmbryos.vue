@@ -60,7 +60,7 @@ v-model="embryoList"
 
   // configEmbryoDefault
   var configEmbryosDefault = {
-    sampleID: "",
+    sampleID: "embryoID",
     gender: "NA",
     keepInformativeIDs: "hide",
     diseaseStatus: "NA",

@@ -42,7 +42,7 @@ v-else
   import cloneDeep from 'lodash/cloneDeep';
   
   var configPaternalGrandfatherDefault = {
-    sampleID: "",
+    sampleID: "paternalGrandfatherID",
     gender: "M",
     keepInformativeIDs: true,
     diseaseStatus: "NA",
