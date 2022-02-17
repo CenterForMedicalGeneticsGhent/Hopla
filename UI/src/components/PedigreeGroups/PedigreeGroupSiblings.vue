@@ -48,7 +48,7 @@ v-model="config"
 
   // configSiblingDefault
   var configSiblingsDefault = {
-    sampleID: "",
+    sampleID: "siblingID",
     gender: "NA",
     keepInformativeIDs: true,
     diseaseStatus: "NA",

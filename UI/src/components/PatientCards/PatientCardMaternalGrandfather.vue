@@ -2,10 +2,10 @@
 <div>
 <v-col 
 class="d-flex justify-center align-center"
-v-if="config['sampleID']=='U2'"
+v-if="config['sampleID']=='U5'"
 >
   <v-btn
-  @click="addMother()"
+  @click="addMaternalGrandfather()"
   >
     <v-icon>
       mdi-plus
@@ -15,7 +15,7 @@ v-if="config['sampleID']=='U2'"
     tile
     >
       <v-img
-        src="../../assets/mother.png"
+        src="../../assets/maternalGrandfather.png"
       />
     </v-avatar>
   </v-btn>
@@ -28,7 +28,7 @@ v-else
   v-model="config"
   :title="title"
   :cardType="cardType"
-  @removeCard="removeMother()"
+  @removeCard="removeMaternalGrandfather()"
   :genderLocked="true"
   />
 </v-col>
@@ -41,18 +41,19 @@ v-else
   import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
   
-  var configMotherDefault = {
-    sampleID: "",
-    gender: "F",
+  var configMaternalGrandfatherDefault = {
+    sampleID: "maternalGrandfatherID",
+    gender: "M",
     keepInformativeIDs: true,
+    keepHeteroIDs: false,
     diseaseStatus: "NA",
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
   };
-  var configMotherAbsentDefault = {
-    sampleID: "U2",
-    gender: "F",
+  var configMaternalGrandfatherAbsentDefault = {
+    sampleID: "U5",
+    gender: "M",
     keepInformativeIDs: "hide",
     diseaseStatus: "NA",
     keepLimitIDHardDP: "hide",
@@ -61,7 +62,7 @@ v-else
   };
 
   export default Vue.extend({
-    name: 'PatientCardMother',
+    name: 'PatientCardMaternalGrandfather',
     components: {
       PatientCardGeneral,
     },
@@ -70,7 +71,7 @@ v-else
     },
     data: function() {
       return {
-        config: cloneDeep(configMotherAbsentDefault),
+        config: cloneDeep(configMaternalGrandfatherAbsentDefault),
       };
     },
     computed: {
@@ -82,21 +83,21 @@ v-else
         }
       },
       title: function(){
-        return `Mother`;
+        return `M. Grandfather`;
       },
       cardType: function(){
-        return "mother";
+        return "maternalGrandfather";
       }
     },
     methods:{
       handleInput: function(){
         this.$emit('input',this.config);
       },
-      addMother:function(){
-        this.config=cloneDeep(configMotherDefault);
+      addMaternalGrandfather:function(){
+        this.config=cloneDeep(configMaternalGrandfatherDefault);
       },
-      removeMother:function(){
-        this.config=cloneDeep(configMotherAbsentDefault);
+      removeMaternalGrandfather:function(){
+        this.config=cloneDeep(configMaternalGrandfatherAbsentDefault);
       },
     },
     mounted: function(){
