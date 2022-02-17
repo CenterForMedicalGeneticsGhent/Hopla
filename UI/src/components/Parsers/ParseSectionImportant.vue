@@ -3,6 +3,7 @@
     <ParseSectionImportantTitle />
     <ParseFatherIDs :configPedigree="config.configPedigree" />
     <ParseMotherIDs :configPedigree="config.configPedigree" />
+    <ParseGenders :configPedigree="config.configPedigree" />
 </span>
 </template>
 
@@ -13,6 +14,7 @@ import Vue from "vue";
 import ParseSectionImportantTitle from "./ParseSectionImportantTitle.vue";
 import ParseFatherIDs from "../Parsers/ParseFatherIDs.vue";
 import ParseMotherIDs from "../Parsers/ParseMotherIDs.vue";
+import ParseGenders from "../Parsers/ParseGenders.vue";
 
 export default Vue.extend({    
     props:{
@@ -22,6 +24,7 @@ export default Vue.extend({
         ParseSectionImportantTitle,
         ParseFatherIDs,
         ParseMotherIDs,
+        ParseGenders,
     },
     data: function(){
         return {
