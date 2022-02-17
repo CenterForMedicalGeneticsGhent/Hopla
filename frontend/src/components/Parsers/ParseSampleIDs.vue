@@ -48,20 +48,43 @@ export default Vue.extend({
             return "";
         },
         father: function(){
+            var fatherID = this.configPedigree.configParents.father.sampleID;
+            if (this.paternalGrandmother || this.paternalGrandfather || fatherID!='U1'){
+                return `${fatherID},`;
+            }
             return "";
         },
         mother: function(){
+            var motherID = this.configPedigree.configParents.mother.sampleID;
+            if (this.maternalGrandmother || this.maternalGrandfather || motherID!='U2'){
+                return `${motherID},`;
+            }
             return "";
         },
         siblings: function(){
-            return "";
+            var siblingIDs = this.configPedigree.configSiblings.map(function(d){return d.sampleID});
+            var siblingsString = "";
+            for (let i=0; i<siblingIDs.length;i++){
+                siblingsString+=`${siblingIDs[i]},`
+            }
+            return siblingsString;
         },
         embryos: function(){
-            return "";
+            var embryoIDs = this.configPedigree.configEmbryos.embryoList.map(function(d){return d.sampleID});
+            var embryoString="";
+            for (let i=0; i<embryoIDs.length; i++){
+                embryoString+=`${embryoIDs[i]},`;
+            }
+            return embryoString;
         },
         content: function(){
-            return `${this.paternalGrandfather}${this.paternalGrandmother}${this.maternalGrandfather}${this.maternalGrandmother}${this.siblings}${this.embryos}
-            `;
+            var content=`${this.paternalGrandfather}${this.paternalGrandmother}${this.maternalGrandfather}${this.maternalGrandmother}${this.father}${this.mother}${this.siblings}${this.embryos}`;
+            if (content){
+                return content.slice(0,-1);
+            }
+            else {
+                return "";
+            }
         }
     },
     methods:{
