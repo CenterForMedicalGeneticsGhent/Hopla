@@ -2,25 +2,22 @@
     <v-checkbox
     dense
     class="ma-0 pa-0"
-    v-model="keepInformativeIDs"
-    label="Informative ID"
+    v-model="limitPmToP"
+    label="Limit PM to P"
     @click="handleInput()"
     />
 </template>
 
 
-<script lang='typescript'>
-import Vue from 'vue';
+<script>
 
-
-export default Vue.extend({
-    name:"InputInformativeIDs",
+export default {
     props:{
         value: Boolean,
     },
-    data: function() {
+    data: function(){
         let d  = {
-            keepInformativeIDs: this.value,
+            limitPmToP: this.value,
         };
         return d;
     },
@@ -28,11 +25,11 @@ export default Vue.extend({
     },
     methods:{
       handleInput: function(){
-        this.$emit('input',this.keepInformativeIDs);
+        this.$emit('input',this.limitPmToP);
       },
     },
     mounted: function(){
         //CODE
     }
-})
+}
 </script>

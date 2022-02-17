@@ -2,10 +2,10 @@
 <div>
 <v-col 
 class="d-flex justify-center align-center"
-v-if="config['sampleID']=='U1'"
+v-if="config['sampleID']=='U5'"
 >
   <v-btn
-  @click="addFather()"
+  @click="addMaternalGrandfather()"
   >
     <v-icon>
       mdi-plus
@@ -15,7 +15,7 @@ v-if="config['sampleID']=='U1'"
     tile
     >
       <v-img
-        src="../../assets/father.png"
+        src="../../assets/maternalGrandfather.png"
       />
     </v-avatar>
   </v-btn>
@@ -28,7 +28,7 @@ v-else
   v-model="config"
   :title="title"
   :cardType="cardType"
-  @removeCard="removeFather()"
+  @removeCard="removeMaternalGrandfather()"
   :genderLocked="true"
   />
 </v-col>
@@ -41,7 +41,7 @@ v-else
   import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
   
-  var configFatherDefault = {
+  var configMaternalGrandfatherDefault = {
     sampleID: "",
     gender: "M",
     keepInformativeIDs: true,
@@ -51,8 +51,8 @@ v-else
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
   };
-  var configFatherAbsentDefault = {
-    sampleID: "U1",
+  var configMaternalGrandfatherAbsentDefault = {
+    sampleID: "U5",
     gender: "M",
     keepInformativeIDs: "hide",
     diseaseStatus: "NA",
@@ -62,7 +62,7 @@ v-else
   };
 
   export default Vue.extend({
-    name: 'PatientCardFather',
+    name: 'PatientCardMaternalGrandfather',
     components: {
       PatientCardGeneral,
     },
@@ -71,7 +71,7 @@ v-else
     },
     data: function() {
       return {
-        config: cloneDeep(configFatherAbsentDefault),
+        config: cloneDeep(configMaternalGrandfatherAbsentDefault),
       };
     },
     computed: {
@@ -83,21 +83,21 @@ v-else
         }
       },
       title: function(){
-        return `Father`;
+        return `M. Grandfather`;
       },
       cardType: function(){
-        return "father";
+        return "maternalGrandfather";
       }
     },
     methods:{
       handleInput: function(){
         this.$emit('input',this.config);
       },
-      addFather:function(){
-        this.config=cloneDeep(configFatherDefault);
+      addMaternalGrandfather:function(){
+        this.config=cloneDeep(configMaternalGrandfatherDefault);
       },
-      removeFather:function(){
-        this.config=cloneDeep(configFatherAbsentDefault);
+      removeMaternalGrandfather:function(){
+        this.config=cloneDeep(configMaternalGrandfatherAbsentDefault);
       },
     },
     mounted: function(){

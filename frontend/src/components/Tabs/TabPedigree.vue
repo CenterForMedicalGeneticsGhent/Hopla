@@ -1,6 +1,21 @@
 <template>
 <v-container>
-  <v-row>
+  <v-row
+  align="center"
+  justify="center"
+  class="pb-0 pt-0"
+  >
+    <v-col class="justify-center align-center">
+    </v-col>
+    <v-col class="justify-center align-center">
+      <InputFamilyID v-model="famID"/>
+    </v-col>
+    <v-col class="justify-center align-center">
+    </v-col>
+  </v-row>
+  <v-row
+  class="pb-0 pt-0"
+  >
     <v-col class="d-flex justify-center align-center">
       <PedigreeGroupGrandparentsPaternal v-model="configGrandParentsPaternal"/>
     </v-col>
@@ -27,11 +42,13 @@
       <PedigreeGroupEmbryos v-model="configEmbryos"/>
     </v-col>
   </v-row>
+  {{ config }}
 </v-container>
 </template>
 
 <script>
   import Vue from 'vue'
+  import InputFamilyID from "../Inputs/InputFamilyID.vue";
   import PedigreeGroupGrandparentsPaternal from "../PedigreeGroups/PedigreeGroupGrandparentsPaternal.vue";
   import PedigreeGroupGrandparentsMaternal from "../PedigreeGroups/PedigreeGroupGrandparentsMaternal.vue";
   import PedigreeGroupParents from "../PedigreeGroups/PedigreeGroupParents.vue";
@@ -40,8 +57,9 @@
 
 
   export default Vue.extend({
-    name: 'Pedigree',
+    name: 'TabPedigree',
     components:{
+      InputFamilyID,
       PedigreeGroupGrandparentsPaternal,
       PedigreeGroupGrandparentsMaternal,
       PedigreeGroupParents,
@@ -53,6 +71,7 @@
     },
     data: function() {
       return {
+        famID: this.value.famID,
         configGrandParentsMaternal: this.value.configGrandParentsMaternal,
         configGrandParentsPaternal: this.value.configGrandParentsPaternal,
         configParents: this.value.configParents,
@@ -63,6 +82,7 @@
     computed:{
       config: function(){
         return {
+          famID: this.famID,
           configGrandParentsMaternal: this.configGrandParentsMaternal,
           configGrandParentsPaternal: this.configGrandParentsPaternal,
           configParents: this.configParents,
