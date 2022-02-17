@@ -1,6 +1,6 @@
 <template>
 <span>
-    father.ids={{content}}<br>
+    mother.ids={{content}}<br>
 </span>
 </template>
 
@@ -51,9 +51,9 @@ export default Vue.extend({
             var paternalGrandfatherID = this.configPedigree.configGrandParentsPaternal.paternalGrandfather.sampleID;
             var paternalGrandmotherID = this.configPedigree.configGrandParentsPaternal.paternalGrandmother.sampleID;
             var fatherID = this.configPedigree.configParents.father.sampleID;
-            if (paternalGrandfatherID!='U3'){
-                // If there is paternal grandfather, show its ID
-                return `${paternalGrandfatherID},`;
+            if (paternalGrandmotherID!='U4'){
+                // If there is paternal grandmother, show her ID
+                return `${paternalGrandmotherID},`;
             }
             else if (fatherID=="U1" && paternalGrandfatherID=='U3' && paternalGrandmotherID=='U4'){
                 // If father and paternal grandparents are absent, show noting 
@@ -65,9 +65,9 @@ export default Vue.extend({
             var maternalGrandfatherID = this.configPedigree.configGrandParentsMaternal.maternalGrandfather.sampleID;
             var maternalGrandmotherID = this.configPedigree.configGrandParentsMaternal.maternalGrandmother.sampleID;
             var motherID = this.configPedigree.configParents.mother.sampleID;
-            if (maternalGrandfatherID!='U5'){
-                // If there is maternal grandfather, show its ID
-                return `${maternalGrandfatherID},`;
+            if (maternalGrandmotherID!='U6'){
+                // If there is maternal grandmother, show her ID
+                return `${maternalGrandmotherID},`;
             }
             else if (motherID=="U2" && maternalGrandfatherID=='U5' && maternalGrandmotherID=='U6'){
                 // If mother and maternal grandparents are absent, show noting 
@@ -77,44 +77,44 @@ export default Vue.extend({
         },
         siblings: function(){
             var siblingIDs = this.configPedigree.configSiblings.map(function(d){return d.sampleID});
-            var paternalGrandfatherID = this.configPedigree.configGrandParentsPaternal.paternalGrandfather.sampleID;
-            var paternalGrandmotherID = this.configPedigree.configGrandParentsPaternal.paternalGrandmother.sampleID;
-            var fatherID = this.configPedigree.configParents.father.sampleID;
-            var siblingsString = "";
-            if (fatherID=="U1" && paternalGrandfatherID=='U3' && paternalGrandmotherID=='U4'){
-                // If father and paternal grandparents are absent, show NA for each child
+            var maternalGrandfatherID = this.configPedigree.configGrandParentsMaternal.maternalGrandfather.sampleID;
+            var maternalGrandmotherID = this.configPedigree.configGrandParentsMaternal.maternalGrandmother.sampleID;
+            var motherID = this.configPedigree.configParents.mother.sampleID;
+            var result = "";  
+            if (motherID=="U2" && maternalGrandfatherID=='U5' && maternalGrandmotherID=='U6'){
+                // If mother and maternal grandparents are absent, show NA for each sibling
                 for (let i=0; i<siblingIDs.length;i++){
-                    siblingsString+=`NA,`;
-                }
-            }
-            else {
-                // show ID of father for each child
-                for (let i=0; i<siblingIDs.length;i++){
-                    siblingsString+=`${fatherID},`;
-                }
-            }
-            return siblingsString;
-        },
-        embryos: function(){
-            var embryoIDs = this.configPedigree.configEmbryos.embryoList.map(function(d){return d.sampleID});
-            var paternalGrandfatherID = this.configPedigree.configGrandParentsPaternal.paternalGrandfather.sampleID;
-            var paternalGrandmotherID = this.configPedigree.configGrandParentsPaternal.paternalGrandmother.sampleID;
-            var fatherID = this.configPedigree.configParents.father.sampleID;
-            var result = "";
-            if (fatherID=="U1" && paternalGrandfatherID=='U3' && paternalGrandmotherID=='U4'){
-                // If father and paternal grandparents are absent, show NA for each embryo
-                for (let i=0; i<embryoIDs.length;i++){
                     result+=`NA,`;
                 }
-                return result;
             }
             else {
                 // show ID of father for each embryo
-                for (let i=0; i<embryoIDs.length;i++){
-                    result+=`${fatherID},`;
+                for (let i=0; i<siblingIDs.length;i++){
+                    result+=`${motherID},`;
                 }
-                return result;
             }
+            return result;
+        },
+        embryos: function(){
+            var embryoIDs = this.configPedigree.configEmbryos.embryoList.map(function(d){return d.sampleID});
+            var maternalGrandfatherID = this.configPedigree.configGrandParentsMaternal.maternalGrandfather.sampleID;
+            var maternalGrandmotherID = this.configPedigree.configGrandParentsMaternal.maternalGrandmother.sampleID;
+            var motherID = this.configPedigree.configParents.mother.sampleID;
+            var result = "";
+            if (motherID=="U2" && maternalGrandfatherID=='U5' && maternalGrandmotherID=='U6'){
+                // If mother and maternal grandparents are absent, show NA for each embryo
+                for (let i=0; i<embryoIDs.length;i++){
+                    result+=`NA,`;
+                }
+            }
+            else {
+                // show ID of motherr for each embryo
+                for (let i=0; i<embryoIDs.length;i++){
+                    result+=`${motherID},`;
+                }
+            }
+            return result;
+
         },
         content: function(){
             var content=`${this.paternalGrandfather}${this.paternalGrandmother}${this.maternalGrandfather}${this.maternalGrandmother}${this.father}${this.mother}${this.siblings}${this.embryos}`;
