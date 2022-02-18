@@ -4,6 +4,7 @@
     <ParseFatherIDs :configPedigree="config.configPedigree" />
     <ParseMotherIDs :configPedigree="config.configPedigree" />
     <ParseGenders :configPedigree="config.configPedigree" />
+    <ParseFileCytoband :filePath="config.configParameters.fileCytoband" />
 </span>
 </template>
 
@@ -15,6 +16,7 @@ import ParseSectionImportantTitle from "./ParseSectionImportantTitle.vue";
 import ParseFatherIDs from "../Parsers/ParseFatherIDs.vue";
 import ParseMotherIDs from "../Parsers/ParseMotherIDs.vue";
 import ParseGenders from "../Parsers/ParseGenders.vue";
+import ParseFileCytoband from "../Parsers/ParseFileCytoband.vue";
 
 export default Vue.extend({    
     props:{
@@ -25,6 +27,7 @@ export default Vue.extend({
         ParseFatherIDs,
         ParseMotherIDs,
         ParseGenders,
+        ParseFileCytoband,
     },
     data: function(){
         return {
