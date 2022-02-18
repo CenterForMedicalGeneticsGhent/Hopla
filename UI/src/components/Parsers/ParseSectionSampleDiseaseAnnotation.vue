@@ -9,6 +9,7 @@
     start.info<br>
     <ParseDisease :disease="config.configParameters.sampleDisease.disease" />
     <ParseInheritance :inheritance="config.configParameters.sampleDisease.inheritance" />
+    <ParseSequencingNote :sequencingNote="config.configParameters.sampleDisease.sequencingNote" />
     end.info<br>
 </span>
 </template>
@@ -25,6 +26,7 @@ import ParseAffectedIDs from "../Parsers/ParseAffectedIDs.vue";
 import ParseNonAffectedIDs from "../Parsers/ParseNonAffectedIDs.vue";
 import ParseDisease from "../Parsers/ParseDisease.vue";
 import ParseInheritance from "../Parsers/ParseInheritance.vue";
+import ParseSequencingNote from "../Parsers/ParseSequencingNote.vue";
 
 export default Vue.extend({    
     props:{
@@ -39,6 +41,7 @@ export default Vue.extend({
         ParseNonAffectedIDs,
         ParseDisease,
         ParseInheritance,
+        ParseSequencingNote,
     },
     data: function(){
         return {
