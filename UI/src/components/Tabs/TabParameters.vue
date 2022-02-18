@@ -35,7 +35,6 @@
     </v-col>
   
   </v-row>
-  {{ config }}
 </v-container>
 </template>
 
