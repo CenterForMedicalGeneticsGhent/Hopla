@@ -5,6 +5,9 @@
     <ParseReferenceIDs />
     <ParseCarrierIDs :configPedigree="config.configPedigree" />
     <ParseAffectedIDs :configPedigree="config.configPedigree" />
+    <ParseNonAffectedIDs :configPedigree="config.configPedigree" />
+    start.info<br>
+    end.info<br>
 </span>
 </template>
 
@@ -17,6 +20,7 @@ import ParseRegions from "../Parsers/ParseRegions.vue";
 import ParseReferenceIDs from "../Parsers/ParseReferenceIDs.vue";
 import ParseCarrierIDs from "../Parsers/ParseCarrierIDs.vue";
 import ParseAffectedIDs from "../Parsers/ParseAffectedIDs.vue";
+import ParseNonAffectedIDs from "../Parsers/ParseNonAffectedIDs.vue";
 
 export default Vue.extend({    
     props:{
@@ -28,6 +32,7 @@ export default Vue.extend({
         ParseReferenceIDs,
         ParseCarrierIDs,
         ParseAffectedIDs,
+        ParseNonAffectedIDs,
     },
     data: function(){
         return {
