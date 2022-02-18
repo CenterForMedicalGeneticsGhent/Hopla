@@ -6,11 +6,9 @@
     <ParseCarrierIDs :configPedigree="config.configPedigree" />
     <ParseAffectedIDs :configPedigree="config.configPedigree" />
     <ParseNonAffectedIDs :configPedigree="config.configPedigree" />
+    start.info<br>
     <ParseDisease :disease="config.configParameters.sampleDisease.disease" />
     <ParseInheritance :inheritance="config.configParameters.sampleDisease.inheritance" />
-
-    start.info<br>
-
     end.info<br>
 </span>
 </template>
