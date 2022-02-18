@@ -10,7 +10,7 @@ import Vue from "vue";
 
 export default Vue.extend({    
     props:{
-        windowSizeVoting: String,
+        windowSizeVoting: Number,
     },
     components: {
     },
