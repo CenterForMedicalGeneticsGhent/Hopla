@@ -6,6 +6,7 @@
     <ParseLimitPmToP :limitPmToP="config.configAdvanced.remainingFeatures.limitPmToP" />
     <ParseValueOfP :valueOfP="config.configAdvanced.remainingFeatures.valueOfP" />
     <ParseSelfContained :selfContained="config.configAdvanced.remainingFeatures.selfContained" />
+    <ParseRegionsFlankingSize :RegionsFlankingSize="config.configAdvanced.remainingFeatures.regionsFlankingSize" />
 </span>
 </template>
 
@@ -19,6 +20,7 @@ import ParseLimitBafToP from "./ParseLimitPmToP.vue";
 import ParseLimitPmToP from "../Parsers/ParseLimitPmToP.vue";
 import ParseValueOfP from "../Parsers/ParseValueOfP.vue";
 import ParseSelfContained from "../Parsers/ParseSelfContained.vue";
+import ParseRegionsFlankingSize from "../Parsers/ParseRegionsFlankingSize.vue";
 
 export default Vue.extend({    
     props:{
@@ -31,6 +33,7 @@ export default Vue.extend({
         ParseLimitPmToP,
         ParseValueOfP,
         ParseSelfContained,
+        ParseRegionsFlankingSize,
     },
     data: function(){
         return {
