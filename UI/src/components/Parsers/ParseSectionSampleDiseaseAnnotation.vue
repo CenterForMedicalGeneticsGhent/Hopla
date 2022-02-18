@@ -4,6 +4,7 @@
     <ParseRegions :regions="config.configParameters.sampleDisease.regions" />
     <ParseReferenceIDs />
     <ParseCarrierIDs :configPedigree="config.configPedigree" />
+    <ParseAffectedIDs :configPedigree="config.configPedigree" />
 </span>
 </template>
 
@@ -14,7 +15,8 @@ import Vue from "vue";
 import ParseSectionSampleDiseaseAnnotationTitle from "../Parsers/ParseSectionSampleDiseaseAnnotationTitle.vue";
 import ParseRegions from "../Parsers/ParseRegions.vue";
 import ParseReferenceIDs from "../Parsers/ParseReferenceIDs.vue";
-import ParseCarrierIDs from "../Parsers/ParseCarrierIDs.vue"
+import ParseCarrierIDs from "../Parsers/ParseCarrierIDs.vue";
+import ParseAffectedIDs from "../Parsers/ParseAffectedIDs.vue";
 
 export default Vue.extend({    
     props:{
@@ -25,6 +27,7 @@ export default Vue.extend({
         ParseRegions,
         ParseReferenceIDs,
         ParseCarrierIDs,
+        ParseAffectedIDs,
     },
     data: function(){
         return {
