@@ -26,7 +26,7 @@ export default Vue.extend({
                     return `${paternalGrandfather.sampleID},`;
                 }
                 else {
-                    return `NA,`;
+                    return ``;
                 }
             }
             return "";
@@ -38,7 +38,7 @@ export default Vue.extend({
                     return `${paternalGrandmother.sampleID},`;
                 }
                 else {
-                    return `NA,`;
+                    return ``;
                 }
             }
             return "";
@@ -50,7 +50,7 @@ export default Vue.extend({
                     return `${maternalGrandfather.sampleID},`;
                 }
                 else {
-                    return `NA,`;
+                    return ``;
                 }
             }
             return "";
@@ -62,7 +62,7 @@ export default Vue.extend({
                     return `${maternalGrandmother.sampleID},`;
                 }
                 else {
-                    return `NA,`;
+                    return ``;
                 }
             }
             return "";
@@ -76,7 +76,7 @@ export default Vue.extend({
                     return `${father.sampleID},`;
                 }
                 else {
-                    return `NA,`;
+                    return ``;
                 }
             }
             return "";
@@ -90,7 +90,7 @@ export default Vue.extend({
                     return `${mother.sampleID},`;
                 }
                 else {
-                    return `NA,`;
+                    return ``;
                 }
             }
             return "";
