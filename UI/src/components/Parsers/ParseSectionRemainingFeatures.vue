@@ -5,6 +5,7 @@
     <ParseLimitBafToP :limitBafToP="config.configAdvanced.remainingFeatures.limitBafToP" />
     <ParseLimitPmToP :limitPmToP="config.configAdvanced.remainingFeatures.limitPmToP" />
     <ParseValueOfP :valueOfP="config.configAdvanced.remainingFeatures.valueOfP" />
+    <ParseSelfContained :selfContained="config.configAdvanced.remainingFeatures.selfContained" />
 </span>
 </template>
 
@@ -17,6 +18,7 @@ import ParseFamilyID from "../Parsers/ParseFamilyID.vue";
 import ParseLimitBafToP from "./ParseLimitPmToP.vue";
 import ParseLimitPmToP from "../Parsers/ParseLimitPmToP.vue";
 import ParseValueOfP from "../Parsers/ParseValueOfP.vue";
+import ParseSelfContained from "../Parsers/ParseSelfContained.vue";
 
 export default Vue.extend({    
     props:{
@@ -28,6 +30,7 @@ export default Vue.extend({
         ParseLimitBafToP,
         ParseLimitPmToP,
         ParseValueOfP,
+        ParseSelfContained,
     },
     data: function(){
         return {
