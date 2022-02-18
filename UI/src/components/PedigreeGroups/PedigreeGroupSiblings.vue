@@ -12,7 +12,7 @@ v-model="config"
     :key="col"
     >
       <PatientCardSibling
-      :key="JSON.stringify(config[col-1])"
+      :key="col+counter"
       v-if="col<=countSiblings()" 
       v-model="config[col-1]"
       :i="col-1"
@@ -69,6 +69,7 @@ v-model="config"
     data: function() {
       return {
         config: this.value,
+        counter: 0,
       }
     },
     computed:{
@@ -92,6 +93,7 @@ v-model="config"
       },
       removeSibling: function(j){
         this.config = this.config.filter((_, index) => index != j);
+        this.counter++;
       },
     },
     mounted: function(){

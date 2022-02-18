@@ -12,7 +12,7 @@ v-model="embryoList"
     :key="col"
     >
       <PatientCardEmbryo
-      :key="JSON.stringify(embryoList[col-1])"
+      :key="col+counter"
       v-if="col<=countEmbryos()" 
       v-model="embryoList[col-1]"
       :i="col-1"
@@ -83,6 +83,7 @@ v-model="embryoList"
       return {
         embryoList: this.value.embryoList,
         keepHeteroIDs: this.value.keepHeteroIDs,
+        counter:0,
       }
     },
     computed:{
@@ -115,6 +116,7 @@ v-model="embryoList"
       },
       removeEmbryo: function(j){
         this.embryoList = this.embryoList.filter((_, index) => index != j);
+        this.counter++;
       },
     },
     mounted: function(){
