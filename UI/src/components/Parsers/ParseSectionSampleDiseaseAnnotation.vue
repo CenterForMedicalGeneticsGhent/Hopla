@@ -1,6 +1,7 @@
 <template>
 <span>
     <ParseSectionSampleDiseaseAnnotationTitle />
+    <ParseRegions :regions="config.configParameters.sampleDisease.regions" />
 </span>
 </template>
 
@@ -8,7 +9,8 @@
 <script>
 import Vue from "vue";
 
-import ParseSectionSampleDiseaseAnnotationTitle from "../Parsers/ParseSectionSampleDiseaseAnnotationTitle.vue"
+import ParseSectionSampleDiseaseAnnotationTitle from "../Parsers/ParseSectionSampleDiseaseAnnotationTitle.vue";
+import ParseRegions from "../Parsers/ParseRegions.vue";
 
 export default Vue.extend({    
     props:{
@@ -16,6 +18,7 @@ export default Vue.extend({
     },
     components:{
         ParseSectionSampleDiseaseAnnotationTitle,
+        ParseRegions,
     },
     data: function(){
         return {
