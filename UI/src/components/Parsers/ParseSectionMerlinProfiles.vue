@@ -1,6 +1,7 @@
 <template>
 <span>
     <ParseSectionMerlinProfilesTitle />
+    <ParseDWindowSizeVoting :windowSizeVoting="config.configParameters.merlinProfiles.windowSizeVoting" />
 </span>
 </template>
 
@@ -9,6 +10,7 @@
 import Vue from "vue";
 
 import ParseSectionMerlinProfilesTitle from "../Parsers/ParseSectionMerlinProfilesTitle.vue"
+import ParseDWindowSizeVoting from "../Parsers/ParseDWindowSizeVoting.vue";
 
 export default Vue.extend({    
     props:{
@@ -16,6 +18,7 @@ export default Vue.extend({
     },
     components:{
         ParseSectionMerlinProfilesTitle,
+        ParseDWindowSizeVoting,
     },
     data: function(){
         return {
