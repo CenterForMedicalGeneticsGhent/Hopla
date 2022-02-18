@@ -7,6 +7,8 @@
     <ParseAffectedIDs :configPedigree="config.configPedigree" />
     <ParseNonAffectedIDs :configPedigree="config.configPedigree" />
     <ParseDisease :disease="config.configParameters.sampleDisease.disease" />
+    <ParseInheritance :inheritance="config.configParameters.sampleDisease.inheritance" />
+
     start.info<br>
 
     end.info<br>
@@ -24,6 +26,7 @@ import ParseCarrierIDs from "../Parsers/ParseCarrierIDs.vue";
 import ParseAffectedIDs from "../Parsers/ParseAffectedIDs.vue";
 import ParseNonAffectedIDs from "../Parsers/ParseNonAffectedIDs.vue";
 import ParseDisease from "../Parsers/ParseDisease.vue";
+import ParseInheritance from "../Parsers/ParseInheritance.vue";
 
 export default Vue.extend({    
     props:{
@@ -37,6 +40,7 @@ export default Vue.extend({
         ParseAffectedIDs,
         ParseNonAffectedIDs,
         ParseDisease,
+        ParseInheritance,
     },
     data: function(){
         return {
