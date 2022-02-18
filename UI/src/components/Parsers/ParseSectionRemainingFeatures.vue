@@ -3,6 +3,7 @@
     <ParseSectionRemainingFeaturesTitle />
     <ParseFamilyID :familyID="config.configPedigree.famID" />
     <ParseLimitBafToP :limitBafToP="config.configAdvanced.remainingFeatures.limitBafToP" />
+    <ParseLimitPmToP :limitPmToP="config.configAdvanced.remainingFeatures.limitPmToP" />
 </span>
 </template>
 
@@ -12,7 +13,8 @@ import Vue from "vue";
 
 import ParseSectionRemainingFeaturesTitle from "../Parsers/ParseSectionRemainingFeaturesTitle.vue";
 import ParseFamilyID from "../Parsers/ParseFamilyID.vue";
-import ParseLimitBafToP from "../Parsers/ParseLimitBafToP.vue";
+import ParseLimitBafToP from "./ParseLimitPmToP.vue";
+import ParseLimitPmToP from "../Parsers/ParseLimitPmToP.vue";
 
 export default Vue.extend({    
     props:{
@@ -22,6 +24,7 @@ export default Vue.extend({
         ParseSectionRemainingFeaturesTitle,
         ParseFamilyID,
         ParseLimitBafToP,
+        ParseLimitPmToP,
     },
     data: function(){
         return {
