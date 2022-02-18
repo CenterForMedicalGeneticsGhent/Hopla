@@ -2,6 +2,8 @@
 <span>
     <ParseSectionMerlinProfilesTitle />
     <ParseDWindowSizeVoting :windowSizeVoting="config.configParameters.merlinProfiles.windowSizeVoting" />
+    <ParseKeepChromosomesOnly :keepChromosomesOnly="config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepChromosomesOnly" />
+
 </span>
 </template>
 
@@ -11,6 +13,7 @@ import Vue from "vue";
 
 import ParseSectionMerlinProfilesTitle from "../Parsers/ParseSectionMerlinProfilesTitle.vue"
 import ParseDWindowSizeVoting from "../Parsers/ParseDWindowSizeVoting.vue";
+import ParseKeepChromosomesOnly from "../Parsers/ParseKeepChromosomesOnly.vue";
 
 export default Vue.extend({    
     props:{
@@ -19,6 +22,7 @@ export default Vue.extend({
     components:{
         ParseSectionMerlinProfilesTitle,
         ParseDWindowSizeVoting,
+        ParseKeepChromosomesOnly,
     },
     data: function(){
         return {

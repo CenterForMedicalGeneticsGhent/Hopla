@@ -1,6 +1,6 @@
 <template>
 <span>
-    window.size.voting={{content}}<br>
+    keep.chromosomes.only={{content}}<br>
 </span>
 </template>
 
@@ -10,7 +10,7 @@ import Vue from "vue";
 
 export default Vue.extend({    
     props:{
-        windowSizeVoting: String,
+        keepChromosomesOnly: Boolean,
     },
     components: {
     },
@@ -20,7 +20,12 @@ export default Vue.extend({
     },
     computed:{
         content: function(){
-            return `${this.windowSizeVoting}`;
+            if (this.keepChromosomesOnly===true){
+                return 'T';
+            }
+            else {
+                return 'F';
+            }
         }
     },
     methods:{
