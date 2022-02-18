@@ -8,8 +8,6 @@
     <ParseSectionBAlleleFrequencyProfiles :config="config" />
     <ParseSectionMerlinProfiles :config="config" />
     <ParseSectionRemainingFeatures :config="config" />
-    <br><br><br>
-    {{config}}
 </div>
 </template>
 

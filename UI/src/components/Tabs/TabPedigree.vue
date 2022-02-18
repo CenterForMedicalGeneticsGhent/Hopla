@@ -42,7 +42,6 @@
       <PedigreeGroupEmbryos v-model="configEmbryos"/>
     </v-col>
   </v-row>
-  {{ config }}
 </v-container>
 </template>
 

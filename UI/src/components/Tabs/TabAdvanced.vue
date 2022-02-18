@@ -12,7 +12,6 @@
     <v-col class="d-flex justify-center align-center">
     </v-col>
   </v-row>
-  {{ config }}
 </v-container>
 </template>
 
