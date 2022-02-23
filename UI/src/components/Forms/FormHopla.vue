@@ -62,7 +62,7 @@
           configSiblings: [],
           configEmbryos: {
             embryoList: [],
-            keepHeteroIDs: true,
+            keepHeteroIDs: false,
           },
         },
         configParameters: {
