@@ -13,4 +13,4 @@ EXPOSE 8080
 
 
 # docker run hopla
-CMD ./docker-run.sh
+CMD /home/node/Hopla/UI/docker-run.sh
