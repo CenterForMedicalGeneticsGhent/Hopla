@@ -4,7 +4,7 @@ LABEL maintainer="jan.vandenschilden@gmail.com"
 
 # Download Github repository 
 WORKDIR /home/node
-RUN git clone https://github.com/janvandenschilden/Hopla.git
+RUN git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla.git
 
 # Switch to node user, go inside Hopla/UI dir and install packages
 WORKDIR /home/node/Hopla/UI
