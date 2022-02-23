@@ -4,7 +4,7 @@ LABEL maintainer="jan.vandenschilden@gmail.com"
 
 # Download Github repository 
 WORKDIR /home/node
-RUN git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla.git
+ADD ./ /home/node/Hopla/
 
 # Switch to node user, go inside Hopla/UI dir and install packages
 WORKDIR /home/node/Hopla/UI
@@ -13,4 +13,4 @@ EXPOSE 8080
 
 
 # docker run hopla
-CMD ["bash", "docker-run.sh"]
+CMD ["yarn", "serve"]
