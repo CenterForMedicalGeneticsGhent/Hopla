@@ -50,7 +50,7 @@ v-model="config"
   var configSiblingsDefault = {
     sampleID: "",
     gender: "NA",
-    keepInformativeIDs: true,
+    keepInformativeIDs: "hide",
     diseaseStatus: "NA",
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
