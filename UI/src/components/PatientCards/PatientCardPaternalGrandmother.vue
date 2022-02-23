@@ -44,7 +44,7 @@ v-else
   var configPaternalGrandmotherDefault = {
     sampleID: "",
     gender: "F",
-    keepInformativeIDs: true,
+    keepInformativeIDs: false,
     diseaseStatus: "NA",
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
