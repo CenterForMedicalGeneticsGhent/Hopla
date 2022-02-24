@@ -22,7 +22,6 @@ export default Vue.extend({
                 "# -------------------",
                 "# MANDATORY ARGUMENTS",
                 "# -------------------",
-                "# OPGELET, DIT MOET EEN FILE ZIJN, GEEN MAP NAAM"
             ],
         }
     },

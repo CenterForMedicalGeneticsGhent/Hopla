@@ -9,6 +9,7 @@
     >
       <v-img
         :src="imgPath"
+        :title="imgLicense"
       />
     </v-avatar>
     <v-spacer />
@@ -31,6 +32,7 @@
       title: String,
       imgType: String,
       width:String,
+      imgLicense: String,
     },
     data: function() {
       return {

@@ -2,7 +2,7 @@
 <v-container>
     <v-text-field
     class="ma-0 pa-0"
-    label="Cytband file absolute path"
+    label="Cytoband file absolute path"
     dense
     outlined
     v-model="fileCytoband"

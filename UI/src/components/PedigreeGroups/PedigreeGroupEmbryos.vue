@@ -3,6 +3,7 @@
 width="100%"
 imgType='embryos'
 title="Embryos"
+imgLicense="Designed by Culmbio from Flaticon"
 v-model="embryoList"
 >
   <v-row>

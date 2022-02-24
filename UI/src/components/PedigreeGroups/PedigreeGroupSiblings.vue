@@ -4,6 +4,7 @@ width="100%"
 imgType='siblings'
 title="Siblings"
 v-model="config"
+imgLicense="Designed by FreePlk from Flaticon"
 >
   <v-row>
     <v-col

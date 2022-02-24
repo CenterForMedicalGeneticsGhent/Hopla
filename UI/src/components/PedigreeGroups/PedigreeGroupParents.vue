@@ -3,6 +3,7 @@
 width="550px"
 imgType='parents'
 title="Parents"
+imgLicense="Designed by FreePlk from Flaticon"
 v-model="config"
 >
   <v-row
