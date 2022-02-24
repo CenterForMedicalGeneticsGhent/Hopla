@@ -1,16 +1,17 @@
 # Hopla docker
-FROM node:16
-LABEL maintainer="jan.vandenschilden@gmail.com"
+# https://cli.vuejs.org/guide/deployment.html#docker-nginx
 
-# Download Github repository 
-WORKDIR /home/node
-ADD ./ /home/node/Hopla/
+FROM node:16 as build
+LABEL maintainer="jan.vandenschilden@ugent.be"
 
-# Switch to node user, go inside Hopla/UI dir and install packages
-WORKDIR /home/node/Hopla/UI
+WORKDIR /usr/src/app
+COPY package.json .
 RUN yarn install
-EXPOSE 8080
+COPY ./ .
+RUN yarn build --prod
 
 
-# docker run hopla
-CMD ["yarn", "serve"]
+from nginx:alpine as web
+RUN mkdir /app
+COPY --from=build /usr/src/app/dist /app
+COPY docker/nginx.conf /etc/nginx/nginx.conf
