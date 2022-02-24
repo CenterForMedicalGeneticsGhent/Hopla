@@ -3,6 +3,7 @@
 width="550px"
 imgType='grandparents1'
 title="Paternal Grandparents"
+imgLicense="Designed by FreePlk from Flaticon"
 v-model="config"
 >
   <v-row
