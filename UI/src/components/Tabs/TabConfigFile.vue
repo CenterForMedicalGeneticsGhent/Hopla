@@ -15,37 +15,21 @@ export default Vue.extend({
     ParseConfig,
   },
   props:{
-    value: Object,
+    config: Object,
   },
   data: function() {
     return {
-      config: this.value,
-    }
+
+    };
   },
   computed:{
-    configWatcher: {
-        get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
-      },
+    //code
   },
   methods:{
-    handleInput: function(){
-      this.$emit('input',this.config);
-    }
+    //code
   },
   watch:{
-    configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+    //code
   },  
 })
 </script>

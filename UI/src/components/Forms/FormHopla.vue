@@ -29,7 +29,7 @@
       <TabAdvanced v-model="configAdvanced" />
     </v-tab-item>
     <v-tab-item>
-      <TabConfigFile v-model="config" />
+      <TabConfigFile :config="config" />
     </v-tab-item>
     
   </v-tabs>
@@ -103,11 +103,6 @@
             configAdvanced: this.configAdvanced,
           };
         },
-        set: function(d){
-          this.configPedigree=d.configPedigree;
-          this.configParameters= d.configParameters;
-          this.configAdvanced= d.configAdvanced;
-        }
       },
     },
   })

@@ -1,17 +1,27 @@
 <template>
-<div 
-:id="id"
-style="font-family: monospace;"
->
-    <ParseSectionMandatory :config="config" />
-    <ParseSectionImportant :config="config" />
-    <ParseSectionVariantInclusionFilter1 :config="config" />
-    <ParseSectionVariantInclusionFilter2 :config="config" />
-    <ParseSectionSampleDiseaseAnnotation :config="config" />
-    <ParseSectionBAlleleFrequencyProfiles :config="config" />
-    <ParseSectionMerlinProfiles :config="config" />
-    <ParseSectionRemainingFeatures :config="config" />
-</div>
+<v-container>
+    <div 
+    :id="idDiv"
+    style="font-family: monospace;"
+    >
+        <ParseSectionMandatory :config="config" />
+        <ParseSectionImportant :config="config" />
+        <ParseSectionVariantInclusionFilter1 :config="config" />
+        <ParseSectionVariantInclusionFilter2 :config="config" />
+        <ParseSectionSampleDiseaseAnnotation :config="config" />
+        <ParseSectionBAlleleFrequencyProfiles :config="config" />
+        <ParseSectionMerlinProfiles :config="config" />
+        <ParseSectionRemainingFeatures :config="config" />
+    </div>
+    <br>
+    <v-btn
+    color="primary"
+    dense
+    @click="downloadFile()"
+    >
+      Download
+    </v-btn>
+</v-container>
 </template>
 
 
@@ -44,10 +54,13 @@ export default Vue.extend({
     data: function(){
         return {
             config: this.value,
-            id: "idConfig"+Math.floor(Math.random()*1000000000),
+            idDiv: "idConfig"+Math.floor(Math.random()*1000000000),
         }
     },
     computed:{
+        fileName: function(){
+            return `${this.config.configPedigree.famID}.txt`
+        },
         configWatcher: {
             get: function(){
             return `
@@ -55,19 +68,33 @@ export default Vue.extend({
             `;
             }
         },
-        configText:function(){
-            return document.getElementById(this.id)
+    },  
+    methods:{
+        handleInput: function(){
+            this.$emit('input',this.config);
+        },
+        downloadFile: function(){
+            //html to text
+            var text = document.getElementById(this.idDiv)
                 .innerHTML
                 .replaceAll("<br>","\n")
                 .replaceAll("<span>","")
                 .replaceAll("</span>","")
                 ;
-        }
-    },  
-    methods:{
-        handleInput: function(){
-        this.$emit('input',this.config);
-        }
+            
+            // make blob from text
+            var blob = new Blob([text]);
+
+            // create object url
+            var url = URL.createObjectURL(blob);
+            
+            // download file
+            var elm = document.createElement("a");
+            elm.href=url; //give url to download
+            elm.setAttribute("download", this.fileName);//set default download name
+            elm.click();
+            elm.remove();
+        },
     },
     watch:{
         configWatcher:{
