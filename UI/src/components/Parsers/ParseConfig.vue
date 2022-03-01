@@ -1,5 +1,8 @@
 <template>
-<div style="font-family: monospace;">
+<div 
+:id="id"
+style="font-family: monospace;"
+>
     <ParseSectionMandatory :config="config" />
     <ParseSectionImportant :config="config" />
     <ParseSectionVariantInclusionFilter1 :config="config" />
@@ -41,11 +44,44 @@ export default Vue.extend({
     data: function(){
         return {
             config: this.value,
+            id: "idConfig"+Math.floor(Math.random()*1000000000),
         }
     },
     computed:{
-    },
+        configWatcher: {
+            get: function(){
+            return `
+                ${JSON.stringify(this.config)}
+            `;
+            }
+        },
+        configText:function(){
+            return document.getElementById(this.id)
+                .innerHTML
+                .replaceAll("<br>","\n")
+                .replaceAll("<span>","")
+                .replaceAll("</span>","")
+                ;
+        }
+    },  
     methods:{
+        handleInput: function(){
+        this.$emit('input',this.config);
+        }
     },
+    watch:{
+        configWatcher:{
+            handler: function(newVal,oldVal){
+            if (oldVal != newVal){
+                this.handleInput();
+            }
+            },
+            deep:false,
+            immediate:true,
+        },
+    },
+    mounted: function(){
+        //code
+    }
 })
 </script>
