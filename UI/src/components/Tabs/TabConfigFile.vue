@@ -1,6 +1,6 @@
 <template>
 <v-container>
-  <ParseConfig :config="config" />
+  <ParseConfig v-model="config" />
 </v-container>
 </template>
 

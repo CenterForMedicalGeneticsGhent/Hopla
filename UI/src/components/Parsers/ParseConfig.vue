@@ -26,7 +26,7 @@ import ParseSectionRemainingFeatures from "../Parsers/ParseSectionRemainingFeatu
 
 export default Vue.extend({    
     props:{
-        config: Object,
+        value: Object,
     },
     components: {
         ParseSectionMandatory,
@@ -40,7 +40,7 @@ export default Vue.extend({
     },
     data: function(){
         return {
-
+            config: this.value,
         }
     },
     computed:{
