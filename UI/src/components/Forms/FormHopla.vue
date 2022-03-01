@@ -29,7 +29,7 @@
       <TabAdvanced v-model="configAdvanced" />
     </v-tab-item>
     <v-tab-item>
-      <TabConfigFile :config="config" />
+      <TabConfigFile v-model="config" />
     </v-tab-item>
     
   </v-tabs>
@@ -95,13 +95,20 @@
       }
     },
     computed:{
-      config: function(){
-        return {
-          configPedigree: this.configPedigree,
-          configParameters: this.configParameters,
-          configAdvanced: this.configAdvanced,
-        };
-      }
+      config: {
+        get: function(){
+          return {
+            configPedigree: this.configPedigree,
+            configParameters: this.configParameters,
+            configAdvanced: this.configAdvanced,
+          };
+        },
+        set: function(d){
+          this.configPedigree=d.configPedigree;
+          this.configParameters= d.configParameters;
+          this.configAdvanced= d.configAdvanced;
+        }
+      },
     },
   })
 </script>
