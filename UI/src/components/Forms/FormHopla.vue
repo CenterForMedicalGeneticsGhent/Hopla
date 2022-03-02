@@ -38,7 +38,11 @@
       <TabAdvanced v-model="configAdvanced" />
     </v-tab-item>
     <v-tab-item>
-      <TabConfigFile :config="config" />
+      <TabConfigFile 
+      :configPedigree="configPedigree" 
+      :configParameters="configParameters"
+      :configAdvanced="configAdvanced"
+      />
     </v-tab-item>
     
   </v-tabs>
@@ -47,6 +51,7 @@
 
 <script>
   import Vue from 'vue';
+  import cloneDeep from 'lodash/cloneDeep';
   import TabPedigree from "../Tabs/TabPedigree.vue";
   import TabParameters from "../Tabs/TabParameters.vue";
   import TabAdvanced from "../Tabs/TabAdvanced.vue";
