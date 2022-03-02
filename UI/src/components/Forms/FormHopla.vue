@@ -1,11 +1,20 @@
 <template>
 <v-card>
-  <v-tabs right>
+  <v-tabs 
+  right
+  height=55
+  >
 
     <v-card-title>
       HOPLA
     </v-card-title>
-    <v-spacer />
+    <v-row>
+      <v-col />
+      <v-col>
+        <InputUploadConfig />
+      </v-col>
+      <v-col />
+    </v-row>
     <v-tab>
       Pedigree
     </v-tab>
@@ -42,6 +51,7 @@
   import TabParameters from "../Tabs/TabParameters.vue";
   import TabAdvanced from "../Tabs/TabAdvanced.vue";
   import TabConfigFile from "../Tabs/TabConfigFile.vue";
+  import InputUploadConfig from "../Inputs/InputUploadConfig.vue";
 
   export default Vue.extend({
     name: 'Form',
@@ -50,6 +60,7 @@
       TabParameters,
       TabAdvanced,
       TabConfigFile,
+      InputUploadConfig,
     },
     data: function() {
       return {
