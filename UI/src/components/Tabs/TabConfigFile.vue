@@ -9,6 +9,7 @@ import Vue from 'vue'
 
 import {parseSampleIDs} from "../Parsers/ParseSampleIDs";
 import {parseFatherIDs} from "../Parsers/ParseFatherIDs";
+import {parseMotherIDs} from "../Parsers/ParseMotherIDs";
 
 
 
@@ -49,6 +50,7 @@ export default Vue.extend({
     sectionImportant: function(){
       return  this.sectionImportantTitle
             + this.sectionImportantFatherIDs
+            + this.sectionImportantMotherIDs
             ; 
     },
     sectionVariantInclusionFilter1: function(){
@@ -100,6 +102,12 @@ export default Vue.extend({
     sectionImportantFatherIDs: function(){
       return  "father.ids="
             + parseFatherIDs(this.configPedigree)
+            + "\n"
+            ;
+    },
+    sectionImportantMotherIDs: function(){
+      return  "mother.ids="
+            + parseMotherIDs(this.configPedigree)
             + "\n"
             ;
     },
