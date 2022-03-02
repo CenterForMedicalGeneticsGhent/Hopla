@@ -8,6 +8,7 @@
 import Vue from 'vue'
 
 import {parseSampleIDs} from "../Parsers/ParseSampleIDs";
+import {parseFatherIDs} from "../Parsers/ParseFatherIDs";
 
 
 
@@ -47,6 +48,7 @@ export default Vue.extend({
     },
     sectionImportant: function(){
       return  this.sectionImportantTitle
+            + this.sectionImportantFatherIDs
             ; 
     },
     sectionVariantInclusionFilter1: function(){
@@ -76,18 +78,31 @@ export default Vue.extend({
           ;
     },
     sectionMandatoryVcfFile: function(){
-      return `vcf.file=${this.configParameters.fileVCF}\n`;
+      return  "vcf.file="
+            + this.configParameters.fileVCF
+            + "\n"
+            ;
     },
     sectionMandatorySampleIDs: function(){
-      return `sample.ids=${parseSampleIDs(this.configPedigree)}\n`
+      return  "sample.ids="
+            + parseSampleIDs(this.configPedigree)
+            + "\n"
+            ;
     },
+
 
     sectionImportantTitle: function(){
       return  "# ----------------------------\n"
             + "# IMPORTANT OPTIONAL ARGUMENTS\n"
             + "# ----------------------------\n"
             ;
-    }
+    },
+    sectionImportantFatherIDs: function(){
+      return  "father.ids="
+            + parseFatherIDs(this.configPedigree)
+            + "\n"
+            ;
+    },
   },
   methods:{
   },
