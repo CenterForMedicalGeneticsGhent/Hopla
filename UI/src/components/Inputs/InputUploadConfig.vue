@@ -1,12 +1,13 @@
 <template>
 <v-container>
     <v-file-input
-    placeholder="Upload config"
+    placeholder="Upload Config"
     dense
     prepend-inner-icon="mdi-upload"
     prepend-icon=""
     rounded
     filled
+    @change="upload"
     />
 </v-container>
 </template>
@@ -26,7 +27,15 @@ export default {
         //CODE
     },
     methods:{
-        //CODE
+        upload: function(event){
+            var filePath = event.name;
+            // create file reader and load text file
+            var fileReader=new FileReader();
+            fileReader.readAsText(event);
+            fileReader.onload=function(){
+                console.log(fileReader.result)
+            }
+        },
     },
 }
 </script>

@@ -11,7 +11,7 @@
     <v-row>
       <v-col />
       <v-col>
-        <InputUploadConfig />
+        <!--<InputUploadConfig />-->
       </v-col>
       <v-col />
     </v-row>
@@ -60,7 +60,7 @@
       TabParameters,
       TabAdvanced,
       TabConfigFile,
-      InputUploadConfig,
+      //InputUploadConfig,
     },
     data: function() {
       return {
