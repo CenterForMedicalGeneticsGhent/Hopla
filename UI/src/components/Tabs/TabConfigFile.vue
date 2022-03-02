@@ -1,7 +1,9 @@
 <template>
-<pre> 
-  {{configText}}
-</pre>
+<v-container>
+  <pre> 
+    {{configText}}
+  </pre>
+</v-container>
 </template>
 
 <script>
@@ -53,6 +55,7 @@ export default Vue.extend({
             + this.sectionImportantFatherIDs
             + this.sectionImportantMotherIDs
             + this.sectionImportantGenders
+            + this.sectionImportantFileCytoband
             ; 
     },
     sectionVariantInclusionFilter1: function(){
@@ -119,6 +122,12 @@ export default Vue.extend({
             + "\n"
             ;
     },
+    sectionImportantFileCytoband: function(){
+      return  "cytoband.file="
+            + this.configParameters.fileCytoband
+            + "\n"
+            ;
+    }
   },
   methods:{
   },
