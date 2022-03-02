@@ -40,13 +40,14 @@ export default Vue.extend({
 
 
     sectionMandatory: function(){
-      return this.sectionMandatoryTitle
-        + this.sectionMandatoryVcfFile
-        + this.sectionMandatorySampleIDs
-        ;
+      return  this.sectionMandatoryTitle
+          +   this.sectionMandatoryVcfFile
+          +   this.sectionMandatorySampleIDs
+          ;
     },
     sectionImportant: function(){
-      return "Important section\n";
+      return  this.sectionImportantTitle
+            ; 
     },
     sectionVariantInclusionFilter1: function(){
       return "Section VariantInclusionFilter1\n";
@@ -79,6 +80,13 @@ export default Vue.extend({
     },
     sectionMandatorySampleIDs: function(){
       return `sample.ids=${parseSampleIDs(this.configPedigree)}\n`
+    },
+
+    sectionImportantTitle: function(){
+      return  "# ----------------------------\n"
+            + "# IMPORTANT OPTIONAL ARGUMENTS\n"
+            + "# ----------------------------\n"
+            ;
     }
   },
   methods:{
