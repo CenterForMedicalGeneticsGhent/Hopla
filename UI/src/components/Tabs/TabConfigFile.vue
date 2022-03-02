@@ -59,7 +59,8 @@ export default Vue.extend({
             ; 
     },
     sectionVariantInclusionFilter1: function(){
-      return "Section VariantInclusionFilter1\n";
+      return  this.sectionVariantInclusionFilter1Title
+            ;
     },
     sectionVariantInclusionFilter2: function(){
       return "SectionVariantInclusionFilter2\n";
@@ -127,7 +128,15 @@ export default Vue.extend({
             + this.configParameters.fileCytoband
             + "\n"
             ;
-    }
+    },
+
+
+    sectionVariantInclusionFilter1Title: function(){
+      return  "# --------------------------------------------------------\n"
+            + "# IMPORTANT OPTIONAL VARIANT INCLUSION ARGUMENTS: FILTER 1\n"
+            + "# --------------------------------------------------------\n"
+            ;
+    },
   },
   methods:{
   },
