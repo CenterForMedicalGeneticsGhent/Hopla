@@ -1,6 +1,5 @@
 <template>
 <span>
-    <ParseLimitPmToP :limitPmToP="config.configAdvanced.remainingFeatures.limitPmToP" />
     <ParseValueOfP :valueOfP="config.configAdvanced.remainingFeatures.valueOfP" />
     <ParseSelfContained :selfContained="config.configAdvanced.remainingFeatures.selfContained" />
     <ParseRegionsFlankingSize :RegionsFlankingSize="config.configAdvanced.remainingFeatures.regionsFlankingSize" />

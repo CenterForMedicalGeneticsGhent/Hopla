@@ -111,6 +111,7 @@ export default Vue.extend({
       return  this.sectionRemainingFeaturesTitle
             + this.sectionRemainingFeaturesFamilyID
             + this.sectionRemainingFeaturesLimitBafToP
+            + this.sectionRemainingFeaturesLimitPmToP
             ;
     },
 
@@ -346,6 +347,14 @@ export default Vue.extend({
       }
       else {
         return "limit.baf.to.P=F\n";
+      } 
+    },
+    sectionRemainingFeaturesLimitPmToP: function(){
+      if (this.configAdvanced.remainingFeatures.limitPmToP===true){
+        return "limit.pm.to.P=T\n";
+      }
+      else {
+        return "limit.pm.to.P=F\n";
       } 
     },
 
