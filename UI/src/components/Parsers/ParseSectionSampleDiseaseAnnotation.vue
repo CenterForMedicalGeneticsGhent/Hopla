@@ -1,8 +1,5 @@
 <template>
 <span>
-    <ParseSectionSampleDiseaseAnnotationTitle />
-    <ParseRegions :regions="config.configParameters.sampleDisease.regions" />
-    <ParseReferenceIDs />
     <ParseCarrierIDs :configPedigree="config.configPedigree" />
     <ParseAffectedIDs :configPedigree="config.configPedigree" />
     <ParseNonAffectedIDs :configPedigree="config.configPedigree" />

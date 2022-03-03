@@ -18,6 +18,7 @@ import {parseAfHardLimitIDs}  from "../Parsers/ParseAfHardLimitIDs";
 import {parseDpSoftLimitIDs}  from "../Parsers/ParseDpSoftLimitIDs";
 import {parseKeepInformativeIDs} from "../Parsers/ParseKeepInformativeIDs";
 import {parseKeepHeteroIDs} from "../Parsers/ParseKeepHeteroIDs";
+import {parseCarrierIDs} from "../Parsers/ParseCarrierIDs";
 
 
 
@@ -80,6 +81,8 @@ export default Vue.extend({
     sectionSampleDiseaseAnnotation: function(){
       return  this.sectionSampleDiseaseAnnotationTitle
             + this.sectionSampleDiseaseAnnotationRegions
+            + this.sectionSampleDiseaseAnnotationReferenceIDs
+            + this.sectionSampleDiseaseAnnotationCarrierIDs
             ;
     },
     sectionBAlleleFrequencyProfiles: function(){
@@ -216,6 +219,17 @@ export default Vue.extend({
               + "\n"
               ;
       }
+    },
+    sectionSampleDiseaseAnnotationReferenceIDs: function(){
+      return  "reference.ids="
+            + "\n"
+            ;
+    },
+    sectionSampleDiseaseAnnotationCarrierIDs: function(){
+      return  "carrier.ids="
+            + parseCarrierIDs(this.configPedigree)
+            + "\n"
+            ;
     },
 
   },
