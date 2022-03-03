@@ -101,7 +101,9 @@ export default Vue.extend({
             ;
     },
     sectionMerlinProfiles: function(){
-      return "sectionMerlinProfiles\n";
+      return  this.sectionMerlinProfilesTitle
+            + this.sectionMerlinProfilesWindowSizeVoting
+            ;
     },
     sectionRemainingFeatures: function(){
       return "sectionRemainingFeatures\n";
@@ -284,6 +286,20 @@ export default Vue.extend({
     sectionBAlleleFrequencyProfilesBafIDs: function(){
       return  "baf.ids="
             + parseBafIDs(this.configPedigree)
+            + "\n"
+            ;
+    },
+
+
+    sectionMerlinProfilesTitle: function(){
+      return  "# -------------------------\n"
+            + "# OPTIONAL: Merlin Profiles\n"
+            + "# -------------------------\n"
+            ;
+    },
+    sectionMerlinProfilesWindowSizeVoting: function(){
+      return  "window.size.voting="
+            + this.configParameters.merlinProfiles.windowSizeVoting
             + "\n"
             ;
     },
