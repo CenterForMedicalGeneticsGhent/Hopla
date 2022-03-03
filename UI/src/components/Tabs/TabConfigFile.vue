@@ -17,6 +17,7 @@ import {parseDpHardLimitIDs}  from "../Parsers/ParseDpHardLimitIDs";
 import {parseAfHardLimitIDs}  from "../Parsers/ParseAfHardLimitIDs";
 import {parseDpSoftLimitIDs}  from "../Parsers/ParseDpSoftLimitIDs";
 import {parseKeepInformativeIDs} from "../Parsers/ParseKeepInformativeIDs";
+import {parseKeepHeteroIDs} from "../Parsers/ParseKeepHeteroIDs";
 
 
 
@@ -73,6 +74,7 @@ export default Vue.extend({
     sectionVariantInclusionFilter2: function(){
       return  this.sectionVariantInclusionFilter2Title
             + this.sectionVariantInclusionFilter2KeepInformativeIDs
+            + this.sectionVariantInclusionFilter2KeepHeteroIDs
             ;
     },
     sectionSampleDiseaseAnnotation: function(){
@@ -182,6 +184,12 @@ export default Vue.extend({
     sectionVariantInclusionFilter2KeepInformativeIDs: function(){
       return  "keep.informative.ids="
             + parseKeepInformativeIDs(this.configPedigree)
+            + "\n"
+            ;
+    },
+    sectionVariantInclusionFilter2KeepHeteroIDs: function(){
+      return  "keep.hetero.ids="
+            + parseKeepHeteroIDs(this.configPedigree)
             + "\n"
             ;
     },
