@@ -1,8 +1,5 @@
 <template>
 <span>
-    <ParseSectionMerlinProfilesTitle />
-    <ParseWindowSizeVoting :windowSizeVoting="config.configParameters.merlinProfiles.windowSizeVoting" />
-    <ParseKeepChromosomesOnly :keepChromosomesOnly="config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepChromosomesOnly" />
     <ParseKeepRegionsOnly :keepRegionsOnly="config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepRegionsOnly" />
 </span>
 </template>

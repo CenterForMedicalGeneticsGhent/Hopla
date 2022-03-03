@@ -103,6 +103,7 @@ export default Vue.extend({
     sectionMerlinProfiles: function(){
       return  this.sectionMerlinProfilesTitle
             + this.sectionMerlinProfilesWindowSizeVoting
+            + this.sectionMerlinProfilesKeepChromosomesOnly
             ;
     },
     sectionRemainingFeatures: function(){
@@ -302,6 +303,14 @@ export default Vue.extend({
             + this.configParameters.merlinProfiles.windowSizeVoting
             + "\n"
             ;
+    },
+    sectionMerlinProfilesKeepChromosomesOnly: function(){
+      if (this.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepChromosomesOnly===true){
+        return "keep.chromosomes.only=T\n";
+      }
+      else {
+        return "keep.chromosomes.only=F\n";
+      } 
     },
 
   },
