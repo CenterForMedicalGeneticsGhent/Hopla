@@ -79,6 +79,7 @@ export default Vue.extend({
     },
     sectionSampleDiseaseAnnotation: function(){
       return  this.sectionSampleDiseaseAnnotationTitle
+            + this.sectionSampleDiseaseAnnotationRegions
             ;
     },
     sectionBAlleleFrequencyProfiles: function(){
@@ -201,6 +202,20 @@ export default Vue.extend({
             + "# OPTIONAL: SAMPLE/DISEASE ANNOTATION\n"
             + "# -----------------------------------\n"
             ;
+    },
+    sectionSampleDiseaseAnnotationRegions: function(){
+      let regions = this.configParameters.sampleDisease.regions;
+      if (regions.length>0){
+        return  "regions="
+            + `${regions[0].chr}:${regions[0].chrStart}-${regions[0].chrEnd}`
+            + "\n"
+            ;
+      }
+      else {
+        return "regions="
+              + "\n"
+              ;
+      }
     },
 
   },
