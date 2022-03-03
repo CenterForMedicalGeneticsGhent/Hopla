@@ -21,6 +21,7 @@ import {parseKeepHeteroIDs} from "../Parsers/ParseKeepHeteroIDs";
 import {parseCarrierIDs} from "../Parsers/ParseCarrierIDs";
 import {parseAffectedIDs} from "../Parsers/ParseAffectedIDs";
 import {parseNonAffectedIDs} from "../Parsers/ParseNonAffectedIDs";
+import {parseBafIDs} from "../Parsers/ParseBafIDs";
 
 
 
@@ -95,7 +96,9 @@ export default Vue.extend({
             ;
     },
     sectionBAlleleFrequencyProfiles: function(){
-      return "sectionBAlleleFrequencyProfiles\n";
+      return  this.sectionBAlleleFrequencyProfilesTitle
+            + this.sectionBAlleleFrequencyProfilesBafIDs
+            ;
     },
     sectionMerlinProfiles: function(){
       return "sectionMerlinProfiles\n";
@@ -267,6 +270,20 @@ export default Vue.extend({
     sectionSampleDiseaseAnnotationSequencingNote: function(){
       return  "Sequencing note:"
             + this.configParameters.sampleDisease.sequencingNote
+            + "\n"
+            ;
+    },
+
+
+    sectionBAlleleFrequencyProfilesTitle: function(){
+      return  "# -------------------------------------\n"
+            + "# OPTIONAL: B-ALLELE FREQUENCY PROFILES\n"
+            + "# -------------------------------------\n"
+            ;
+    },
+    sectionBAlleleFrequencyProfilesBafIDs: function(){
+      return  "baf.ids="
+            + parseBafIDs(this.configPedigree)
             + "\n"
             ;
     },
