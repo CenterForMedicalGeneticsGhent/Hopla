@@ -70,7 +70,8 @@ export default Vue.extend({
             ;
     },
     sectionVariantInclusionFilter2: function(){
-      return "SectionVariantInclusionFilter2\n";
+      return  this.sectionVariantInclusionFilter2Title
+            ;
     },
     sectionSampleDiseaseAnnotation: function(){
       return "sectionSampleDiseaseAnnotation\n";
