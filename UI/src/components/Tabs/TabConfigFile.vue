@@ -114,6 +114,7 @@ export default Vue.extend({
             + this.sectionRemainingFeaturesLimitPmToP
             + this.sectionRemainingFeaturesValueOfP
             + this.sectionRemainingFeaturesSelfContained
+            + this.sectionRemainingFeaturesRegionsFlankingSize
             ;
     },
 
@@ -372,6 +373,12 @@ export default Vue.extend({
       else {
         return "self.contained=F\n";
       }
+    },
+    sectionRemainingFeaturesRegionsFlankingSize: function(){
+      return  "regions.flanking.size="
+            + this.configAdvanced.remainingFeatures.regionsFlankingSize
+            + "\n"
+            ;
     },
 
   },
