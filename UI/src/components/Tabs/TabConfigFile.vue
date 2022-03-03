@@ -64,6 +64,7 @@ export default Vue.extend({
       return  this.sectionVariantInclusionFilter1Title
             + this.sectionVariantInclusionFilter1DpHardLimitIDs
             + this.sectionVariantInclusionFilter1AfHardLimitIDs
+            + this.sectionVariantInclusionFilter1AfHardLimit
             ;
     },
     sectionVariantInclusionFilter2: function(){
@@ -150,6 +151,12 @@ export default Vue.extend({
     sectionVariantInclusionFilter1AfHardLimitIDs: function(){
       return  "af.hard.limit.ids="
             + parseAfHardLimitIDs(this.configPedigree)
+            + "\n"
+            ;
+    },
+    sectionVariantInclusionFilter1AfHardLimit: function(){
+      return  "af.hard.limit="
+            + this.configParameters.afHardLimit
             + "\n"
             ;
     },
