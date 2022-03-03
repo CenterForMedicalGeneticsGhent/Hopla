@@ -87,6 +87,9 @@ export default Vue.extend({
             + this.sectionSampleDiseaseAnnotationCarrierIDs
             + this.sectionSampleDiseaseAnnotationAffectedIDs
             + this.sectionSampleDiseaseAnnotationNonAffectedIDs
+            + "start.info\n"
+            + this.sectionSampleDiseaseAnnotationDisease
+            + "end.info\n"
             ;
     },
     sectionBAlleleFrequencyProfiles: function(){
@@ -244,6 +247,12 @@ export default Vue.extend({
     sectionSampleDiseaseAnnotationNonAffectedIDs: function(){
       return  "nonaffected.ids="
             + parseNonAffectedIDs(this.configPedigree)
+            + "\n"
+            ;
+    },
+    sectionSampleDiseaseAnnotationDisease: function(){
+      return  "Disease:"
+            + this.configParameters.sampleDisease.disease
             + "\n"
             ;
     },
