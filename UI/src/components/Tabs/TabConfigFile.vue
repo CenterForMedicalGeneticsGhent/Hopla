@@ -113,6 +113,7 @@ export default Vue.extend({
             + this.sectionRemainingFeaturesLimitBafToP
             + this.sectionRemainingFeaturesLimitPmToP
             + this.sectionRemainingFeaturesValueOfP
+            + this.sectionRemainingFeaturesSelfContained
             ;
     },
 
@@ -363,6 +364,14 @@ export default Vue.extend({
             + this.configAdvanced.remainingFeatures.valueOfP
             + "\n"
             ;
+    },
+    sectionRemainingFeaturesSelfContained: function(){
+      if (this.configAdvanced.remainingFeatures.selfContained===true){
+        return "self.contained=T\n";
+      }
+      else {
+        return "self.contained=F\n";
+      }
     },
 
   },
