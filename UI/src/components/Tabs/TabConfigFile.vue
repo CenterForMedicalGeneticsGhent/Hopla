@@ -90,6 +90,7 @@ export default Vue.extend({
             + "start.info\n"
             + this.sectionSampleDiseaseAnnotationDisease
             + this.sectionSampleDiseaseAnnotationInheritance
+            + this.sectionSampleDiseaseAnnotationSequencingNote
             + "end.info\n"
             ;
     },
@@ -260,6 +261,12 @@ export default Vue.extend({
     sectionSampleDiseaseAnnotationInheritance: function(){
       return  "Inheritance:"
             + this.configParameters.sampleDisease.inheritance
+            + "\n"
+            ;
+    },
+    sectionSampleDiseaseAnnotationSequencingNote: function(){
+      return  "Sequencing note:"
+            + this.configParameters.sampleDisease.sequencingNote
             + "\n"
             ;
     },
