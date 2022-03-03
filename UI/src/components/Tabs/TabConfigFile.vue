@@ -13,6 +13,7 @@ import {parseSampleIDs} from "../Parsers/ParseSampleIDs";
 import {parseFatherIDs} from "../Parsers/ParseFatherIDs";
 import {parseMotherIDs} from "../Parsers/ParseMotherIDs";
 import {parseGenders} from "../Parsers/ParseGenders";
+import {parseDpHardLimitIDs}  from "../Parsers/ParseDpHardLimitIDs";
 
 
 
@@ -60,6 +61,7 @@ export default Vue.extend({
     },
     sectionVariantInclusionFilter1: function(){
       return  this.sectionVariantInclusionFilter1Title
+            + this.sectionVariantInclusionFilter1DpHardLimitIDs
             ;
     },
     sectionVariantInclusionFilter2: function(){
@@ -135,6 +137,12 @@ export default Vue.extend({
       return  "# --------------------------------------------------------\n"
             + "# IMPORTANT OPTIONAL VARIANT INCLUSION ARGUMENTS: FILTER 1\n"
             + "# --------------------------------------------------------\n"
+            ;
+    },
+    sectionVariantInclusionFilter1DpHardLimitIDs: function(){
+      return  "dp.hard.limit.ids="
+            + parseDpHardLimitIDs(this.configPedigree)
+            + "\n"
             ;
     },
   },

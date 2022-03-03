@@ -34,7 +34,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "src/components/Parsers/ParseDpHardLimitIDs.js"  ],
   "exclude": [
     "node_modules"
   ]
