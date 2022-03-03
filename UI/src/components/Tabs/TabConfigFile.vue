@@ -78,7 +78,8 @@ export default Vue.extend({
             ;
     },
     sectionSampleDiseaseAnnotation: function(){
-      return "sectionSampleDiseaseAnnotation\n";
+      return  this.sectionSampleDiseaseAnnotationTitle
+            ;
     },
     sectionBAlleleFrequencyProfiles: function(){
       return "sectionBAlleleFrequencyProfiles\n";
@@ -193,6 +194,15 @@ export default Vue.extend({
             + "\n"
             ;
     },
+
+
+    sectionSampleDiseaseAnnotationTitle: function(){
+      return  "# -----------------------------------\n"
+            + "# OPTIONAL: SAMPLE/DISEASE ANNOTATION\n"
+            + "# -----------------------------------\n"
+            ;
+    },
+
   },
   methods:{
   },
