@@ -110,6 +110,7 @@ export default Vue.extend({
     sectionRemainingFeatures: function(){
       return  this.sectionRemainingFeaturesTitle
             + this.sectionRemainingFeaturesFamilyID
+            + this.sectionRemainingFeaturesLimitBafToP
             ;
     },
 
@@ -338,6 +339,14 @@ export default Vue.extend({
             + "\n"
             ;
 
+    },
+    sectionRemainingFeaturesLimitBafToP: function(){
+      if (this.configAdvanced.remainingFeatures.limitBafToP===true){
+        return "limit.baf.to.P=T\n";
+      }
+      else {
+        return "limit.baf.to.P=F\n";
+      } 
     },
 
   },

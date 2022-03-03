@@ -1,6 +1,5 @@
 <template>
 <span>
-    <ParseLimitBafToP :limitBafToP="config.configAdvanced.remainingFeatures.limitBafToP" />
     <ParseLimitPmToP :limitPmToP="config.configAdvanced.remainingFeatures.limitPmToP" />
     <ParseValueOfP :valueOfP="config.configAdvanced.remainingFeatures.valueOfP" />
     <ParseSelfContained :selfContained="config.configAdvanced.remainingFeatures.selfContained" />
