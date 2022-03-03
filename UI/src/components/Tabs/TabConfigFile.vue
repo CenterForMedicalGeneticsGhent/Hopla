@@ -16,6 +16,7 @@ import {parseGenders} from "../Parsers/ParseGenders";
 import {parseDpHardLimitIDs}  from "../Parsers/ParseDpHardLimitIDs";
 import {parseAfHardLimitIDs}  from "../Parsers/ParseAfHardLimitIDs";
 import {parseDpSoftLimitIDs}  from "../Parsers/ParseDpSoftLimitIDs";
+import {parseKeepInformativeIDs} from "../Parsers/ParseKeepInformativeIDs";
 
 
 
@@ -71,6 +72,7 @@ export default Vue.extend({
     },
     sectionVariantInclusionFilter2: function(){
       return  this.sectionVariantInclusionFilter2Title
+            + this.sectionVariantInclusionFilter2KeepInformativeIDs
             ;
     },
     sectionSampleDiseaseAnnotation: function(){
@@ -175,6 +177,12 @@ export default Vue.extend({
       return  "# --------------------------------------------------------\n"
             + "# IMPORTANT OPTIONAL VARIANT INCLUSION ARGUMENTS: FILTER 2\n"
             + "# --------------------------------------------------------\n"
+            ;
+    },
+    sectionVariantInclusionFilter2KeepInformativeIDs: function(){
+      return  "keep.informative.ids="
+            + parseKeepInformativeIDs(this.configPedigree)
+            + "\n"
             ;
     },
   },
