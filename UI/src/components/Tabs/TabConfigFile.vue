@@ -109,6 +109,7 @@ export default Vue.extend({
     },
     sectionRemainingFeatures: function(){
       return  this.sectionRemainingFeaturesTitle
+            + this.sectionRemainingFeaturesFamilyID
             ;
     },
 
@@ -328,6 +329,13 @@ export default Vue.extend({
       return  "# ----------------------------\n"
             + "# OPTIONAL: REMAINING FEATURES\n"
             + "# ----------------------------\n"
+            ;
+
+    },
+    sectionRemainingFeaturesFamilyID: function(){
+      return  "fam.id="
+            + this.configPedigree.famID
+            + "\n"
             ;
 
     },

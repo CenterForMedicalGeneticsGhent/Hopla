@@ -1,7 +1,5 @@
 <template>
 <span>
-    <ParseSectionRemainingFeaturesTitle />
-    <ParseFamilyID :familyID="config.configPedigree.famID" />
     <ParseLimitBafToP :limitBafToP="config.configAdvanced.remainingFeatures.limitBafToP" />
     <ParseLimitPmToP :limitPmToP="config.configAdvanced.remainingFeatures.limitPmToP" />
     <ParseValueOfP :valueOfP="config.configAdvanced.remainingFeatures.valueOfP" />
