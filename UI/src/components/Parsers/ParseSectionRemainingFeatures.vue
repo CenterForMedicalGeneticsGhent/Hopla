@@ -1,6 +1,5 @@
 <template>
 <span>
-    <ParseValueOfP :valueOfP="config.configAdvanced.remainingFeatures.valueOfP" />
     <ParseSelfContained :selfContained="config.configAdvanced.remainingFeatures.selfContained" />
     <ParseRegionsFlankingSize :RegionsFlankingSize="config.configAdvanced.remainingFeatures.regionsFlankingSize" />
 </span>

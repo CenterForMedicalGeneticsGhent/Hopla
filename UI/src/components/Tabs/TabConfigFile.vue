@@ -112,6 +112,7 @@ export default Vue.extend({
             + this.sectionRemainingFeaturesFamilyID
             + this.sectionRemainingFeaturesLimitBafToP
             + this.sectionRemainingFeaturesLimitPmToP
+            + this.sectionRemainingFeaturesValueOfP
             ;
     },
 
@@ -356,6 +357,12 @@ export default Vue.extend({
       else {
         return "limit.pm.to.P=F\n";
       } 
+    },
+    sectionRemainingFeaturesValueOfP: function(){
+      return  "value.of.p="
+            + this.configAdvanced.remainingFeatures.valueOfP
+            + "\n"
+            ;
     },
 
   },
