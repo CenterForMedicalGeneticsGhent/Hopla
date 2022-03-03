@@ -1,6 +1,5 @@
 <template>
 <span>
-    <ParseInheritance :inheritance="config.configParameters.sampleDisease.inheritance" />
     <ParseSequencingNote :sequencingNote="config.configParameters.sampleDisease.sequencingNote" />
 </span>
 </template>

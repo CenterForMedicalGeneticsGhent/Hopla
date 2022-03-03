@@ -89,6 +89,7 @@ export default Vue.extend({
             + this.sectionSampleDiseaseAnnotationNonAffectedIDs
             + "start.info\n"
             + this.sectionSampleDiseaseAnnotationDisease
+            + this.sectionSampleDiseaseAnnotationInheritance
             + "end.info\n"
             ;
     },
@@ -253,6 +254,12 @@ export default Vue.extend({
     sectionSampleDiseaseAnnotationDisease: function(){
       return  "Disease:"
             + this.configParameters.sampleDisease.disease
+            + "\n"
+            ;
+    },
+    sectionSampleDiseaseAnnotationInheritance: function(){
+      return  "Inheritance:"
+            + this.configParameters.sampleDisease.inheritance
             + "\n"
             ;
     },
