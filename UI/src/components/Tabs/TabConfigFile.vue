@@ -1,5 +1,9 @@
 <template>
 <v-container>
+  <OutputDownloadConfig 
+  :fileNameDefault="configPedigree.famID+'.txt'" 
+  :textToDownload="configText" 
+  />
   <pre> 
     {{configText}}
   </pre>
@@ -9,6 +13,10 @@
 <script>
 import Vue from 'vue'
 
+// Components
+import OutputDownloadConfig from "../Outputs/OutputDownloadConfig.vue";
+
+// Parsers
 import {parseSampleIDs} from "../Parsers/ParseSampleIDs";
 import {parseFatherIDs} from "../Parsers/ParseFatherIDs";
 import {parseMotherIDs} from "../Parsers/ParseMotherIDs";
@@ -28,6 +36,7 @@ import {parseBafIDs} from "../Parsers/ParseBafIDs";
 export default Vue.extend({
   name: 'TabConfigFile',
   components:{
+    OutputDownloadConfig,
   },
   props:{
     configPedigree: Object,
