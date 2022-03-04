@@ -4,9 +4,7 @@
   :fileNameDefault="configPedigree.famID+'.txt'" 
   :textToDownload="configText" 
   />
-  <pre> 
-    {{configText}}
-  </pre>
+  <pre>{{configText}}</pre>
 </v-container>
 </template>
 
@@ -49,7 +47,7 @@ export default Vue.extend({
   },
   computed:{
     configText: function(){
-      return "\n"
+      return ""
         + this.sectionMandatory 
         + this.sectionImportant 
         + this.sectionVariantInclusionFilter1
