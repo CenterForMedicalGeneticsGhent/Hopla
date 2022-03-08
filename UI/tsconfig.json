@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "types": [
+      "webpack-env",
+      "jest"
+    ],
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+, "src/components/Parsers/ParseDpHardLimitIDs.js", "src/components/Parsers/ParseAfHardLimitIDs.js", "src/components/Parsers/ParseKeepHeteroIDs.js", "src/components/Parsers/ParseKeepInformativeIDs.js", "src/components/Parsers/ParseDpSoftLimitIDs.js", "src/components/Parsers/ParseNonAffectedIDs.js", "src/components/Parsers/ParseAffectedIDs.js", "src/components/Parsers/ParseCarrierIDs.js", "src/components/Parsers/ParseBafIDs.js"  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
