@@ -15,11 +15,9 @@ jobs:
         with:
           image: cmgg/hopla
           tags: latest ${{ github.ref }}
+          context: ./UI
           containerfiles: |
             ./UI/Dockerfile
-
-      # Podman Login action (https://github.com/redhat-actions/podman-login) also be used to log in,
-      # in which case 'username' and 'password' can be omitted.
       - name: Push To quay.io
         id: push-to-quay
         uses: redhat-actions/push-to-registry@v2
