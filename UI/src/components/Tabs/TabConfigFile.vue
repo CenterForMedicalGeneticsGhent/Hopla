@@ -368,7 +368,7 @@ export default Vue.extend({
       } 
     },
     sectionRemainingFeaturesValueOfP: function(){
-      return  "value.of.p="
+      return  "value.of.P="
             + this.configAdvanced.remainingFeatures.valueOfP
             + "\n"
             ;
