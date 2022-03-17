@@ -111,7 +111,7 @@ export var templateParameters = {
     merlinProfiles:{
         windowSizeVoting: 10000000,
         keepChromosomesRegionsOnly:{
-            keepChromosomesOnly:false,
+            keepChromosomesOnly:true,
             keepRegionsOnly:false,
       }
     }
