@@ -1,8 +1,10 @@
 <template>
-<v-card>
+<v-card
+>
   <v-tabs 
   right
   height=55
+  v-model="tab"
   >
 
     <v-card-title>
@@ -11,7 +13,9 @@
     <v-row>
       <v-col />
       <v-col>
-        <!--<InputUploadConfig />-->
+        <InputUploadConfig 
+        @updateConfig="updateConfig"
+        />
       </v-col>
       <v-col />
     </v-row>
@@ -29,7 +33,7 @@
     </v-tab>
     
     <v-tab-item>
-      <TabPedigree v-model="configPedigree" />
+      <TabPedigree v-model="configPedigree"/>
     </v-tab-item>
     <v-tab-item>
       <TabParameters v-model="configParameters" />
@@ -52,11 +56,20 @@
 <script>
   import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
+
+  // Components
   import TabPedigree from "../Tabs/TabPedigree.vue";
   import TabParameters from "../Tabs/TabParameters.vue";
   import TabAdvanced from "../Tabs/TabAdvanced.vue";
   import TabConfigFile from "../Tabs/TabConfigFile.vue";
   import InputUploadConfig from "../Inputs/InputUploadConfig.vue";
+
+  // Templates
+  import {
+    templatePedigree,
+    templateParameters,
+    templateAdvanced,
+  } from "../Templates";
 
   export default Vue.extend({
     name: 'Form',
@@ -65,49 +78,14 @@
       TabParameters,
       TabAdvanced,
       TabConfigFile,
-      //InputUploadConfig,
+      InputUploadConfig,
     },
     data: function() {
       return {
-        tab: null,
-        configPedigree:{
-          famID: "",
-          configGrandParentsMaternal: {"maternalGrandfather": null, "maternalGrandmother": null},
-          configGrandParentsPaternal: {"paternalGrandfather": null, "paternalGrandmother": null},
-          configParents: {"father": null, "mother": null},
-          configSiblings: [],
-          configEmbryos: {
-            embryoList: [],
-            keepHeteroIDs: false,
-          },
-        },
-        configParameters: {
-          fileVCF:"/path/to/file.vcf",
-          fileCytoband:"/home/projects/coPGT-M/ref/cytoBand_hg38.txt",
-          afHardLimit: 0.25,
-          sampleDisease:{
-            regions:[],
-            disease: "",
-            inheritance: "AD",
-            sequencingNote:"",
-          },
-          merlinProfiles:{
-            windowSizeVoting: 10000000,
-            keepChromosomesRegionsOnly:{
-              keepChromosomesOnly:false,
-              keepRegionsOnly:false,
-            }
-          }
-        },
-        configAdvanced:{
-          remainingFeatures: {
-            limitPmToP: true,
-            valueOfP: 0.15,
-            limitBafToP: false,
-            selfContained: true,
-            regionsFlankingSize: 1000000,
-          },
-        },
+        tab: "Pedigree",
+        configPedigree: cloneDeep(templatePedigree),
+        configParameters: cloneDeep(templateParameters),
+        configAdvanced:cloneDeep(templateAdvanced),
       }
     },
     computed:{
@@ -118,8 +96,34 @@
             configParameters: this.configParameters,
             configAdvanced: this.configAdvanced,
           };
-        },
+        },        
       },
+      configWatcher: {
+        get: function(){
+          return `
+            ${JSON.stringify(this.config)}
+          `;
+        }
+      }
     },
+    methods: {
+      updateConfig: function(newConfig){
+        
+        this.configPedigree = newConfig.configPedigree;
+        this.configParameters = newConfig.configParameters;
+        this.configAdvanced = newConfig.configAdvanced;        
+      }
+    },
+    watch:{
+      configWatcher:{
+        handler: function(newVal,oldVal){
+          if (oldVal != newVal){
+            //code
+          }
+        },
+        deep:false,
+        immediate:false,
+      },
+    },  
   })
 </script>

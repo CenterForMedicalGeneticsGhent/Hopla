@@ -5,7 +5,6 @@
     dense
     outlined
     v-model="famID"
-    v-on:input="handleInput()"
     type="text"
     />
 </v-container>
@@ -19,16 +18,19 @@ export default {
     },
     data: function(){
         return{
-            famID: this.value,
         }
     },
     computed:{
-        //CODE
+        famID: {
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            }
+        }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.famID);
-      },
     },
 }
 </script>

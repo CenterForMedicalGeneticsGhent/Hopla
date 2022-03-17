@@ -24,16 +24,16 @@ v-model="config"
     },
     data: function() {
       return {
-        config: this.value
       };
     },
     computed: {
-      configWatcher: {
+      config:{
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
       title: function(){
         return `Sibling ${this.i+1}`;
@@ -52,9 +52,6 @@ v-model="config"
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       removeCard:function(){
         this.$emit('removeCard');
       }
@@ -63,15 +60,7 @@ v-model="config"
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
     })
 </script>

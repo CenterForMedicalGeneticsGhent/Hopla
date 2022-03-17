@@ -1,4 +1,4 @@
-export function parseBafIDs(configPedigree){
+export default function parseBafIDs(configPedigree){
     var embryoIDs = configPedigree.configEmbryos.embryoList.map(function(d){return d.sampleID});
     var content=function(){   
         var embryoString="";

@@ -1,4 +1,4 @@
-export function parseKeepHeteroIDs(configPedigree){
+export default function parseDpSoftLimitIDs(configPedigree){
     //IDs
     var paternalGrandfather = configPedigree.configGrandParentsPaternal.paternalGrandfather;
     var paternalGrandmother = configPedigree.configGrandParentsPaternal.paternalGrandmother;
@@ -22,7 +22,7 @@ export function parseKeepHeteroIDs(configPedigree){
     content+=function(){
         return "";
     }();
-    //maternalGrandmother 
+    //maternalGrandmother
     content+=function(){
         return "";
     }();
@@ -42,14 +42,14 @@ export function parseKeepHeteroIDs(configPedigree){
     //embryos
     content+=function(){
         var embryoString="";
-        if (configPedigree.configEmbryos.keepHeteroIDs===true){
-            for (let i=0;i<embryos.length;i++){
+        for (let i=0;i<embryos.length;i++){
+            if (embryos[i].keepLimitIDSoftDP===true){
                 embryoString+=`${embryos[i].sampleID},`;
             }
         }
         return embryoString;
     }();
-    // return result
+    //Return result
     if (content){
         return content.slice(0,-1);
     }

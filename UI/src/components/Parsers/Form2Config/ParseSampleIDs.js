@@ -1,4 +1,4 @@
-export function parseSampleIDs(configPedigree){
+export default function parseSampleIDs(configPedigree){
     var paternalGrandfather = function(){
         var paternalGrandfatherID = configPedigree.configGrandParentsPaternal.paternalGrandfather.sampleID;
         if (paternalGrandfatherID!='U3'){

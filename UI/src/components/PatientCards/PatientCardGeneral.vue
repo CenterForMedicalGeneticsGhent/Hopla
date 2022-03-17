@@ -16,18 +16,18 @@ width="220px"
   <v-spacer />
   {{title}}
   <v-spacer />
-   <InputGender v-model="gender" :genderLocked="genderLocked" />
+   <InputGender v-model="config.gender" :genderLocked="genderLocked" />
   </v-card-title>
   <v-card-text
   dense
   class=""
   >
-    <InputSampleID v-model="sampleID" />
-    <InputKeepLimitIDHardDP v-model="keepLimitIDHardDP" v-if="keepLimitIDHardDP!='hide'"/>
-    <InputKeepLimitIDHardAF v-model="keepLimitIDHardAF" v-if="keepLimitIDHardAF!='hide'"/>
-    <InputKeepLimitIDSoftDP v-model="keepLimitIDSoftDP" v-if="keepLimitIDSoftDP!='hide'"/>
-    <InputInformativeIDs v-model="keepInformativeIDs" v-if="keepInformativeIDs!='hide'"/>
-    <InputAffected v-model="diseaseStatus" />
+    <InputSampleID v-model="config.sampleID" />
+    <InputKeepLimitIDHardDP v-model="config.keepLimitIDHardDP" v-if="config.keepLimitIDHardDP!='hide'"/>
+    <InputKeepLimitIDHardAF v-model="config.keepLimitIDHardAF" v-if="config.keepLimitIDHardAF!='hide'"/>
+    <InputKeepLimitIDSoftDP v-model="config.keepLimitIDSoftDP" v-if="config.keepLimitIDSoftDP!='hide'"/>
+    <InputInformativeIDs v-model="config.keepInformativeIDs" v-if="config.keepInformativeIDs!='hide'"/>
+    <InputAffected v-model="config.diseaseStatus" />
     <v-btn
     dense
     depressed
@@ -69,39 +69,20 @@ width="220px"
       genderLocked:Boolean,
     },
     data: function() {
-      var d = {
-        sampleID: this.value.sampleID,
-        gender: this.value.gender,
-        keepInformativeIDs: this.value.keepInformativeIDs,
-        diseaseStatus: this.value.diseaseStatus,
-        keepLimitIDHardDP: this.value.keepLimitIDHardDP,
-        keepLimitIDHardAF: this.value.keepLimitIDHardAF,
-        keepLimitIDSoftDP: this.value.keepLimitIDSoftDP,
-      }
-      return d;
+      return {
+      };
     },
     computed:{
-      config: function(){
-        var c = {
-          sampleID: this.sampleID,
-          gender: this.gender,
-          keepInformativeIDs: this.keepInformativeIDs,
-          diseaseStatus: this.diseaseStatus,
-          keepLimitIDHardDP: this.keepLimitIDHardDP,
-          keepLimitIDHardAF: this.keepLimitIDHardAF,
-          keepLimitIDSoftDP: this.keepLimitIDSoftDP,
-        }
-        return c;
-      },
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
-      },  
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
+      },
       color: function(){
-        var diseaseStatus = this.diseaseStatus;
+        var diseaseStatus = this.config.diseaseStatus;
         if (diseaseStatus=="affected"){
           return "rgba(255,0,0,0.1)";
         }
@@ -152,9 +133,6 @@ width="220px"
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       removeCard: function(){
         this.$emit('removeCard',null);
       },
@@ -163,15 +141,7 @@ width="220px"
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },  
-    })
+  })
 </script>

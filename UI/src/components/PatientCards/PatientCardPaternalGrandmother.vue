@@ -38,27 +38,18 @@ v-else
 <script>
   // Imports
   import Vue from 'vue'
-  import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
+
+  // Components
+  import PatientCardGeneral from "./PatientCardGeneral.vue";
+
+  // Templates
+  import {templatePaternalGrandmother} from "../Templates";
+  var configPaternalGrandmotherAbsentDefault = cloneDeep(templatePaternalGrandmother);
+  var configPaternalGrandmotherDefault = cloneDeep(configPaternalGrandmotherAbsentDefault);
+  configPaternalGrandmotherDefault.sampleID="paternalGrandmotherID";
+
   
-  var configPaternalGrandmotherDefault = {
-    sampleID: "",
-    gender: "F",
-    keepInformativeIDs: false,
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: true,
-    keepLimitIDHardAF: true,
-    keepLimitIDSoftDP: "hide",
-  };
-  var configPaternalGrandmotherAbsentDefault = {
-    sampleID: "U4",
-    gender: "F",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: "hide",
-    keepLimitIDHardAF: "hide",
-    keepLimitIDSoftDP: "hide",
-  };
 
   export default Vue.extend({
     name: 'PatientCardPaternalGrandmother',
@@ -70,16 +61,16 @@ v-else
     },
     data: function() {
       return {
-        config: cloneDeep(configPaternalGrandmotherAbsentDefault),
       };
     },
     computed: {
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
       title: function(){
         return `P. Grandmother`;
@@ -89,9 +80,6 @@ v-else
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       addPaternalGrandmother:function(){
         this.config=cloneDeep(configPaternalGrandmotherDefault);
       },
@@ -103,15 +91,7 @@ v-else
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },
     })
 </script>

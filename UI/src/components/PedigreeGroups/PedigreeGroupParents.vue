@@ -24,7 +24,7 @@ v-model="config"
 </PedigreeGroup>
 </template>
 
-<script lang="ts">
+<script>
   import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardFather from "../PatientCards/PatientCardFather.vue";
@@ -42,13 +42,19 @@ v-model="config"
     },
     data: function() {
       return {
-        config: this.value,
       }
     },
-    methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
+    computed:{
+      config: {
+        get:function(){
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
+    },
+    methods:{
     },
     mounted: function(){
       //CODE

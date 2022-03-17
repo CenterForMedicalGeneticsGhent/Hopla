@@ -14,28 +14,36 @@
 
 
 <script>
+import {config2Form} from "../Parsers/Config2Form";
+
 export default {
     props:{
-        value: Object,
     },
     data: function(){
         return {
-            config: this.value,
         }
     },
     computed:{
-        //CODE
     },
     methods:{
+        emitNewConfig: function (data){
+            this.$emit('updateConfig', data);
+        },
         upload: function(event){
-            var filePath = event.name;
-            // create file reader and load text file
-            var fileReader=new FileReader();
-            fileReader.readAsText(event);
-            fileReader.onload=function(){
-                console.log(fileReader.result)
+            var emit=this.emitNewConfig;
+            if (event!=null){
+                var fileReader=new FileReader();
+                fileReader.readAsText(event);
+                fileReader.onload=function(){
+                    var configText = fileReader.result;
+                    let newConfig = config2Form(configText);
+                    emit(newConfig);
+                }
+                
             }
         },
+    },
+    watch:{
     },
 }
 </script>

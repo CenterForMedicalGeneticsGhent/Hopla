@@ -27,7 +27,7 @@ flat
         <v-col>
             <InputRegion
             v-for="(region,index) in regions"
-            :key="JSON.stringify(region)"
+            :key="index"
             v-model="regions[index]"
             />
         </v-col>
@@ -71,22 +71,19 @@ export default Vue.extend({
     },
     data: function(){
         return{
-            regions: this.value,
         }
     },
     computed:{
-        configWatcher: {
+        regions:{
             get: function(){
-            return `
-                ${JSON.stringify(this.regions)}
-            `;
-            }
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
         },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.regions);
-      },
       removeRegion: function(){
           this.regions=[];
       },
@@ -98,15 +95,7 @@ export default Vue.extend({
         //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
 })
 </script>

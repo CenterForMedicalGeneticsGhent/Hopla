@@ -28,36 +28,26 @@ export default Vue.extend({
     },
     data: function(){
         return{
-            fileVCF: this.value,
         }
     },
     computed:{
-        configWatcher: {
-            get: function(){
-            return `
-                ${JSON.stringify(this.fileVCF)}
-            `;
-            }
+      fileVCF: {
+        get:function(){
+          return this.value;
         },
+        set: function(d){
+          this.$emit('input',d);
+        },
+      },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.fileVCF);
-      },
+      //CODE
     },
     mounted:function(){
-        //CODE
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
 })
 </script>

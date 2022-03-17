@@ -5,7 +5,6 @@
     dense
     outlined
     v-model="sequencingNote"
-    v-on:input="handleInput()"
     type="text"
     />
 </v-container>
@@ -19,16 +18,20 @@ export default {
     },
     data: function(){
         return{
-            sequencingNote: this.value,
         }
     },
     computed:{
-        //CODE
+        sequencingNote:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.sequencingNote);
-      },
+        //CODE
     },
 }
 </script>

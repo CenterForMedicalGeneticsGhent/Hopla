@@ -5,7 +5,6 @@
     dense
     outlined
     v-model="sampleID"
-    v-on:input="handleInput()"
     type="text"
     />
 </template>
@@ -18,16 +17,19 @@ export default {
     },
     data: function(){
         return{
-            sampleID: this.value,
         }
     },
     computed:{
-        //CODE
+        sampleID: {
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.sampleID);
-      },
     },
 }
 </script>

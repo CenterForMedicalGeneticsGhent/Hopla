@@ -1,4 +1,4 @@
-export function parseFatherIDs(configPedigree){
+export default function parseFatherIDs(configPedigree){
     //IDs
     var paternalGrandfatherID = configPedigree.configGrandParentsPaternal.paternalGrandfather.sampleID;
     var paternalGrandmotherID = configPedigree.configGrandParentsPaternal.paternalGrandmother.sampleID;

@@ -5,7 +5,7 @@
   justify="center"  
   >
     <v-col class="d-flex justify-center align-center">
-      <InputArgumentsRemaining v-model="remainingFeatures" />
+      <InputArgumentsRemaining v-model="config.remainingFeatures" />
     </v-col>
     <v-col class="d-flex justify-center align-center">
     </v-col>
@@ -30,38 +30,23 @@
     },
     data: function() {
       return {
-        remainingFeatures: this.value.remainingFeatures,
       }
     },
     computed:{
-      config: function(){
-        return {
-          remainingFeatures: this.remainingFeatures,
-        };
-      },
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
         }
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      }
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },  
     })
 </script>

@@ -4,7 +4,7 @@ width="100%"
 imgType='embryos'
 title="Embryos"
 imgLicense="Designed by Culmbio from Flaticon"
-v-model="embryoList"
+v-model="config.embryoList"
 >
   <v-row>
     <v-col
@@ -15,7 +15,7 @@ v-model="embryoList"
       <PatientCardEmbryo
       :key="col+counter"
       v-if="col<=countEmbryos()" 
-      v-model="embryoList[col-1]"
+      v-model="config.embryoList[col-1]"
       :i="col-1"
       @removeCard="removeEmbryo(col-1)"
       />
@@ -46,29 +46,28 @@ v-model="embryoList"
     </v-col>
 
     <v-col class="d-flex justify-center align-center">
-      <InputHeteroIDs v-model="keepHeteroIDs" />
+      <InputHeteroIDs v-model="config.keepHeteroIDs" />
     </v-col>
   </v-row>
 </PedigreeGroup>
 </template>
 
 <script>
+  //Imports
   import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
+
+  // Components
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardEmbryo from "../PatientCards/PatientCardEmbryo.vue";
   import InputHeteroIDs from "../Inputs/InputHeteroIDs.vue";
 
-  // configEmbryoDefault
-  var configEmbryosDefault = {
-    sampleID: "",
-    gender: "NA",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: "hide",
-    keepLimitIDHardAF: "hide",
-    keepLimitIDSoftDP: true,
-  };
+  // Templates
+  import {templateEmbryo} from "../Templates";
+  var configEmbryosDefault = cloneDeep(templateEmbryo);
+  configEmbryosDefault.sampleID="embryoID";
+
+  
 
   export default Vue.extend({
     name: 'PedigreeGroupEmbryos',
@@ -82,41 +81,31 @@ v-model="embryoList"
     },
     data: function() {
       return {
-        embryoList: this.value.embryoList,
-        keepHeteroIDs: this.value.keepHeteroIDs,
         counter:0,
       }
     },
     computed:{
-      config: function(){
-        return {
-          embryoList: this.embryoList,
-          keepHeteroIDs: this.keepHeteroIDs,
-        }
-      },
-      configWatcher: {
+      config:{
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',this.config);
+        },
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       countEmbryos: function(){
-        return this.embryoList.length;
+        return this.config.embryoList.length;
       },
       countRows: function(){
         return Math.ceil(this.countEmbryos()/this.colsMax);
       },
       addEmbryo: function(){
-        this.embryoList.push(cloneDeep(configEmbryosDefault));
+        this.config.embryoList.push(cloneDeep(configEmbryosDefault));
       },
       removeEmbryo: function(j){
-        this.embryoList = this.embryoList.filter((_, index) => index != j);
+        this.config.embryoList = this.config.embryoList.filter((_, index) => index != j);
         this.counter++;
       },
     },
@@ -124,15 +113,7 @@ v-model="embryoList"
       //code
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },  
     })
 </script>

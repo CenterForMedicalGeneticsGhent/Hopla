@@ -2,7 +2,6 @@
     <v-radio-group
     class="ma-0 pa-0"
     v-model="diseaseStatus2RadioBtnNr"
-    v-on:change="handleInput()"
     dense
     >
       <v-radio
@@ -39,12 +38,17 @@ export default {
         value: String,
     },
     data: function(){
-        let d  = {
-            diseaseStatus: this.value,
-        };
-        return d;
+        return {};
     },
     computed:{
+      diseaseStatus:{
+        get: function(){
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
+      },
       diseaseStatus2RadioBtnNr: {
         get: function(){ 
           for (let i=0; i<diseaseStatusOptions.length;i++){
@@ -60,9 +64,6 @@ export default {
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.diseaseStatus);
-      },
     },
     mounted: function(){
         //CODE

@@ -21,43 +21,33 @@ import InputFileCytoband from "./InputFileCytoband.vue";
 export default Vue.extend({
     name: 'InputArgumentsOptional',
     props:{
-        value: String,
+      value: String,
     },
     components:{
-        InputFileCytoband,
+      InputFileCytoband,
     },
     data: function(){
-        return{
-            fileCytoband: this.value,
-        }
+      return{
+      }
     },
     computed:{
-        configWatcher: {
-            get: function(){
-            return `
-                ${JSON.stringify(this.fileCytoband)}
-            `;
-            }
+      fileCytoband: {
+        get: function(){
+          return this.value;
         },
+        set: function(d){
+          this.$emit('input',d);
+        },
+      },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.fileCytoband);
-      },
+      //CODE
     },
     mounted:function(){
-        //CODE
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
 })
 </script>

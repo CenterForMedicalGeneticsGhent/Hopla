@@ -4,8 +4,7 @@ label="Value of P"
 :disabled="disabled"
 outlined
 v-model="valueOfP"
-type="number"
-@change="handleInput()"
+:key="key"
 />
 </template>
 
@@ -18,29 +17,27 @@ export default {
     },
     data: function(){
         return{
-            valueOfP: this.value,
-            valueOfPOld: this.value,
+            key:0,
         }
     },
     computed:{
-        //CODE
+        valueOfP:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                if (isNaN(+d) || +d<0 || +d>1){
+                    this.$emit('input',this.valueOfP);
+                    this.key++ //Update view and reset to previous valid value
+                }
+                else {
+                    this.$emit('input',Number(d));
+                }
+            }
+        },
     },
     methods:{
-        handleInput: function(){
-            var valueOfPNew = Number(this.valueOfP); //If not number it is transformed to 0
-            if (valueOfPNew===this.valueOfPOld){
-                //Nothing changes, do nothing
-            }
-            else if (valueOfPNew>0 && valueOfPNew<=1){
-                // Valid input
-                this.valueOfPOld=valueOfPNew;
-                this.$emit('input',valueOfPNew);
-            } 
-            else {
-                //Invalid input, change back to previous value
-                this.valueOfP = this.valueOfPOld;
-            } 
-        },
+        //CODE
     },
 }
 </script>

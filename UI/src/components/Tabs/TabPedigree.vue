@@ -1,5 +1,6 @@
 <template>
-<v-container>
+<v-container
+>
   <v-row
   align="center"
   justify="center"
@@ -8,7 +9,7 @@
     <v-col class="justify-center align-center">
     </v-col>
     <v-col class="justify-center align-center">
-      <InputFamilyID v-model="famID"/>
+      <InputFamilyID v-model="config.famID"/>
     </v-col>
     <v-col class="justify-center align-center">
     </v-col>
@@ -17,29 +18,29 @@
   class="pb-0 pt-0"
   >
     <v-col class="d-flex justify-center align-center">
-      <PedigreeGroupGrandparentsPaternal v-model="configGrandParentsPaternal"/>
+      <PedigreeGroupGrandparentsPaternal v-model="config.configGrandParentsPaternal"/>
     </v-col>
     
     <v-col class="d-flex justify-center align-center">
-      <PedigreeGroupGrandparentsMaternal v-model="configGrandParentsMaternal"/>
+      <PedigreeGroupGrandparentsMaternal v-model="config.configGrandParentsMaternal"/>
     </v-col>
   </v-row>
   
   <v-row>
     <v-col class="d-flex justify-center align-center">
-      <PedigreeGroupParents v-model="configParents"/>
+      <PedigreeGroupParents v-model="config.configParents"/>
     </v-col>
   </v-row>
 
   <v-row>
     <v-col>
-      <PedigreeGroupSiblings v-model="configSiblings"/>
+      <PedigreeGroupSiblings v-model="config.configSiblings"/>
     </v-col>
   </v-row>
 
   <v-row>
     <v-col>
-      <PedigreeGroupEmbryos v-model="configEmbryos"/>
+      <PedigreeGroupEmbryos v-model="config.configEmbryos"/>
     </v-col>
   </v-row>
 </v-container>
@@ -68,50 +69,23 @@
     props:{
       value: Object,
     },
-    data: function() {
+    data: function(){
       return {
-        famID: this.value.famID,
-        configGrandParentsMaternal: this.value.configGrandParentsMaternal,
-        configGrandParentsPaternal: this.value.configGrandParentsPaternal,
-        configParents: this.value.configParents,
-        configSiblings: this.value.configSiblings,
-        configEmbryos: this.value.configEmbryos,
       }
     },
     computed:{
-      config: function(){
-        return {
-          famID: this.famID,
-          configGrandParentsMaternal: this.configGrandParentsMaternal,
-          configGrandParentsPaternal: this.configGrandParentsPaternal,
-          configParents: this.configParents,
-          configSiblings: this.configSiblings,
-          configEmbryos: this.configEmbryos,
-        };
-      },
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
         }
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      }
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
     },  
     })
 </script>

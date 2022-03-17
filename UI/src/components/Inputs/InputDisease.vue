@@ -5,7 +5,6 @@
     dense
     outlined
     v-model="disease"
-    v-on:input="handleInput()"
     type="text"
     />
 </v-container>
@@ -19,16 +18,20 @@ export default {
     },
     data: function(){
         return{
-            disease: this.value,
         }
     },
     computed:{
-        //CODE
+        disease:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.disease);
-      },
+        //CODE
     },
 }
 </script>

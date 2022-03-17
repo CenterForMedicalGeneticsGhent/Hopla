@@ -6,7 +6,6 @@
     dense
     outlined
     v-model="fileVCF"
-    v-on:input="handleInput()"
     type="text"
     />
 </v-container>
@@ -20,16 +19,20 @@ export default {
     },
     data: function(){
         return{
-            fileVCF: this.value,
         }
     },
     computed:{
-        //CODE
+        fileVCF:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.fileVCF);
-      },
+        //CODE
     },
 }
 </script>
