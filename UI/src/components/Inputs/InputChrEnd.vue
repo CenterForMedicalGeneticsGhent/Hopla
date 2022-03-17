@@ -3,8 +3,7 @@
 label="End"
 outlined
 v-model="chrEnd"
-type="number"
-@change="handleInput()"
+:key="key"
 />
 </template>
 
@@ -16,29 +15,27 @@ export default {
     },
     data: function(){
         return{
-            chrEnd: this.value,
-            chrEndOld: this.value,
+            key:0,
         }
     },
     computed:{
-        //CODE
+        chrEnd:{
+            get:function(){
+                return this.value;
+            },
+            set: function(d){
+                if (isNaN(d) || Number(d)<=0 ){
+                    this.$emit('input',this.chrEnd);
+                    this.key++ //Update view and reset to previous valid value
+                }
+                else {
+                    this.$emit('input',Number(d));
+                }
+            },
+        },
     },
     methods:{
-        handleInput: function(){
-            var chrEndNew = Math.ceil(Number(this.chrEnd)); //If not number it is transformed to 0
-            if (chrEndNew===this.chrEndOld){
-                //Nothing changes, do nothing
-            }
-            else if (chrEndNew>0){
-                // Valid input
-                this.chrEndOld=chrEndNew;
-                this.$emit('input',chrEndNew);
-            } 
-            else {
-                //Invalid input, change back to previous value
-                this.chrEnd = this.chrEndOld;
-            } 
-        },
+        //CODE
     },
 }
 </script>

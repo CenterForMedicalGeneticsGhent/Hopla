@@ -38,27 +38,17 @@ v-else
 <script>
   // Imports
   import Vue from 'vue'
-  import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
-  
-  var configPaternalGrandfatherDefault = {
-    sampleID: "",
-    gender: "M",
-    keepInformativeIDs: false,
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: true,
-    keepLimitIDHardAF: true,
-    keepLimitIDSoftDP: "hide",
-  };
-  var configPaternalGrandfatherAbsentDefault = {
-    sampleID: "U3",
-    gender: "M",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: "hide",
-    keepLimitIDHardAF: "hide",
-    keepLimitIDSoftDP: "hide",
-  };
+
+  // Components
+  import PatientCardGeneral from "./PatientCardGeneral.vue";
+
+  //Templates
+  import {templatePaternalGrandfather} from "../Templates";
+  var configPaternalGrandfatherAbsentDefault = cloneDeep(templatePaternalGrandfather);
+  var configPaternalGrandfatherDefault = cloneDeep(configPaternalGrandfatherAbsentDefault);
+  configPaternalGrandfatherDefault.sampleID= "paternalGrandfatherID";
+
 
   export default Vue.extend({
     name: 'PatientCardPaternalGrandfather',
@@ -66,20 +56,20 @@ v-else
       PatientCardGeneral,
     },
     props:{
-      value: Object,
+      value: Object,  
     },
     data: function() {
       return {
-        config: cloneDeep(configPaternalGrandfatherAbsentDefault),
       };
     },
     computed: {
-      configWatcher: {
+      config:{
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
       title: function(){
         return `P. Grandfather`;
@@ -89,9 +79,6 @@ v-else
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       addPaternalGrandfather:function(){
         this.config=cloneDeep(configPaternalGrandfatherDefault);
       },
@@ -103,15 +90,7 @@ v-else
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },
     })
 </script>

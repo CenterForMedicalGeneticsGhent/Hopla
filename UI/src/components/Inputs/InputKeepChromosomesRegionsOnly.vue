@@ -1,7 +1,7 @@
 <template>
     <v-radio-group
     class="ma-0 pa-0"
-    v-model="optionChosen"
+    v-model="config"
     dense
     >
       <v-radio
@@ -31,70 +31,54 @@ export default Vue.extend({
     },
     data: function(){
       return {
-        keepChromosomesOnly: this.value.keepChromosomesOnly,
-        keepRegionsOnly: this.value.keepRegionsOnly,
       }
     },
     computed:{
-      optionChosen:{
+      config:{
         get: function(){
-          if ((!this.keepChromosomesOnly) && (!this.keepRegionsOnly)){
-            return 0;
-          } 
-          else if ((this.keepChromosomesOnly) && (!this.keepRegionsOnly)){
+          if (this.value.keepChromosomesOnly==true && this.value.keepRegionsOnly==false){
             return 1;
           }
-          else if ((!this.keepChromosomesOnly) && (this.keepRegionsOnly)){
+          else if (this.value.keepChromosomesOnly==false && this.value.keepRegionsOnly==true){
             return 2;
           }
           else {
             return 0;
           }
         },
-        set: function(i){
-          if (i==0){
-            [this.keepChromosomesOnly, this.keepRegionsOnly] = [false,false];
+        set: function(d){
+          console.log(d)
+          if (d==0){
+            this.$emit('input',{
+              keepChromosomesOnly:false,
+              keepRegionsOnly:false,
+
+            });
           }
-          else if (i==1){
-            [this.keepChromosomesOnly, this.keepRegionsOnly] = [true,false];
+          else if (d==1){
+            this.$emit('input',{
+              keepChromosomesOnly:true,
+              keepRegionsOnly:false,
+
+            });
           }
-          else if (i==2){
-            [this.keepChromosomesOnly, this.keepRegionsOnly] = [false,true];
-          }
-        }
-      },
-      config: function(){
-        return {
-          keepChromosomesOnly: this.keepChromosomesOnly,
-          keepRegionsOnly: this.keepRegionsOnly,
-        }
-      },
-      configWatcher: {
-            get: function(){
-            return `
-                ${JSON.stringify(this.config)}
-            `;
-            }
+          else if (d==2){
+            this.$emit('input',{
+              keepChromosomesOnly:false,
+              keepRegionsOnly:true,
+            });
+          }      
         },
+    },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
+      //CODE
     },
     mounted: function(){
-        //CODE
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     }, 
 })
 </script>

@@ -6,7 +6,6 @@
     dense
     outlined
     v-model="fileCytoband"
-    v-on:input="handleInput()"
     type="text"
     />
 </v-container>
@@ -20,16 +19,20 @@ export default {
     },
     data: function(){
         return{
-            fileCytoband: this.value,
         }
     },
     computed:{
-        //CODE
+        fileCytoband: {
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            }
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.fileCytoband);
-      },
+        //CODE
     },
 }
 </script>

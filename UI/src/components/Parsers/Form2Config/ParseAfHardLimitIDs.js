@@ -1,19 +1,19 @@
-export function parseDpHardLimitIDs(configPedigree){
-     //IDs
-     var paternalGrandfather = configPedigree.configGrandParentsPaternal.paternalGrandfather;
-     var paternalGrandmother = configPedigree.configGrandParentsPaternal.paternalGrandmother;
-     var maternalGrandfather = configPedigree.configGrandParentsMaternal.maternalGrandfather;
-     var maternalGrandmother = configPedigree.configGrandParentsMaternal.maternalGrandmother;
-     var father = configPedigree.configParents.father;
-     var mother = configPedigree.configParents.mother;
-     var siblings = configPedigree.configSiblings;
-     var embryos = configPedigree.configEmbryos.embryoList;
-     //logic for each relative
-     var content="";
-     // paternalGrandfather
-     content += function(){
+export default function parseAfHardLimitIDs(configPedigree){
+    //IDs
+    var paternalGrandfather = configPedigree.configGrandParentsPaternal.paternalGrandfather;
+    var paternalGrandmother = configPedigree.configGrandParentsPaternal.paternalGrandmother;
+    var maternalGrandfather = configPedigree.configGrandParentsMaternal.maternalGrandfather;
+    var maternalGrandmother = configPedigree.configGrandParentsMaternal.maternalGrandmother;
+    var father = configPedigree.configParents.father;
+    var mother = configPedigree.configParents.mother;
+    var siblings = configPedigree.configSiblings;
+    var embryos = configPedigree.configEmbryos.embryoList;
+    //logic for each relative
+    var content="";
+    //paternalGrandfather
+    content+=function(){
         if (paternalGrandfather.sampleID!='U3'){
-            if (paternalGrandfather.keepLimitIDHardDP){
+            if (paternalGrandfather.keepLimitIDHardAF){
                 return `${paternalGrandfather.sampleID},`;
             }
             else {
@@ -22,10 +22,10 @@ export function parseDpHardLimitIDs(configPedigree){
         }
         return "";
     }();
-    // paternalGrandmother
-    content+= function(){
+    //paternalGrandmother
+    content+=function(){
         if (paternalGrandmother.sampleID!='U4'){
-            if (paternalGrandmother.keepLimitIDHardDP){
+            if (paternalGrandmother.keepLimitIDHardAF){
                 return `${paternalGrandmother.sampleID},`;
             }
             else {
@@ -37,7 +37,7 @@ export function parseDpHardLimitIDs(configPedigree){
     //maternalGrandfather
     content+=function(){
         if (maternalGrandfather.sampleID!='U5'){
-            if (maternalGrandfather.keepLimitIDHardDP){
+            if (maternalGrandfather.keepLimitIDHardAF){
                 return `${maternalGrandfather.sampleID},`;
             }
             else {
@@ -49,7 +49,7 @@ export function parseDpHardLimitIDs(configPedigree){
     //maternalGrandmother
     content+=function(){
         if (maternalGrandmother.sampleID!='U6'){
-            if (maternalGrandmother.keepLimitIDHardDP){
+            if (maternalGrandmother.keepLimitIDHardAF){
                 return `${maternalGrandmother.sampleID},`;
             }
             else {
@@ -61,7 +61,7 @@ export function parseDpHardLimitIDs(configPedigree){
     //father
     content+=function(){
         if (paternalGrandmother.sampleID!="U4" || paternalGrandfather.sampleID!="U3" || father.sampleID!='U1'){
-            if (father.keepLimitIDHardDP===true){
+            if (father.keepLimitIDHardAF===true){
                 return `${father.sampleID},`;
             }
             else {
@@ -73,7 +73,7 @@ export function parseDpHardLimitIDs(configPedigree){
     //mother
     content+=function(){
         if (maternalGrandmother.sampleID!="U6" || maternalGrandfather.sampleID!="U5" || mother.sampleID!='U2'){
-            if (mother.keepLimitIDHardDP===true){
+            if (mother.keepLimitIDHardAF===true){
                 return `${mother.sampleID},`;
             }
             else {
@@ -86,7 +86,7 @@ export function parseDpHardLimitIDs(configPedigree){
     content+=function(){
         var siblingsString = "";
         for (let i=0; i<siblings.length;i++){
-            if (siblings[i].keepLimitIDHardDP===true){
+            if (siblings[i].keepLimitIDHardAF===true){
                 siblingsString+=`${siblings[i].sampleID},`;
             }
         }
@@ -98,6 +98,7 @@ export function parseDpHardLimitIDs(configPedigree){
         var embryoString="";
         return embryoString;
     }();
+    //Return result
     if (content){
         return content.slice(0,-1);
     }

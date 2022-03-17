@@ -38,27 +38,16 @@ v-else
 <script>
   // Imports
   import Vue from 'vue'
-  import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
   
-  var configMotherDefault = {
-    sampleID: "",
-    gender: "F",
-    keepInformativeIDs: true,
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: true,
-    keepLimitIDHardAF: true,
-    keepLimitIDSoftDP: "hide",
-  };
-  var configMotherAbsentDefault = {
-    sampleID: "U2",
-    gender: "F",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: "hide",
-    keepLimitIDHardAF: "hide",
-    keepLimitIDSoftDP: "hide",
-  };
+   //Components
+  import PatientCardGeneral from "./PatientCardGeneral.vue";
+
+  //Templates 
+  import {templateMother} from "../Templates";
+  var configMotherAbsentDefault = cloneDeep(templateMother);
+  var configMotherDefault = cloneDeep(configMotherAbsentDefault);
+  configMotherDefault.sampleID="motherID";
 
   export default Vue.extend({
     name: 'PatientCardMother',
@@ -70,16 +59,16 @@ v-else
     },
     data: function() {
       return {
-        config: cloneDeep(configMotherAbsentDefault),
       };
     },
     computed: {
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
       title: function(){
         return `Mother`;
@@ -89,9 +78,6 @@ v-else
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       addMother:function(){
         this.config=cloneDeep(configMotherDefault);
       },
@@ -103,15 +89,7 @@ v-else
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },
-    })
+  })
 </script>

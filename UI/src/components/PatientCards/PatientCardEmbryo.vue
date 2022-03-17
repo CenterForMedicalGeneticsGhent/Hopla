@@ -24,25 +24,22 @@ cardType="embryo"
     },
     data: function() {
       return {
-        config: this.value
       };
     },
     computed: {
-      configWatcher: {
-        get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+      config:{
+        get:function(){
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
       title: function(){
         return `Embryo ${this.i+1}`;
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       removeCard:function(){
         this.$emit('removeCard');
       }
@@ -51,15 +48,6 @@ cardType="embryo"
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
     },
     })
 </script>

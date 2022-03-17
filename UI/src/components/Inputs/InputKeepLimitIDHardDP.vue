@@ -4,7 +4,6 @@
     class="InputKeepLimitIDHardDP ma-0 pa-0"
     v-model="keepID"
     :label="label"
-    @click="handleInput()"
     />
 </template>
 
@@ -17,18 +16,23 @@ export default {
     },
     data: function(){
         return {
-            keepID: this.value,
         };
     },
     computed:{
+        keepID:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            }
+        },
         label: function(){
             return `DP Hard Limit ID`;
         }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.keepID);
-      },
+        //CODE
     },
     mounted: function(){
         //CODE

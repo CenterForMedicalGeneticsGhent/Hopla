@@ -25,37 +25,27 @@ export default Vue.extend({
       InputAfHardLimit,
     },
     data: function(){
-        return{
-            afHardLimit: this.value,
-        }
+      return{
+      }
     },
     computed:{
-        configWatcher: {
-            get: function(){
-            return `
-                ${JSON.stringify(this.afHardLimit)}
-            `;
-            }
+      afHardLimit: {
+        get: function(){
+          return this.value;
         },
+        set: function(d){
+          this.$emit('input',d);
+        }
+      },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.afHardLimit);
-      },
+      //CODE
     },
     mounted:function(){
-        //CODE
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
 })
 </script>

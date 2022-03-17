@@ -4,7 +4,6 @@
     class="ma-0 pa-0"
     v-model="limitPmToP"
     label="Limit PM to P"
-    @click="handleInput()"
     />
 </template>
 
@@ -16,17 +15,21 @@ export default {
         value: Boolean,
     },
     data: function(){
-        let d  = {
-            limitPmToP: this.value,
+        return {    
         };
-        return d;
     },
     computed:{
+        limitPmToP:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.limitPmToP);
-      },
+        //CODE
     },
     mounted: function(){
         //CODE

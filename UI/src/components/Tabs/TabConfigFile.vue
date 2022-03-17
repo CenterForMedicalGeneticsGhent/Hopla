@@ -15,21 +15,21 @@ import Vue from 'vue'
 import OutputDownloadConfig from "../Outputs/OutputDownloadConfig.vue";
 
 // Parsers
-import {parseSampleIDs} from "../Parsers/ParseSampleIDs";
-import {parseFatherIDs} from "../Parsers/ParseFatherIDs";
-import {parseMotherIDs} from "../Parsers/ParseMotherIDs";
-import {parseGenders} from "../Parsers/ParseGenders";
-import {parseDpHardLimitIDs}  from "../Parsers/ParseDpHardLimitIDs";
-import {parseAfHardLimitIDs}  from "../Parsers/ParseAfHardLimitIDs";
-import {parseDpSoftLimitIDs}  from "../Parsers/ParseDpSoftLimitIDs";
-import {parseKeepInformativeIDs} from "../Parsers/ParseKeepInformativeIDs";
-import {parseKeepHeteroIDs} from "../Parsers/ParseKeepHeteroIDs";
-import {parseCarrierIDs} from "../Parsers/ParseCarrierIDs";
-import {parseAffectedIDs} from "../Parsers/ParseAffectedIDs";
-import {parseNonAffectedIDs} from "../Parsers/ParseNonAffectedIDs";
-import {parseBafIDs} from "../Parsers/ParseBafIDs";
-
-
+import {
+  parseSampleIDs,
+  parseFatherIDs,
+  parseMotherIDs,
+  parseGenders,
+  parseDpHardLimitIDs,
+  parseAfHardLimitIDs,
+  parseDpSoftLimitIDs,
+  parseKeepInformativeIDs,
+  parseKeepHeteroIDs,
+  parseCarrierIDs,
+  parseAffectedIDs,
+  parseNonAffectedIDs,
+  parseBafIDs,
+} from "../Parsers/Form2Config";
 
 export default Vue.extend({
   name: 'TabConfigFile',
@@ -48,6 +48,7 @@ export default Vue.extend({
   computed:{
     configText: function(){
       return ""
+        + this.sectionPedigreeInfo
         + this.sectionMandatory 
         + this.sectionImportant 
         + this.sectionVariantInclusionFilter1
@@ -59,7 +60,18 @@ export default Vue.extend({
         ;
       },
 
-
+    sectionPedigreeInfo: function(){
+      return  this.sectionPedigreeInfoTitle
+            + this.sectionPedigreePaternalGrandfather
+            + this.sectionPedigreePaternalGrandmother
+            + this.sectionPedigreeMaternalGrandfather
+            + this.sectionPedigreeMaternalGrandmother
+            + this.sectionPedigreeFather
+            + this.sectionPedigreeMother
+            + this.sectionPedigreeSiblings
+            + this.sectionPedigreeEmbryos
+            ;
+    },
     sectionMandatory: function(){
       return  this.sectionMandatoryTitle
           +   this.sectionMandatoryVcfFile
@@ -122,6 +134,62 @@ export default Vue.extend({
             + this.sectionRemainingFeaturesValueOfP
             + this.sectionRemainingFeaturesSelfContained
             + this.sectionRemainingFeaturesRegionsFlankingSize
+            ;
+    },
+
+
+    sectionPedigreeInfoTitle: function(){
+      return  "# ------\n"
+            + "# HEADER\n"
+            + "# ------\n"
+            ;        
+    },
+    sectionPedigreePaternalGrandfather: function(){
+      return  "# paternalGrandfather="
+            + this.configPedigree.configGrandParentsPaternal.paternalGrandfather.sampleID
+            + "\n"
+            ;
+    },
+    sectionPedigreePaternalGrandmother: function(){
+      return  "# paternalGrandmother="
+            + this.configPedigree.configGrandParentsPaternal.paternalGrandmother.sampleID
+            + "\n"
+            ;
+    },
+    sectionPedigreeMaternalGrandfather: function(){
+      return  "# maternalGrandfather="
+            + this.configPedigree.configGrandParentsMaternal.maternalGrandfather.sampleID
+            + "\n"
+            ;
+    },
+    sectionPedigreeMaternalGrandmother: function(){
+      return  "# maternalGrandmother="
+            + this.configPedigree.configGrandParentsMaternal.maternalGrandmother.sampleID
+            + "\n"
+            ;
+    },
+    sectionPedigreeFather: function(){
+      return  "# father="
+            + this.configPedigree.configParents.father.sampleID
+            + "\n"
+            ;
+    },
+    sectionPedigreeMother: function(){
+      return  "# mother="
+            + this.configPedigree.configParents.mother.sampleID
+            + "\n"
+            ;
+    },
+    sectionPedigreeSiblings: function(){
+      return  "# siblings="
+            + this.configPedigree.configSiblings.map(function(d){return d.sampleID}).toString()
+            + "\n"
+            ;
+    },
+    sectionPedigreeEmbryos: function(){
+      return  "# embryos="
+            + this.configPedigree.configEmbryos.embryoList.map(function(d){return d.sampleID}).toString()
+            + "\n"
             ;
     },
 

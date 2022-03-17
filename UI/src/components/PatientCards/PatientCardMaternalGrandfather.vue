@@ -38,28 +38,17 @@ v-else
 <script>
   // Imports
   import Vue from 'vue'
-  import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
+
+  // Components
+  import PatientCardGeneral from "./PatientCardGeneral.vue";
+
+  // Templates
+  import {templateMaternalGrandfather} from "../Templates";
+  var configMaternalGrandfatherAbsentDefault = cloneDeep(templateMaternalGrandfather);
+  var configMaternalGrandfatherDefault = cloneDeep(templateMaternalGrandfather);
+  configMaternalGrandfatherDefault.sampleID="maternalGrandfatherID";
   
-  var configMaternalGrandfatherDefault = {
-    sampleID: "",
-    gender: "M",
-    keepInformativeIDs: false,
-    keepHeteroIDs: false,
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: true,
-    keepLimitIDHardAF: true,
-    keepLimitIDSoftDP: "hide",
-  };
-  var configMaternalGrandfatherAbsentDefault = {
-    sampleID: "U5",
-    gender: "M",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: "hide",
-    keepLimitIDHardAF: "hide",
-    keepLimitIDSoftDP: "hide",
-  };
 
   export default Vue.extend({
     name: 'PatientCardMaternalGrandfather',
@@ -71,16 +60,16 @@ v-else
     },
     data: function() {
       return {
-        config: cloneDeep(configMaternalGrandfatherAbsentDefault),
       };
     },
     computed: {
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
       title: function(){
         return `M. Grandfather`;
@@ -90,9 +79,6 @@ v-else
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       addMaternalGrandfather:function(){
         this.config=cloneDeep(configMaternalGrandfatherDefault);
       },
@@ -104,15 +90,7 @@ v-else
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },
     })
 </script>

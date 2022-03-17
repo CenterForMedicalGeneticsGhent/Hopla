@@ -5,13 +5,13 @@
   justify="center"  
   >
     <v-col class="d-flex justify-center align-center">
-      <InputArgumentsMandatory v-model="fileVCF" />
+      <InputArgumentsMandatory v-model="config.fileVCF" />
     </v-col>
     <v-col class="d-flex justify-center align-center">
-      <InputArgumentsOptional v-model="fileCytoband" />
+      <InputArgumentsOptional v-model="config.fileCytoband" />
     </v-col>
     <v-col class="d-flex justify-center align-center">
-      <InputArgumentsVariantInclusion v-model="afHardLimit" />
+      <InputArgumentsVariantInclusion v-model="config.afHardLimit" />
     </v-col>
   </v-row>
 
@@ -20,7 +20,7 @@
   justify="center"
   >
     <v-col class="d-flex justify-center align-center">
-      <InputArgumentsSampleDisease v-model="sampleDisease" />
+      <InputArgumentsSampleDisease v-model="config.sampleDisease" />
     </v-col>
   </v-row>
 
@@ -29,7 +29,7 @@
   justify="center"
   >
     <v-col class="d-flex justify-center align-center" :cols="4">
-      <InputArgumentsMerlinProfiles v-model="merlinProfiles" />
+      <InputArgumentsMerlinProfiles v-model="config.merlinProfiles" />
     </v-col>
     <v-col class="d-flex justify-center align-center" :cols="8" >
     </v-col>
@@ -61,46 +61,23 @@
     },
     data: function() {
       return {
-        fileVCF: this.value.fileVCF,
-        fileCytoband: this.value.fileCytoband,
-        afHardLimit: this.value.afHardLimit,
-        sampleDisease: this.value.sampleDisease,
-        merlinProfiles: this.value.merlinProfiles,
-      }
+      };
     },
     computed:{
-      config: function(){
-        return {
-          fileVCF: this.fileVCF,
-          fileCytoband: this.fileCytoband,
-          afHardLimit: this.afHardLimit,
-          sampleDisease: this.sampleDisease,
-          merlinProfiles: this.merlinProfiles,
-        };
-      },
-      configWatcher: {
+      config:{
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
         }
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      }
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     },  
     })
 </script>

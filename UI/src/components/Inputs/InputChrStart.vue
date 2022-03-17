@@ -3,8 +3,7 @@
 label="Start"
 outlined
 v-model="chrStart"
-type="number"
-@change="handleInput()"
+:key="key"
 />
 </template>
 
@@ -16,29 +15,27 @@ export default {
     },
     data: function(){
         return{
-            chrStart: this.value,
-            chrStartOld: this.value,
+            key:0,
         }
     },
     computed:{
-        //CODE
+        chrStart: {
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                if (isNaN(d) || Number(d)<=0 ){
+                    this.$emit('input',this.chrStart);
+                    this.key++ //Update view and reset to previous valid value
+                }
+                else {
+                    this.$emit('input',Number(d));
+                }
+            },
+        },
     },
     methods:{
-        handleInput: function(){
-                var chrStartNew = Math.ceil(Number(this.chrStart)); //If not number it is transformed to 0
-                if (chrStartNew===this.chrStartOld){
-                    //Nothing changes, do nothing
-                }
-                else if (chrStartNew>0){
-                    // Valid input
-                    this.chrStartOld=chrStartNew;
-                    this.$emit('input',chrStartNew);
-                } 
-                else {
-                    //Invalid input, change back to previous value
-                    this.chrStart = this.chrStartOld;
-                } 
-        },
+        //CODE
     },
 }
 </script>

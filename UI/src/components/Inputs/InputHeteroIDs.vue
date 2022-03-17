@@ -4,7 +4,6 @@
     class="ma-0 pa-0"
     v-model="keepHeteroIDs"
     label="Keep Heterogenous IDs"
-    @click="handleInput()"
     />
 </template>
 
@@ -16,17 +15,21 @@ export default {
         value: Boolean,
     },
     data: function(){
-        let d  = {
-            keepHeteroIDs: this.value,
+        return{
         };
-        return d;
     },
     computed:{
+        keepHeteroIDs:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.keepHeteroIDs);
-      },
+        //CODE
     },
     mounted: function(){
         //CODE

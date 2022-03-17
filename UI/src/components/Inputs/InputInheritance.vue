@@ -5,7 +5,6 @@
     :items="options"
     label="Inheritance"
     outlined
-    @change="handleInput()"
     />
 </v-container>
 </template>
@@ -18,7 +17,6 @@ export default {
     },
     data: function(){
         return{
-            inheritance: this.value,
             options: [
                 'AD',
                 'AR',
@@ -28,12 +26,17 @@ export default {
         }
     },
     computed:{
-        //CODE
+        inheritance:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.inheritance);
-      },
+        //CODE
     },
 }
 </script>

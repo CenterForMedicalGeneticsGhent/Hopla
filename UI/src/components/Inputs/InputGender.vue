@@ -29,10 +29,17 @@ export default {
     data: function(){
         return{
             hover: false,
-            genderOptionChosen: this.getInitialGender(),
         }
     },
     computed:{
+        genderOptionChosen: {
+            get: function(){
+                return this.getGenderIndex(this.value);
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
+        },
         color: function(){
             var color;
             if (this.hover){
@@ -58,12 +65,9 @@ export default {
         }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.gender);
-      },
-      getInitialGender(){
+      getGenderIndex(g){
             for (let i=0; i<genderOptions.length;i++){
-                if (genderOptions[i]["gender"]==this.value){
+                if (genderOptions[i]["gender"]==g){
                     return i;
                 }
             }
@@ -71,8 +75,8 @@ export default {
       },
       goToNextOption: function(){
           if (!this.genderLocked){
-            this.genderOptionChosen = (this.genderOptionChosen+1) % genderOptions.length;
-            this.handleInput();
+            var genderIndex = (this.genderOptionChosen+1) % genderOptions.length;
+            this.genderOptionChosen=genderOptions[genderIndex]["gender"];
           }    
       }
     },

@@ -1,4 +1,4 @@
-export function parseCarrierIDs(configPedigree){
+export default function parseGenders(configPedigree){
     //IDs
     var paternalGrandfather = configPedigree.configGrandParentsPaternal.paternalGrandfather;
     var paternalGrandmother = configPedigree.configGrandParentsPaternal.paternalGrandmother;
@@ -10,45 +10,45 @@ export function parseCarrierIDs(configPedigree){
     var embryos = configPedigree.configEmbryos.embryoList;
     //logic for each relative
     var content="";
-    //paternalGrandfather
-    content+=function(){
-        if (paternalGrandfather.diseaseStatus=='carrier'){
-            return `${paternalGrandfather.sampleID},`;
+    //patermalGrandfatjer
+    content += function(){
+        if (paternalGrandfather.sampleID!='U3'){
+            return `${paternalGrandfather.gender},`;
         }
         return "";
     }();
-    //paternalGrandmother
+    // paternalGrandmother
     content+=function(){
-        if (paternalGrandmother.diseaseStatus=='carrier'){
-            return `${paternalGrandmother.sampleID},`;
+        if (paternalGrandmother.sampleID!='U4'){
+            return `${paternalGrandmother.gender},`;
         }
         return "";
     }();
-    //maternalGrandfather
+    // maternalGrandfather
     content+=function(){
-        if (maternalGrandfather.diseaseStatus=='carrier'){
-            return `${maternalGrandfather.sampleID},`;
+        if (maternalGrandfather.sampleID!='U5'){
+            return `${maternalGrandfather.gender},`;
         }
         return "";
     }();
-    //maternalGrandmother
+    // maternalGrandmother
     content+=function(){
-        if (maternalGrandmother.diseaseStatus=='carrier'){
-            return `${maternalGrandmother.sampleID},`;
+        if (maternalGrandmother.sampleID!='U6'){
+            return `${maternalGrandmother.gender},`;
         }
         return "";
     }();
     //father
     content+=function(){
-        if (father.diseaseStatus=='carrier'){
-            return `${father.sampleID},`;
+        if (paternalGrandmother.sampleID!="U4" || paternalGrandfather.sampleID!="U3" || father.sampleID!='U1'){
+            return `${father.gender},`;
         }
         return "";
     }();
     //mother
     content+=function(){
-        if (mother.diseaseStatus=='carrier'){
-            return `${mother.sampleID},`;
+        if (maternalGrandmother.sampleID!="U6" || maternalGrandfather.sampleID!="U5" || mother.sampleID!='U2'){
+            return `${mother.gender},`;
         }
         return "";
     }();
@@ -56,23 +56,19 @@ export function parseCarrierIDs(configPedigree){
     content+=function(){
         var siblingsString = "";
         for (let i=0; i<siblings.length;i++){
-            if (siblings[i].diseaseStatus=="carrier"){
-                siblingsString+=`${siblings[i].sampleID},`
-            }  
+            siblingsString+=`${siblings[i].gender},`
         }
         return siblingsString;
     }();
-    //embryos: 
+    //Embryos
     content+=function(){
         var embryoString="";
         for (let i=0; i<embryos.length; i++){
-            if (embryos[i].diseaseStatus=="carrier"){
-                embryoString+=`${embryos[i].sampleID},`;
-            }
+            embryoString+=`${embryos[i].gender},`;
         }
         return embryoString;
     }();
-
+    //Return result
     if (content){
         return content.slice(0,-1);
     }
@@ -80,4 +76,3 @@ export function parseCarrierIDs(configPedigree){
         return "";
     }
 }
-

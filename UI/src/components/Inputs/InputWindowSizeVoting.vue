@@ -4,7 +4,7 @@ label="Window Size Voting"
 outlined
 v-model="windowSizeVoting"
 type="number"
-@change="handleInput()"
+:key="key"
 />
 </template>
 
@@ -15,30 +15,28 @@ export default {
         value: Number,
     },
     data: function(){
-        return{
-            windowSizeVoting: this.value,
-            windowSizeVotingOld: this.value,
+        return {
+            key:0,
         }
     },
     computed:{
-        //CODE
+        windowSizeVoting:{
+            get: function(){
+                return this.value;
+            },
+            set: function(d){
+                if (isNaN(d) || Number(d)<=0 ){
+                    this.$emit('input',this.windowSizeVoting);
+                    this.key++ //Update view and reset to previous valid value
+                }
+                else {
+                    this.$emit('input',Number(d));
+                }
+            }
+        },
     },
     methods:{
-        handleInput: function(){
-            var windowSizeVotingNew = Number(this.windowSizeVoting); //If not number it is transformed to 0
-            if (windowSizeVotingNew===this.windowSizeVotingOld){
-                //Nothing changes, do nothing
-            }
-            else if (windowSizeVotingNew>0){
-                // Valid input
-                this.windowSizeVotingOld=windowSizeVotingNew;
-                this.$emit('input',windowSizeVotingNew);
-            } 
-            else {
-                //Invalid input, change back to previous value
-                this.windowSizeVoting = this.windowSizeVotingOld;
-            } 
-        },
+        //CODE
     },
 }
 </script>

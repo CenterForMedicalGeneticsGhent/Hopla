@@ -38,28 +38,17 @@ v-else
 <script>
   // Imports
   import Vue from 'vue'
-  import PatientCardGeneral from "./PatientCardGeneral.vue";
   import cloneDeep from 'lodash/cloneDeep';
+
+  //Components
+  import PatientCardGeneral from "./PatientCardGeneral.vue";
+
+  //Templates 
+  import {templateFather} from "../Templates";
+  var configFatherAbsentDefault = cloneDeep(templateFather);
+  var configFatherDefault = cloneDeep(configFatherAbsentDefault);
+  configFatherDefault.sampleID="fatherID";
   
-  var configFatherDefault = {
-    sampleID: "",
-    gender: "M",
-    keepInformativeIDs: true,
-    keepHeteroIDs: false,
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: true,
-    keepLimitIDHardAF: true,
-    keepLimitIDSoftDP: "hide",
-  };
-  var configFatherAbsentDefault = {
-    sampleID: "U1",
-    gender: "M",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: "hide",
-    keepLimitIDHardAF: "hide",
-    keepLimitIDSoftDP: "hide",
-  };
 
   export default Vue.extend({
     name: 'PatientCardFather',
@@ -71,15 +60,15 @@ v-else
     },
     data: function() {
       return {
-        config: cloneDeep(configFatherAbsentDefault),
       };
     },
     computed: {
-      configWatcher: {
+      config: {
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
         }
       },
       title: function(){
@@ -90,9 +79,6 @@ v-else
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       addFather:function(){
         this.config=cloneDeep(configFatherDefault);
       },
@@ -104,15 +90,7 @@ v-else
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
-    },
+      //CODE
+    }
     })
 </script>

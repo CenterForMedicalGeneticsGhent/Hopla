@@ -36,10 +36,17 @@
     },
     data: function() {
       return {
-        config: this.value,
       }
     },
     computed:{
+      config:{
+        get: function(){
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
+      },
       imgPath: function(){
         if (this.imgType=="grandparents1"){
           return require('../../assets/grandparents1.png');
@@ -70,23 +77,12 @@
       }
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
     },
     mounted: function(){
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
-    },  
+      //CODE
+    },
     })
 </script>

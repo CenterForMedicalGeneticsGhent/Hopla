@@ -44,19 +44,15 @@ imgLicense="Designed by FreePlk from Flaticon"
 <script>
   import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
+
+  // Components
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardSibling from "../PatientCards/PatientCardSibling.vue";
 
-  // configSiblingDefault
-  var configSiblingsDefault = {
-    sampleID: "",
-    gender: "NA",
-    keepInformativeIDs: "hide",
-    diseaseStatus: "NA",
-    keepLimitIDHardDP: true,
-    keepLimitIDHardAF: true,
-    keepLimitIDSoftDP: "hide",
-  };
+  // Templates
+  import {templateSibling} from "../Templates";
+  var configSiblingsDefault = cloneDeep(templateSibling);
+  configSiblingsDefault.sampleID="siblingID";
 
   export default Vue.extend({
     name: 'PedigreeGroupSiblings',
@@ -69,23 +65,20 @@ imgLicense="Designed by FreePlk from Flaticon"
     },
     data: function() {
       return {
-        config: this.value,
         counter: 0,
       }
     },
     computed:{
-      configWatcher: {
+      config:{
         get: function(){
-          return `
-            ${JSON.stringify(this.config)}
-          `;
-        }
+          return this.value;
+        },
+        set: function(d){
+          this.$emit('input',d);
+        },
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
       countSiblings: function(){
         return this.config.length;
       },
@@ -101,15 +94,7 @@ imgLicense="Designed by FreePlk from Flaticon"
       //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:true,
-      },
+      //CODE
     }, 
     })
 </script>

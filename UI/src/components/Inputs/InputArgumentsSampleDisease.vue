@@ -5,17 +5,17 @@
         Sample / Disease Annotation
     </v-card-title>
     <v-card-text>
-        <InputRegions v-model="regions" />
+        <InputRegions v-model="config.regions" />
 
         <v-row>
           <v-col class="d-flex justify-center align-center">
-            <InputDisease v-model="disease" />
+            <InputDisease v-model="config.disease" />
           </v-col>
           <v-col class="d-flex justify-center align-center">
-            <InputInheritance v-model="inheritance" />
+            <InputInheritance v-model="config.inheritance" />
           </v-col>
           <v-col class="d-flex justify-center align-center">
-            <InputSequencingNote v-model="sequencingNote" />
+            <InputSequencingNote v-model="config.sequencingNote" />
           </v-col>
         </v-row>
     </v-card-text>
@@ -44,49 +44,26 @@ export default Vue.extend({
     },
     data: function(){
         return{
-          regions:this.value.regions,
-          disease: this.value.disease,
-          inheritance: this.value.inheritance,
-          sequencingNote: this.value.sequencingNote,
         }
     },
     computed:{
       config: {
-            get: function(){
-            return {
-              regions:this.regions,
-              disease: this.disease,
-              inheritance: this.inheritance,
-              sequencingNote: this.sequencingNote,
-            }
-            }
+        get: function(){
+          return this.value;
         },
-      configWatcher: {
-          get: function(){
-          return `
-              ${JSON.stringify(this.config)}
-          `;
-          }
+        set: function(d){
+          this.$emit('input',d);
+        }
       },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
+      //CODE
     },
     mounted:function(){
-        //CODE
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
 })
 </script>

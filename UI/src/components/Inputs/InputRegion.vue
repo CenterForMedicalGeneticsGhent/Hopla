@@ -8,19 +8,19 @@ class="mt-4"
     <v-col
     class="d-flex justify-center align-center"
     >
-        <InputChr v-model="chr" />
+        <InputChr v-model="config.chr" />
     </v-col>
     
     <v-col
     class="d-flex justify-center align-center"
     >
-        <InputChrStart v-model="chrStart" />
+        <InputChrStart v-model="config.chrStart" />
     </v-col>
 
     <v-col
     class="d-flex justify-center align-center"
     >
-        <InputChrEnd v-model="chrEnd" />
+        <InputChrEnd v-model="config.chrEnd" />
     </v-col>
 </v-row>
 </v-container>
@@ -46,42 +46,23 @@ export default Vue.extend({
     },
     data: function(){
         return{
-            chr: this.value.chr,
-            chrStart: this.value.chrStart,
-            chrEnd: this.value.chrEnd,
         }
     },
     computed:{
-        config: function() {
-            return {
-                chr: this.chr,
-                chrStart: this.chrStart,
-                chrEnd: this.chrEnd,
-            };
-        },
-        configWatcher: {
+        config:{
             get: function(){
-            return `
-                ${JSON.stringify(this.config)}
-            `;
-            }
+                return this.value;
+            },
+            set: function(d){
+                this.$emit('input',d);
+            },
         },
     },
     methods:{
-      handleInput: function(){
-        this.$emit('input',this.config);
-      },
+      //CODE
     },
     watch:{
-      configWatcher:{
-        handler: function(newVal,oldVal){
-          if (oldVal != newVal){
-            this.handleInput();
-          }
-        },
-        deep:false,
-        immediate:false,
-      },
+      //CODE
     },
 })
 </script>
