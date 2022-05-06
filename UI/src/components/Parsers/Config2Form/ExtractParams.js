@@ -27,7 +27,10 @@ export default function extractParams(configString){
         })
         .map(function(d){
             //split lines in key and value
-            return d.split(/:|=/i);
+            let indexOfFirstColonEqualSign = d.search(/:|=/i);
+            let firstPart = d.substring(0,indexOfFirstColonEqualSign);
+            let secondPart = d.substring(indexOfFirstColonEqualSign+1);
+            return [firstPart,secondPart];
         })
         .map(function(d){
             //split values by ','
