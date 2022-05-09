@@ -5,6 +5,7 @@ import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
 import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 import determineKeepHeteroIDs from "./determineKeepHeteroIDs";
+import determineKeepBafProfiles from "./determineKeepBafProfiles";
 
 export default function extractInfoEmbryos(paramsObject, config){
     
@@ -14,6 +15,9 @@ export default function extractInfoEmbryos(paramsObject, config){
         var indicesOfID=sampleIDs.map(function(d){
             return determinePositionSampleID(d,paramsObject["sample.ids"]);
         }); 
+        var keepBafProfiles=sampleIDs.map(function(d){
+            return determineKeepBafProfiles(d,paramsObject["baf.ids"]);
+        });
         var genders=indicesOfID.map(function(i){
             return paramsObject["genders"][i];
         });
@@ -43,6 +47,7 @@ export default function extractInfoEmbryos(paramsObject, config){
             config.configPedigree.configEmbryos.embryoList[i].keepLimitIDHardAF=keepLimitIDHardAFs[i];
             config.configPedigree.configEmbryos.embryoList[i].keepLimitIDSoftDP=keepLimitIDSoftDPs[i];
             config.configPedigree.configEmbryos.embryoList[i].keepInformativeIDs=keepInformativeIDs[i];
+            config.configPedigree.configEmbryos.embryoList[i].keepBafProfile=keepBafProfiles[i];
             config.configPedigree.configEmbryos.embryoList[i].diseaseStatus=diseaseStati[i];
         }
     }
