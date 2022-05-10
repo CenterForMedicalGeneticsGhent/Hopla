@@ -1,8 +1,5 @@
 export default function extractParams(configString){
     var paramsObject = readHeader(Object(),configString);
-
-    // Read region
-    paramsObject = readRegion(paramsObject,configString);
     
     var configArrayNested = configString.split('\n')
         .map(function(d){
@@ -16,8 +13,7 @@ export default function extractParams(configString){
         .filter(function(d){
             // remove comments
             return (!(
-                d.startsWith("#") ||
-                d.startsWith("regions=")
+                d.startsWith("#")
             ));
         })
         .filter(function(d){
@@ -43,7 +39,6 @@ export default function extractParams(configString){
         let value=configArrayNested[i][1];
         paramsObject[key]=value;
     }
-
     return paramsObject;
 }
 
@@ -69,9 +64,3 @@ function readHeader(configObject, configString){
     configObject.pedigreeMapping.embryos = findValue(configString,"# embryos=").split(',');    
     return configObject;
 }
-
-function readRegion(configObject, configString){
-    configObject.regions=findValue(configString,"regions=");
-    return configObject;
-}
-
