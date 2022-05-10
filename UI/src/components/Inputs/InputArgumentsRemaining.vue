@@ -7,7 +7,7 @@
   <v-card-text>
     <InputLimitPmToP v-model="config.limitPmToP" />
     <InputValueOfP :disabled="!config.limitPmToP" v-model="config.valueOfP" />
-
+    <InputRegionsFlankingSize v-model="config.regionsFlankingSize" />
   </v-card-text>
 </v-card>
 </v-container>
@@ -19,6 +19,7 @@ import Vue from 'vue';
 
 import InputLimitPmToP from "../Inputs/InputLimitPmToP.vue";
 import InputValueOfP from "../Inputs/InputValueOfP.vue";
+import InputRegionsFlankingSize from "../Inputs/InputRegionsFlankingSize.vue";
 
 export default Vue.extend({
     name: 'InputArgumentsRemainingFeatures',
@@ -28,6 +29,7 @@ export default Vue.extend({
     components:{
       InputLimitPmToP,
       InputValueOfP,
+      InputRegionsFlankingSize,
     },
     data: function(){
         return{
