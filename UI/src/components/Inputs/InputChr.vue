@@ -10,6 +10,7 @@ outlined
 
 <script>
 export default {
+    name: 'InputChr',
     props:{
         value: String,
     },

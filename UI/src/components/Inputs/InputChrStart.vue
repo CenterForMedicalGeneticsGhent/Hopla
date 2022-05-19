@@ -1,5 +1,6 @@
 <template>
 <v-text-field
+id="input_chr_start"
 label="Start"
 outlined
 v-model="chrStart"

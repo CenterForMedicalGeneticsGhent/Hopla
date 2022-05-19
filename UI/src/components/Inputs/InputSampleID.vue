@@ -1,5 +1,6 @@
 <template>
     <v-text-field
+    id="input_sample_id"
     class="ma-0 pa-0"
     label="Sample ID"
     dense

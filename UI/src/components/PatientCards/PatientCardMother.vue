@@ -1,10 +1,13 @@
 <template>
-<div>
+<div
+id="input_mother_card"
+>
 <v-col 
 class="d-flex justify-center align-center"
 v-if="config['sampleID']=='U2'"
 >
   <v-btn
+  id="input_mother_add"
   @click="addMother()"
   >
     <v-icon>

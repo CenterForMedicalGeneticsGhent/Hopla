@@ -1,6 +1,7 @@
 <template>
 <v-container>
     <v-text-field
+    id="input_vcf_file"
     class="ma-0 pa-0"
     label="VCF file absolute path"
     dense

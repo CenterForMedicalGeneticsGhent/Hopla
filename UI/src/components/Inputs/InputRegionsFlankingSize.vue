@@ -10,6 +10,7 @@ outlined
 
 <script>
 export default {
+    name: 'InputRegionsFlankingSize',
     props:{
         value: Number,
     },

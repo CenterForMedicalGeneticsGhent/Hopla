@@ -29,6 +29,7 @@ v-model="config.embryoList"
     </v-col> 
     <v-col class="d-flex justify-center align-center"> 
       <v-btn
+      id="input_embryo_add"
       @click="addEmbryo()"
       >
         <v-icon>

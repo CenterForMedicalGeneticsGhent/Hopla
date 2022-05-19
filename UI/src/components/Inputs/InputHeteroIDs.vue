@@ -1,5 +1,6 @@
 <template>
     <v-checkbox
+    id="input_hetero_id"
     dense
     class="ma-0 pa-0"
     v-model="keepHeteroIDs"

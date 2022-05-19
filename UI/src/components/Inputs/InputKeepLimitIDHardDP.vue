@@ -1,5 +1,6 @@
 <template>
     <v-checkbox
+    id='input_dp_hard_limit_id'
     dense
     class="InputKeepLimitIDHardDP ma-0 pa-0"
     v-model="keepID"

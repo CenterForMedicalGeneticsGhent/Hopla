@@ -4,7 +4,7 @@
   :fileNameDefault="configPedigree.famID+'.txt'" 
   :textToDownload="configText" 
   />
-  <pre>{{configText}}</pre>
+  <pre id="config_text">{{configText}}</pre>
 </v-container>
 </template>
 

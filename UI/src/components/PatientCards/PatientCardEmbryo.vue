@@ -1,4 +1,7 @@
 <template>
+<div
+id="input_embryo_card"
+>
 <PatientCardGeneral
 v-model="config"
 :title="title"
@@ -6,6 +9,7 @@ cardType="embryo"
 @removeCard="removeCard()"
 :genderLocked="false"
 />
+</div>
 </template>
 
 <script>

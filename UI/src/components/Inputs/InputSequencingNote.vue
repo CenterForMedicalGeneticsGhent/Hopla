@@ -1,6 +1,7 @@
 <template>
 <v-container>
     <v-text-field
+    id="input_sequencing_note"
     label="Sequencing Note"  
     dense
     outlined

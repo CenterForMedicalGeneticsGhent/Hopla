@@ -1,5 +1,6 @@
 <template>
 <v-text-field
+id="input_af_hard_limit"
 label="af.hard.limit"
 outlined
 v-model="afHardLimit"

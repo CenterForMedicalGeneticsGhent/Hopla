@@ -1,18 +1,22 @@
 <template>
     <v-radio-group
+    id="input_keep_chromosomes_regions_only"
     class="ma-0 pa-0"
     v-model="config"
     dense
     >
       <v-radio
+        id="input_keep_chromosomes_regions_only__everything"
         label="Show everything"
         :value="0"
       ></v-radio>
       <v-radio
+        id="input_keep_chromosomes_regions_only__chromosomes"
         label="Only show chromosome of interest"
         :value="1"
       ></v-radio>
       <v-radio
+        id="input_keep_chromosomes_regions_only__regions"
         label="Only show region of interest"
         :value="2"
       ></v-radio>
@@ -47,7 +51,6 @@ export default Vue.extend({
           }
         },
         set: function(d){
-          console.log(d)
           if (d==0){
             this.$emit('input',{
               keepChromosomesOnly:false,

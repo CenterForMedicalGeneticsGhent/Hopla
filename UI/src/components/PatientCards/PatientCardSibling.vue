@@ -1,11 +1,15 @@
 <template>
-<PatientCardGeneral
-v-model="config"
-:title="title"
-:cardType="cardType"
-@removeCard="removeCard()"
-:genderLocked="false"
-/>
+<div
+id="input_sibling_card"
+>
+  <PatientCardGeneral
+  v-model="config"
+  :title="title"
+  :cardType="cardType"
+  @removeCard="removeCard()"
+  :genderLocked="false"
+  />
+</div>
 </template>
 
 <script>

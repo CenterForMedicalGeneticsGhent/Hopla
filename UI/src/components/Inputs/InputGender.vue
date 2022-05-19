@@ -1,5 +1,6 @@
 <template>
-    <v-avatar 
+    <v-avatar
+    id="input_gender" 
     dense
     size="30"
     :color="color"
@@ -22,6 +23,7 @@ const genderOptions = [
 ];
 
 export default {
+    name: "InputGender",
     props:{
         value: String,
         genderLocked: Boolean,
