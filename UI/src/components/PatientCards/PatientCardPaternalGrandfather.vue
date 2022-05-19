@@ -1,10 +1,13 @@
 <template>
-<div>
+<div
+id="input_paternal_grandfather_card"
+>
 <v-col 
 class="d-flex justify-center align-center"
 v-if="config['sampleID']=='U3'"
 >
   <v-btn
+  id="input_paternal_grandfather_add"
   @click="addPaternalGrandfather()"
   >
     <v-icon>

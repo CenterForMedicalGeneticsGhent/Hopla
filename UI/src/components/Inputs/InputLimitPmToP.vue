@@ -1,5 +1,6 @@
 <template>
     <v-checkbox
+    id="input_limit_pm_to_p"
     dense
     class="ma-0 pa-0"
     v-model="limitPmToP"
@@ -11,6 +12,7 @@
 <script>
 
 export default {
+    name: 'InputLimitPmToP',
     props:{
         value: Boolean,
     },

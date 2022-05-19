@@ -1,11 +1,14 @@
 <template>
-<div>
+<div
+id="input_father_card"
+>
 <v-col 
 class="d-flex justify-center align-center"
 v-if="config['sampleID']=='U1'"
 >
   <v-btn
   @click="addFather()"
+  id="input_father_add"
   >
     <v-icon>
       mdi-plus

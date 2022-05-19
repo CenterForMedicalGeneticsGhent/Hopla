@@ -10,6 +10,7 @@ flat
     >
         <v-col class="d-flex justify-center align-center">
             <v-btn
+            id="input_add_region"
             dense
             depressed
             color="green"

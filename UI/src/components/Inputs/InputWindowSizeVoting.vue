@@ -1,5 +1,6 @@
 <template>
 <v-text-field
+id="input_window_size_voting"
 label="Window Size Voting"
 outlined
 v-model="windowSizeVoting"

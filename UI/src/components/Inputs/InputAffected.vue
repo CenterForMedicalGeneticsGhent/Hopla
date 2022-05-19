@@ -1,5 +1,6 @@
 <template>
     <v-radio-group
+    id="input_affected"
     class="ma-0 pa-0"
     v-model="diseaseStatus2RadioBtnNr"
     dense
@@ -34,6 +35,7 @@ var diseaseStatusOptions = [
 ];
 
 export default {
+    name:"InputAffected",
     props:{
         value: String,
     },

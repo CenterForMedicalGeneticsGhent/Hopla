@@ -19,16 +19,16 @@
       </v-col>
       <v-col />
     </v-row>
-    <v-tab>
+    <v-tab id="tab_pedigree">
       Pedigree
     </v-tab>
-    <v-tab>
+    <v-tab id="tab_parameters">
       Parameters
     </v-tab>
-    <v-tab>
+    <v-tab id="tab_advanced">
       Advanced
     </v-tab>
-    <v-tab>
+    <v-tab id="tab_config">
       Config
     </v-tab>
     

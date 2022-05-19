@@ -1,5 +1,6 @@
 <template>
     <v-checkbox
+    id='input_informative_id'
     dense
     class="ma-0 pa-0"
     v-model="keepInformativeIDs"

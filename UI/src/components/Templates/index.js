@@ -12,6 +12,7 @@ export var templateFather = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templateMother = {
     sampleID: "U2",
@@ -21,6 +22,7 @@ export var templateMother = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templatePaternalGrandfather = {
     sampleID: "U3",
@@ -30,6 +32,7 @@ export var templatePaternalGrandfather = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templatePaternalGrandmother = {
     sampleID: "U4",
@@ -39,6 +42,7 @@ export var templatePaternalGrandmother = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templateMaternalGrandfather = {
     sampleID: "U5",
@@ -49,6 +53,7 @@ export var templateMaternalGrandfather = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templateMaternalGrandmother = {
     sampleID: "U6",
@@ -58,6 +63,7 @@ export var templateMaternalGrandmother = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templateSibling = {
     sampleID: "U7",
@@ -67,6 +73,7 @@ export var templateSibling = {
     keepLimitIDHardDP: true,
     keepLimitIDHardAF: true,
     keepLimitIDSoftDP: "hide",
+    keepBafProfile: "hide",
 };
 export var templateEmbryo = {
     sampleID: "U8",
@@ -76,6 +83,7 @@ export var templateEmbryo = {
     keepLimitIDHardDP: "hide",
     keepLimitIDHardAF: "hide",
     keepLimitIDSoftDP: true,
+    keepBafProfile: true,
 };
   
 export var templatePedigree = {

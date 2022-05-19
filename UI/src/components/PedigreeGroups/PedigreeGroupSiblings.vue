@@ -23,6 +23,7 @@ imgLicense="Designed by FreePlk from Flaticon"
   </v-row>
   <v-row> <v-col class="d-flex justify-center align-center"> 
     <v-btn
+    id="input_sibling_add"
     @click="addSibling()"
     >
       <v-icon>

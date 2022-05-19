@@ -1,17 +1,17 @@
 <template>
-<v-container>
     <v-autocomplete
+    id="input_inheritance"
     v-model="inheritance"
     :items="options"
     label="Inheritance"
     outlined
     />
-</v-container>
 </template>
 
 
 <script>
 export default {
+    name: 'InputInheritance',
     props:{
         value: String,
     },

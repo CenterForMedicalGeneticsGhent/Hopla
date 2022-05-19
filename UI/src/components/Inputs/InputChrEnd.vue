@@ -1,5 +1,6 @@
 <template>
 <v-text-field
+id="input_chr_end"
 label="End"
 outlined
 v-model="chrEnd"
