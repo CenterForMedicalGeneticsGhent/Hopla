@@ -12,7 +12,7 @@ export default function extractArgumentsSampleDisease(paramsObject, config){
         }
         return [content];
     }();
-    var disease=paramsObject["Disease"][0];
+    var disease=paramsObject["Disease"];
     var inheritance=paramsObject["Inheritance"][0];
     var sequencingNote=paramsObject["Sequencing note"][0];
 

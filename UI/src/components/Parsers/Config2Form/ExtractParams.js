@@ -3,6 +3,7 @@ export default function extractParams(configString){
 
     // Read region
     paramsObject = readRegion(paramsObject,configString);
+    paramsObject = readDisease(paramsObject,configString);
     
     var configArrayNested = configString.split('\n')
         .map(function(d){
@@ -17,7 +18,8 @@ export default function extractParams(configString){
             // remove comments
             return (!(
                 d.startsWith("#") ||
-                d.startsWith("regions=")
+                d.startsWith("regions=") ||
+                d.startsWith("Disease:")
             ));
         })
         .filter(function(d){
@@ -69,6 +71,11 @@ function readHeader(configObject, configString){
 
 function readRegion(configObject, configString){
     configObject.regions=findValue(configString,"regions=");
+    return configObject;
+}
+
+function readDisease(configObject, configString){
+    configObject.Disease=findValue(configString,"Disease:");
     return configObject;
 }
 
