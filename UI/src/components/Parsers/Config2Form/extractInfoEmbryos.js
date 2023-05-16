@@ -9,7 +9,7 @@ import determineKeepHeteroIDs from "./determineKeepHeteroIDs";
 export default function extractInfoEmbryos(paramsObject, config){
     
     // Retrieve Params
-    var sampleIDs=paramsObject.pedigreeMapping.embryos;
+    var sampleIDs = paramsObject.pedigreeMapping.embryos.filter(id => id !== "");
     var indicesOfID=sampleIDs.map(function(d){
         return determinePositionSampleID(d,paramsObject["sample.ids"]);
     }); 
