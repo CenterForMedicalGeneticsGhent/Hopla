@@ -14,6 +14,7 @@ export default function extractInfoFather(paramsObject, config){
     var keepLimitIDHardAF = determinekeepLimitIDHardAF(sampleID,paramsObject["af.hard.limit.ids"]);
     //var keepLimitIDSoftDP = determinekeepLimitIDSoftDP(sampleID,paramsObject["dp.soft.limit.ids"]);
     var keepLimitIDSoftDP = "hide";
+    var keepBafIDs = "hide";
     var keepInformativeIDs = determineKeepInformativeIDs(sampleID,paramsObject["keep.informative.ids"]);
     var diseaseStatus = determineDiseaseStatus(sampleID,paramsObject["carrier.ids"],paramsObject["affected.ids"],paramsObject["nonaffected.ids"]);
     
@@ -23,6 +24,7 @@ export default function extractInfoFather(paramsObject, config){
     config.configPedigree.configParents.father.keepLimitIDHardDP=keepLimitIDHardDP;
     config.configPedigree.configParents.father.keepLimitIDHardAF=keepLimitIDHardAF;
     config.configPedigree.configParents.father.keepLimitIDSoftDP=keepLimitIDSoftDP;
+    config.configPedigree.configParents.father.keepBafIDs=keepBafIDs;
     config.configPedigree.configParents.father.keepInformativeIDs=keepInformativeIDs;
     config.configPedigree.configParents.father.diseaseStatus=diseaseStatus;
     return config;
