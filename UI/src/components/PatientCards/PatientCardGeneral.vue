@@ -27,6 +27,7 @@ width="220px"
     <InputKeepLimitIDHardAF v-model="config.keepLimitIDHardAF" v-if="config.keepLimitIDHardAF!='hide'"/>
     <InputKeepLimitIDSoftDP v-model="config.keepLimitIDSoftDP" v-if="config.keepLimitIDSoftDP!='hide'"/>
     <InputInformativeIDs v-model="config.keepInformativeIDs" v-if="config.keepInformativeIDs!='hide'"/>
+    <InputBafIDs v-model="config.keepBafIDs" v-if="config.keepBafIDs!='hide'"/>
     <InputAffected v-model="config.diseaseStatus" />
     <v-btn
     dense
@@ -50,6 +51,7 @@ width="220px"
   import InputKeepLimitIDHardDP from "../Inputs/InputKeepLimitIDHardDP.vue";
   import InputKeepLimitIDHardAF from "../Inputs/InputKeepLimitIDHardAF.vue";
   import InputKeepLimitIDSoftDP from "../Inputs/InputKeepLimitIDSoftDP.vue";
+  import InputBafIDs from "../Inputs/InputBafIDs.vue";
 
   export default Vue.extend({
     name: 'PatientCardGeneral',
@@ -60,6 +62,7 @@ width="220px"
       InputKeepLimitIDSoftDP,
       InputGender,
       InputInformativeIDs,
+      InputBafIDs,
       InputAffected,
     },
     props:{

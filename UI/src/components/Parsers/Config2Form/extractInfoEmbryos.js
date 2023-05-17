@@ -5,11 +5,12 @@ import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
 import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 import determineKeepHeteroIDs from "./determineKeepHeteroIDs";
+import determineKeepBafIDs from "./determineKeepBafIDs";
 
 export default function extractInfoEmbryos(paramsObject, config){
     
     // Retrieve Params
-    var sampleIDs=paramsObject.pedigreeMapping.embryos;
+    var sampleIDs = paramsObject.pedigreeMapping.embryos.filter(id => id !== "");
     var indicesOfID=sampleIDs.map(function(d){
         return determinePositionSampleID(d,paramsObject["sample.ids"]);
     }); 
@@ -25,6 +26,9 @@ export default function extractInfoEmbryos(paramsObject, config){
     var keepLimitIDSoftDPs=sampleIDs.map(function(d){
         return determinekeepLimitIDSoftDP(d,paramsObject["dp.soft.limit.ids"]);
     }); 
+    var keepBafIDs=sampleIDs.map(function(d){
+        return determineKeepBafIDs(d,paramsObject["baf.ids"]);
+    });
     var keepInformativeIDs=sampleIDs.map(function(d){
         return "hide";
     });
@@ -41,6 +45,7 @@ export default function extractInfoEmbryos(paramsObject, config){
         config.configPedigree.configEmbryos.embryoList[i].keepLimitIDHardDP=keepLimitIDHardDPs[i];
         config.configPedigree.configEmbryos.embryoList[i].keepLimitIDHardAF=keepLimitIDHardAFs[i];
         config.configPedigree.configEmbryos.embryoList[i].keepLimitIDSoftDP=keepLimitIDSoftDPs[i];
+        config.configPedigree.configEmbryos.embryoList[i].keepBafIDs=keepBafIDs[i];
         config.configPedigree.configEmbryos.embryoList[i].keepInformativeIDs=keepInformativeIDs[i];
         config.configPedigree.configEmbryos.embryoList[i].diseaseStatus=diseaseStati[i];
     }

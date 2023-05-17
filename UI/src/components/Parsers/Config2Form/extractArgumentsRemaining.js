@@ -11,7 +11,7 @@ export default function extractArgumentsRemaining(paramsObject, config){
     var valueOfP= Number(paramsObject["value.of.P"][0]);
     var limitBafToP= false;
     var selfContained= true;
-    var regionsFlankingSize= 1000000;
+    var regionsFlankingSize= Number(paramsObject["regions.flanking.size"][0]);
     
     // Assign Params
     config.configAdvanced.remainingFeatures.limitPmToP = limitPmToP;

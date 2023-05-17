@@ -14,6 +14,7 @@ export default function extractInfoMaternalGrandmother(paramsObject, config){
     var keepLimitIDHardAF = determinekeepLimitIDHardAF(sampleID,paramsObject["af.hard.limit.ids"]);
     //var keepLimitIDSoftDP = determinekeepLimitIDSoftDP(sampleID,paramsObject["dp.soft.limit.ids"]);
     var keepLimitIDSoftDP = "hide";
+    var keepBafIDs = "hide";
     var keepInformativeIDs = determineKeepInformativeIDs(sampleID,paramsObject["keep.informative.ids"]);
     var diseaseStatus = determineDiseaseStatus(sampleID,paramsObject["carrier.ids"],paramsObject["affected.ids"],paramsObject["nonaffected.ids"]);
     
@@ -23,6 +24,7 @@ export default function extractInfoMaternalGrandmother(paramsObject, config){
     config.configPedigree.configGrandParentsMaternal.maternalGrandmother.keepLimitIDHardDP=keepLimitIDHardDP;
     config.configPedigree.configGrandParentsMaternal.maternalGrandmother.keepLimitIDHardAF=keepLimitIDHardAF;
     config.configPedigree.configGrandParentsMaternal.maternalGrandmother.keepLimitIDSoftDP=keepLimitIDSoftDP;
+    config.configPedigree.configGrandParentsMaternal.maternalGrandmother.keepBafIDs=keepBafIDs;
     config.configPedigree.configGrandParentsMaternal.maternalGrandmother.keepInformativeIDs=keepInformativeIDs;
     config.configPedigree.configGrandParentsMaternal.maternalGrandmother.diseaseStatus=diseaseStatus;
     return config;

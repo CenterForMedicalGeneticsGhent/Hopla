@@ -7,7 +7,7 @@ import determineDiseaseStatus from "./determineDiseaseStatus";
 
 export default function extractInfoSiblings(paramsObject, config){
     // Retrieve Params
-    var sampleIDs=paramsObject.pedigreeMapping.siblings;
+    var sampleIDs=paramsObject.pedigreeMapping.siblings.filter(id => id !== "");
     var indicesOfID=sampleIDs.map(function(d){
         return determinePositionSampleID(d,paramsObject["sample.ids"]);
     }); 
@@ -23,6 +23,9 @@ export default function extractInfoSiblings(paramsObject, config){
     var keepLimitIDSoftDPs=sampleIDs.map(function(d){
         return "hide";
     }); 
+    var keepBafIDs=sampleIDs.map(function(d){
+        return "hide";
+    });
     var keepInformativeIDs=sampleIDs.map(function(d){
         return "hide";
     }); 
@@ -39,6 +42,7 @@ export default function extractInfoSiblings(paramsObject, config){
         config.configPedigree.configSiblings[i].keepLimitIDHardDP=keepLimitIDHardDPs[i];
         config.configPedigree.configSiblings[i].keepLimitIDHardAF=keepLimitIDHardAFs[i];
         config.configPedigree.configSiblings[i].keepLimitIDSoftDP=keepLimitIDSoftDPs[i];
+        config.configPedigree.configSiblings[i].keepBafIDs=keepBafIDs[i];
         config.configPedigree.configSiblings[i].keepInformativeIDs=keepInformativeIDs[i];
         config.configPedigree.configSiblings[i].diseaseStatus=diseaseStati[i];
     }
