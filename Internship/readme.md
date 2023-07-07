@@ -17,11 +17,11 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 ## Output csv files
 
-- **'vcfs.csv'** Generated from vcf objects
-- **'parsed_flow.csv'** generated from merlin output
-- **'parsed_geno.csv'** generated from merlin output
-- **'map_list.csv'** generated from merlin output
-- **'is_corrected.csv'** generated from merlin output
+- **'vcfs.csv'**, Generated from vcf objects
+- **'parsed_flow.csv'**, Generated from merlin output
+- **'parsed_geno.csv'**, Generated from merlin output
+- **'map_list.csv'**, Generated from merlin output
+- **'is_corrected.csv'**, Generated from merlin output
 
 
 # How to read generated output files for further analysis and visualization (R file name)
