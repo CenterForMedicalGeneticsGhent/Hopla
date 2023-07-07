@@ -9,7 +9,7 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 ## Additional mandatory argument
 
---vcf.file [string] Path to settings file
+- **`--settings.file [string]`** Path to settings file
 
 ## Additional optional argument
 
