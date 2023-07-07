@@ -1,4 +1,4 @@
-# Hopla without visualization in html format
+# Hopla without visualization in html format (Hopla_intern.R)
 
 In this R script, visualization is optional and the outputs used for visualization are exported in csv format.
 
@@ -15,23 +15,30 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 **`--run.visualization [boolean, default=F]`** Whether visualization should be executed
 
-## Output
+## Output csv files
 
-1. csv file (vcfs.csv) generated from vcf objects
-2. csv files (parsed_flow.csv & parsed_geno.csv) generated from merlin output
+- **'vcfs.csv'** Generated from vcf objects
+- **'parsed_flow.csv'** generated from merlin output
+- **'parsed_geno.csv'** generated from merlin output
+- **'map_list.csv'** generated from merlin output
+- **'is_corrected.csv'** generated from merlin output
 
 
-# How to read generated output files for the further analysis and visualization
+# How to read generated output files for further analysis and visualization (R file name)
+
+In this R script, previously generated csv files are read into certain formats of R objects for further analysis and visualization.
 
 ## Input files
 
-1. vcfs.csv 
-2. parsed_flow.csv
-3. parsed_geno.csv
+- **'vcfs.csv'** Generated from vcf objects
+- **'parsed_flow.csv'** generated from merlin output
+- **'parsed_geno.csv'** generated from merlin output
+- **'map_list.csv'** generated from
+- **'is_corrected.csv'** generated from merlin output
 
 ## Example output
 
-Haplotyping by Merlin
+HTML file
 
 
 
