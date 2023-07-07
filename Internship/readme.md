@@ -7,10 +7,13 @@ In this R script, visualization is optional and the outputs used for visualizati
 1. settings file
 2. vcf.gz file
 
-## Additional arguments
+## Additional mandatory argument
 
-1. --vcf.file [string] Path to settings file, mandatory
-2. --run.visualization [boolean, default=F] Whether visualization should be executed, optional
+--vcf.file [string] Path to settings file
+
+## Additional optional argument
+
+--run.visualization [boolean, default=F] Whether visualization should be executed, optional
 
 ## Output
 
