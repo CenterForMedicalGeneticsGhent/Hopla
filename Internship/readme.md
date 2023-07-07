@@ -9,11 +9,11 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 ## Additional mandatory argument
 
-- **`--settings.file [string]`** Path to settings file
+**`--settings.file [string]`** Path to settings file
 
 ## Additional optional argument
 
---run.visualization [boolean, default=F] Whether visualization should be executed, optional
+**`--run.visualization [boolean, default=F]`** Whether visualization should be executed
 
 ## Output
 
