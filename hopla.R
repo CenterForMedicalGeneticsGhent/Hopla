@@ -2309,6 +2309,7 @@ args <- list(
   mother.ids=c(),
   genders=c(),
   run.merlin=T,
+  run.visualization = F,
   cytoband.file=c(),
   
   ## variant inclusion arguments: filter 1
@@ -2448,40 +2449,72 @@ if (args$run.merlin){
   letters <- c('A', 'B', 'C', 'D') # no merlin -> four letters (ie, colors) required
 }
 
-# -----
-# Write output
-# -----
-
-html.list <- get.html.list()
-
-cat('Saving to HTML ...\n')
-save_html(html.list, file = paste0(args$out.bs, 'output.html'), libdir = paste0(args$out.bs, 'output_files'))
-if (args$self.contained) transform.to.selfcontained()
 
 # -----
-# tmp (for validation purposes)
+# Write output (html)
 # -----
 
-if (args$run.merlin){
-  cat('Saving Merlin output to tables ...\n')
-  for (sample in args$samples.no.u){
-    i = which(args$samples.no.u == sample)
-    geno.table <- cbind(unlist(sapply(chrs, function(chr) rep(chr, nrow(map.list[[chr]])))),
-                        unlist(sapply(chrs, function(chr) map.list[[chr]]$pos)),
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.geno[[chr]][,i])), '|', fixed = T), function(y) y[[1]]),
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.geno[[chr]][,i])), '|', fixed = T), function(y) y[[2]]))
-    colnames(geno.table) <- c('chr', 'pos', 'genoA', 'genoB')
-    write.table(geno.table, paste0(args$merlin.dir, sample, '-geno.txt'), sep = '\t', row.names = F, quote = F)
-    flow.table <- cbind(unlist(sapply(chrs, function(chr) rep(chr, nrow(map.list[[chr]])))),
-                        unlist(sapply(chrs, function(chr) map.list[[chr]]$pos)),
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[1]),
-                        as.character(letter.colors[sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[1])]),
-                        unlist(sapply(chrs, function(chr) is.corrected[[chr]][,(i*2)-1])),
-                        
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[2]),
-                        as.character(letter.colors[sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[2])]),
-                        unlist(sapply(chrs, function(chr) is.corrected[[chr]][,(i*2)])))
-    colnames(flow.table) <- c('chr', 'pos', 'flowA', 'flowA.hexcol', 'flowA.iscorrected', 'flowB', 'flowB.hexcol', 'flowB.iscorrected')
-    write.table(flow.table, paste0(args$merlin.dir, sample, '-flow.txt'), sep = '\t', row.names = F, quote = F)
-  }
+if (args$run.visualization){
+  html.list <- get.html.list()
+  cat('Saving to HTML ...\n')
+  save_html(html.list, file = paste0(args$out.bs, 'output.html'), libdir = paste0(args$out.bs, 'output_files'))
+  if (args$self.contained) transform.to.selfcontained()
 }
+
+
+# -----
+# Write output (csv)
+# -----
+
+# add new columns about filtering and save
+for (i in 1:length(vcfs)){
+  vcfs[[i]]$On_filter1 <- ifelse(vcfs[[i]][, 'ID'] %in% vcfs.filtered[[i]][, 'ID'], 1, 0)
+  vcfs[[i]]$On_filter2 <- ifelse(vcfs[[i]][, 'ID'] %in% vcfs.filtered2[[i]][, 'ID'], 1, 0)
+}
+
+write.csv(vcfs, paste0(args$out.dir, '/vcfs.csv'))
+
+# saving parsed.flow into csv
+
+combined_flow <- data.frame(matrix(nrow = 0, ncol = dim(parsed.flow[[1]])[2]+1))
+for (i in 1:length(parsed.flow)){
+  parsed.flow[[i]] <- cbind(parsed.flow[[i]], paste0("chr", i))
+  combined_flow <- rbind(combined_flow, parsed.flow[[i]])
+  
+}
+
+write.csv(combined_flow, file.path(args$out.dir, 'parsed_flow.csv'), row.names=FALSE)
+
+# saving parsed.geno into csv
+
+combined_geno <- data.frame(matrix(nrow = 0, ncol = dim(parsed.geno[[1]])[2]+1))
+for (i in 1:length(parsed.geno)){
+  parsed.geno[[i]] <- cbind(parsed.geno[[i]], paste0("chr", i))
+  combined_geno <- rbind(combined_geno, parsed.geno[[i]])
+  
+}
+
+write.csv(combined_geno, file.path(args$out.dir, 'parsed_geno.csv'), row.names=FALSE)
+
+
+# saving is.corrected into csv
+
+combined_corrected <- data.frame(matrix(nrow = 0, ncol = dim(is.corrected[[1]])[2]+1))
+for (i in 1:length(is.corrected)){
+  is.corrected[[i]] <- cbind(is.corrected[[i]], paste0("chr", i))
+  combined_corrected <- rbind(combined_corrected, is.corrected[[i]])
+}
+
+write.csv(combined_corrected, file.path(args$out.dir, 'is_corrected.csv'), row.names=FALSE)
+
+# saving map.list into csv
+
+combined_maplist <- data.frame(matrix(nrow = 0, ncol = dim(map.list[[1]])[2]+1))
+for (i in 1:length(map.list)){
+  map.list[[i]] <- cbind(map.list[[i]], paste0("chr", i))
+  combined_maplist <- rbind(combined_maplist, map.list[[i]])
+}
+colnames(combined_maplist) <- c("id","pos","pos.out","chr")
+write.csv(combined_maplist, file.path(args$out.dir, 'map_list.csv'), row.names=FALSE)
+
+
