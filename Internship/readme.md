@@ -7,6 +7,11 @@ In this R scripts, visualization is optional and the outputs used for visualizat
 1. settings file
 2. vcf.gz file
 
+## Additional arguments
+
+1. --vcf.file [string] Path to settings file, mandatory
+2. --run.visualization [boolean, default=F] Whether visualization should be executed, optional
+
 ## Output
 
 1. csv file (vcfs.csv) generated from vcf objects
