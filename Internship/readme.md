@@ -1,6 +1,6 @@
-# Hopla
+# Hopla without visualization in html format
 
-In this R scripts, visualization is optional and the outputs used for visualization are exported in csv format.
+In this R script, visualization is optional and the outputs used for visualization are exported in csv format.
 
 ## Input files
 
