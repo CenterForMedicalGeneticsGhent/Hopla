@@ -5,7 +5,7 @@ In this R scripts, visualization is optional and the outputs used for visualizat
 ## Input files
 
 1. settings file
-2. vcf file
+2. vcf.gz file
 
 ## Output
 
