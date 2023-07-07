@@ -38,7 +38,7 @@ In this R script, previously generated csv files are read into certain formats o
 
 ## Example output
 
-HTML file
+HTML file with 'Haplotyping by Merlin' as an example output.
 
 
 
