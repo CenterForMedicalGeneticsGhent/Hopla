@@ -4,8 +4,8 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 ## Input files
 
-1. settings file
-2. vcf.gz file
+1. A (multisample) vcf.gz file 
+2. Several parameter arguments,  in form of a settings file and/or command line arguments
 
 ## Additional mandatory argument
 
