@@ -19,3 +19,20 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 1. csv file (vcfs.csv) generated from vcf objects
 2. csv files (parsed_flow.csv & parsed_geno.csv) generated from merlin output
+
+
+# How to read generated output files for the further analysis and visualization
+
+## Input files
+
+1. vcfs.csv 
+2. parsed_flow.csv
+3. parsed_geno.csv
+
+## Example output
+
+Haplotyping by Merlin
+
+
+
+
