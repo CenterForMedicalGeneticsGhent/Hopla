@@ -26,7 +26,7 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 # How to read generated output files for further analysis and visualization (haplotyping_demo.ipynb)
 
-This R script reads the previously created csv files as R objects in specific formats for further analysis and visualization. 
+This R notebook reads the previously created csv files as R objects in specific formats for further analysis and visualization. 
 The csv files should be stored in data directory, where raw vcf.gz are located.
 
 ## Input files
