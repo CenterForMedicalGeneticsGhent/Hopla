@@ -33,7 +33,7 @@ This R script reads the previously created csv files as R objects in specific fo
 - **'vcfs.csv'** Generated from vcf objects
 - **'parsed_flow.csv'** generated from merlin output
 - **'parsed_geno.csv'** generated from merlin output
-- **'map_list.csv'** generated from
+- **'map_list.csv'** generated from merlin output
 - **'is_corrected.csv'** generated from merlin output
 
 ## Example output
