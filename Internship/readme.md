@@ -26,7 +26,7 @@ In this R script, visualization is optional and the outputs used for visualizati
 
 # How to read generated output files for further analysis and visualization (R file name)
 
-In this R script, previously generated csv files are read into certain formats of R objects for further analysis and visualization.
+This R script reads the previously created csv files as R objects in specific formats for further analysis and visualization.
 
 ## Input files
 
