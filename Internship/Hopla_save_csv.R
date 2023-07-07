@@ -2461,7 +2461,7 @@ for (i in 1:length(map.list)){
   map.list[[i]] <- cbind(map.list[[i]], paste0("chr", i))
   combined_maplist <- rbind(combined_maplist, map.list[[i]])
 }
-
+colnames(combined_maplist) <- c("id","pos","pos.out","chr")
 write.csv(combined_maplist, file.path(args$out.dir, 'map_list.csv'), row.names=FALSE)
 
 
