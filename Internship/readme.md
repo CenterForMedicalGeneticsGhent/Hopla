@@ -18,4 +18,4 @@ In this R script, visualization is optional and the outputs used for visualizati
 ## Output
 
 1. csv file (vcfs.csv) generated from vcf objects
-2. csv files generated (parsed_flow.csv & parsed_geno.csv) from merlin output
+2. csv files (parsed_flow.csv & parsed_geno.csv) generated from merlin output
