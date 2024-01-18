@@ -1,0 +1,50 @@
+<tool id="hopla" name="Hopla" version="1.0.6" profile="23.0">
+  <description>Duo/trio analysis and pedigree haplotyping</description>
+  <requirements>
+    <container type="docker">
+      quay.io/biocontainers/hopla:1.0.6--hdfd78af_0
+    </container>
+  </requirements>
+  <stdio>
+    <regex match="ERROR\:"
+    source="stdout"
+    level="fatal"
+    description="Error encountered" />
+    <regex match="Killed"
+    source="stderr"
+    level="fatal_oom"
+    description="Error while running pandoc"
+    />
+  </stdio>
+  <version_command>hopla --version</version_command>
+  <command><![CDATA[
+    hopla --vcf.file ${vcf_file} --settings $script_file --cytoband.file /references/Hsapiens/hg38/hopla/cytoBand_hg38.txt
+  ]]></command>
+  <configfiles>
+    <configfile name="script_file">
+      ${settings}
+    </configfile>
+  </configfiles>
+  <inputs>
+    <param label="VCF file" name="vcf_file" type="data" format="vcf_bgzip" />
+    <param label="Settings" name="settings" type="text" area="true">
+      <sanitizer sanitize="false"/>
+    </param>
+    <!--<param label="Cytoband" name="cytoband" type="select">
+    ${cytoband.fields.path}
+      <options from_data_table="cmgg">
+        <column name="name" index="3"/>
+        <column name="value" index="0"/>
+        <column name="path" index="4"/>
+      </options>
+    </param>-->
+  </inputs>
+  <outputs>
+    <data name="hopla_html" label="HOPLA ${vcf_file.name}">
+      <discover_datasets pattern="(?P&lt;name&gt;.+)-output.html" format="html" visible="true" />
+    </data>
+  </outputs>
+  <help>
+    <![CDATA[ https://github.com/CenterForMedicalGeneticsGhent/Hopla ]]>
+  </help>
+</tool>
