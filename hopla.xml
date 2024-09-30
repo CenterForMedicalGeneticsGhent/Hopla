@@ -1,8 +1,8 @@
-<tool id="hopla" name="Hopla" version="1.0.6" profile="23.0">
+<tool id="hopla" name="Hopla" version="1.2.1" profile="23.0">
   <description>Duo/trio analysis and pedigree haplotyping</description>
   <requirements>
     <container type="docker">
-      quay.io/biocontainers/hopla:1.0.6--hdfd78af_0
+      quay.io/biocontainers/hopla:1.2.1--hdfd78af_1
     </container>
   </requirements>
   <stdio>
@@ -18,7 +18,7 @@
   </stdio>
   <version_command>hopla --version</version_command>
   <command><![CDATA[
-    hopla --vcf.file ${vcf_file} --settings $script_file --cytoband.file /references/Hsapiens/hg38/hopla/cytoBand_hg38.txt
+    Rscript $__tool_directory__/hopla.R --vcf.file ${vcf_file} --settings $script_file --cytoband.file /references/Hsapiens/hg38/hopla/cytoBand_hg38.txt
   ]]></command>
   <configfiles>
     <configfile name="script_file">
