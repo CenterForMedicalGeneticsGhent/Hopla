@@ -2242,15 +2242,15 @@ get.html.list <- function(){
 
 transform.to.selfcontained <- function(){
   cat('Converting to self-contained HTML ...\n')
-  if (!rmarkdown:::pandoc_available()) {
-    cat(paste0("WARNING: Saving a widget with --self.contained T requires pandoc. For details see: https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md\n",
+  if (!htmlwidgets:::pandoc_available()) {
+    cat(paste0("WARNING: Saving a widget with --self.contained T requires pandoc. For details see: https://github.com/rstudio/htmlwidgets/blob/master/PANDOC.md\n",
                "Self-contained HTML will not be created.\n"))
   }
   else {
-    rmarkdown:::find_pandoc()
+    htmlwidgets:::find_pandoc()
     system(paste0('touch ', args$out.bs, 'nocss.css'))
     system(paste0('cd "', normalizePath(args$out.dir),
-                  '" && ', rmarkdown:::pandoc(), 
+                  '" && ', htmlwidgets:::pandoc(), 
                   ' ', args$out.bs, 'output.html --output ', args$out.bs, 'output.sc.html +RTS -M40G -RTS --from markdown --self-contained --metadata pagetitle=', args$fam.id,' --css ',
                   args$out.bs, 'nocss.css'), ignore.stderr = T)
     unlink(paste0(args$out.bs, 'nocss.css'), recursive = T)
