@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     && tar -xvzf merlin-1.1.2.tar.gz && cd merlin-1.1.2 && make && make install \
     && apt-get purge build-essetials \
     && rm -rf /var/lib/apt/lists/* \
-    && cd /
+    && cd \
     && rm -r /tmp/*
 
 COPY hopla.R /usr/local/bin
