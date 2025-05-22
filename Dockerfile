@@ -22,12 +22,10 @@ RUN apt-get update && apt-get install -y \
         'plotly'                 \
     ), repos='https://cloud.r-project.org/')" \
     && R -e "install.packages('BiocManager', repos='https://cloud.r-project.org/')" \
-    && R -e "BiocManager::install(c('GenomicRanges', 'DNAcopy'))"
-
-RUN wget https://csg.sph.umich.edu/abecasis/merlin/download/Linux-merlin.tar.gz \
-    && tar -xvzf Linux-merlin.tar.gz && cd merlin-1.1.2 && rm -r ChangeLog examples LICENSE.twister README && cp * /usr/bin
-    
-RUN apt-get purge -y build-essential \
+    && R -e "BiocManager::install(c('GenomicRanges', 'DNAcopy'))" \
+    && wget https://csg.sph.umich.edu/abecasis/merlin/download/Linux-merlin.tar.gz \
+    && tar -xvzf Linux-merlin.tar.gz && cd merlin-1.1.2 && rm -r ChangeLog examples LICENSE.twister README && cp * /usr/bin \
+    && apt-get purge -y build-essential \
     && rm -rf /var/lib/apt/lists/* \
     && cd \
     && rm -r /tmp/*
