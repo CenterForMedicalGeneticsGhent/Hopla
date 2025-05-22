@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
     && R -e "BiocManager::install(c('GenomicRanges', 'DNAcopy'))"
 
 RUN wget https://csg.sph.umich.edu/abecasis/merlin/download/Linux-merlin.tar.gz \
-    && tar -xvzf Linux-merlin.tar.gz && cd merlin-1.1.2 && && rm -r ChangeLog examples LICENSE.twister README && cp * /usr/bin
+    && tar -xvzf Linux-merlin.tar.gz && cd merlin-1.1.2 && rm -r ChangeLog examples LICENSE.twister README && cp * /usr/bin
     
 RUN apt-get purge build-essential \
     && rm -rf /var/lib/apt/lists/* \
