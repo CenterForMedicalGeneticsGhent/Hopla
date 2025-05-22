@@ -25,8 +25,9 @@ RUN apt-get update && apt-get install -y \
     && R -e "BiocManager::install(c('GenomicRanges', 'DNAcopy'))"
 
 RUN wget https://csg.sph.umich.edu/abecasis/merlin/download/merlin-1.1.2.tar.gz \
-    && tar -xvzf merlin-1.1.2.tar.gz && cd merlin-1.1.2 && make && make install \
-    && apt-get purge build-essential \
+    && tar -xvzf merlin-1.1.2.tar.gz && cd merlin-1.1.2 && make && make install
+    
+RUN apt-get purge build-essential \
     && rm -rf /var/lib/apt/lists/* \
     && cd \
     && rm -r /tmp/*
