@@ -300,11 +300,16 @@ load.samples <- function(args){
   if (substr(vcf.A$CHROM[1], 1, 3) != 'chr') vcf.A$CHROM <- paste0('chr', vcf.A$CHROM)
   vcf.A$ID <- as.character(paste0('id', 1:nrow(vcf.A)))
   
-  vcf.A <- vcf.A[,c('CHROM', 'POS', 'ID', 'REF', 'ALT')]
+  vcf.A <- vcf.A[,c('CHROM', 'POS', 'ID', 'REF', 'ALT','FILTER')]
   vcf.A$POS <- as.numeric(as.character(vcf.A$POS))
   for (x in c('CHROM', 'ID', 'REF', 'ALT')) vcf.A[[x]] <- as.character(vcf.A[[x]])
   
-  snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1 & vcf.A$CHROM %in% c(chrs, 'chrY')
+  snp.mask <- nchar(vcf.A$REF) == 1 &
+              nchar(vcf.A$ALT) == 1 & 
+              vcf.A$CHROM %in% c(chrs, 'chrY') &
+              vcf.A$FILTER == "PASS"
+  
+  vcf.A <- vcf.A[,c('CHROM', 'POS', 'ID', 'REF', 'ALT')]
   
   ## vcf.B (data)
   vcf.B.tmp <- as.data.frame(vcf@gt)

@@ -1,4 +1,4 @@
-<tool id="hopla" name="Hopla" version="1.0.6" profile="23.0">
+<tool id="hopla" name="Hopla" version="1.0.6_filter" profile="23.0">
   <description>Duo/trio analysis and pedigree haplotyping</description>
   <requirements>
     <container type="docker">
