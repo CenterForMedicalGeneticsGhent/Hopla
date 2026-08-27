@@ -7,11 +7,27 @@ Hopla enables classic genomic single, duo, trio, etc., analysis, by studying a s
 
 # Easy install
 
-Hopla and all [necessary dependencies](#Dependencies-automatically-installed-with-easy-install) can be installed through [conda](https://docs.conda.io/en/latest/), using:  
+Hopla requires R 4.4 or newer. The repository includes a locked [pixi](https://pixi.sh) environment for Linux:
+
+```bash
+pixi install
+pixi run hopla --help
+```
+
+Alternatively, install the published package through [conda](https://docs.conda.io/en/latest/):
 
 ```bash
 
 conda install -c conda-forge -c bioconda hopla
+```
+
+## Docker
+
+The root Dockerfile builds a minimal Linux image from `pixi.lock`; it is separate from the UI image:
+
+```bash
+docker build -t hopla .
+docker run --rm hopla Rscript /app/hopla.R --version
 ```
 
 # Input
@@ -87,7 +103,7 @@ conda install -c conda-forge -c bioconda hopla
 - **`--value.of.P [numeric (range 0-1), default=.25]`** Value of P (see two parameters above)
 - **`--color.palette [string, default=Paired]`** [Color palette](https://rdrr.io/cran/RColorBrewer/man/ColorBrewer.html) to be used in visualizations
 - **`--dot.factor [numeric, default=2]`** The size of every dot in the visualizations is multiplied by this number
-- **`--self.contained [boolean, default=F]`** Whether to generate a self-contained HTML; requires [Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
+- **`--self.contained [boolean, default=F]`** Whether to generate a self-contained HTML; local JavaScript, CSS, fonts, and images are inlined without Pandoc
 - **`--cairo [boolean, default=F]`** Whether the cairo bitmap should be used (required by some systems for plotting)
 
 # Settings file
@@ -98,23 +114,25 @@ conda install -c conda-forge -c bioconda hopla
 - Example at *example/example-settings.txt*
 
 # Dependencies (automatically installed with [easy install](#Easy-install))
+- R (v4.4 or newer)
 - R packages
-    - vcfR (v1.12.0)
-    - data.table (v1.13.2)
-    - RColorBrewer (v1.1-2)
-    - kinship2 (v1.8.5)
-    - plotly (v4.9.2.1)
+    - vcfR (v1.16.0 or newer)
+    - data.table (v1.17.0 or newer)
+    - RColorBrewer (v1.1-3 or newer)
+    - kinship2 (v1.9.0 or newer)
+    - plotly (v4.12.0 or newer)
     - htmltools (v0.5.0)
-    - GenomicRanges (v1.42.0)
-    - DNAcopy (v1.64.0)
-    - knitr (v1.29)
+    - base64enc (v0.1-3 or newer)
+    - scales (v1.4.0 or newer)
+    - GenomicRanges and DNAcopy from the Bioconductor release matching the installed R version
 - Standalone tools
     - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
-    - ([Pandoc](https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md) (v2.10))  
 
 Merlin's version should be exactly as given.  
 Plotly's version is ideally no lower than given.  
 For the remaining packages, other versions are very likely to work.  
+
+See [CHANGELOG-R.md](CHANGELOG-R.md) for changes to the R pipeline scripts.
 
 # Running Hopla
 
