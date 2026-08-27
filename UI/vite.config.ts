@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import vuetify from 'vite-plugin-vuetify'
 
 export default defineConfig({
@@ -15,6 +15,11 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
-    globals: true
+    globals: true,
+    server: {
+      deps: {
+        inline: ['vuetify']
+      }
+    }
   }
 })

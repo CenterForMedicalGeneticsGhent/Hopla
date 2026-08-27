@@ -15,7 +15,7 @@ v-if="config['sampleID']=='U4'"
     tile
     >
       <v-img
-        src="../../assets/paternalGrandmother.png"
+        :src="paternalGrandmotherImg"
       />
     </v-avatar>
   </v-btn>
@@ -38,6 +38,7 @@ v-else
 <script>
   // Imports
   import cloneDeep from 'lodash/cloneDeep';
+  import paternalGrandmotherImg from '../../assets/paternalGrandmother.png';
 
   // Components
   import PatientCardGeneral from "./PatientCardGeneral.vue";
@@ -61,6 +62,8 @@ v-else
     },
     data: function() {
       return {
+      
+        paternalGrandmotherImg,
       };
     },
     computed: {

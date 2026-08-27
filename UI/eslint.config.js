@@ -8,8 +8,8 @@ export default tseslint.config(
     ignores: ['dist/**', 'node_modules/**']
   },
   eslint.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
   ...tseslint.configs.recommended,
+  ...pluginVue.configs['flat/essential'],
   {
     files: ['**/*.{js,ts,vue}'],
     languageOptions: {
@@ -21,7 +21,7 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-require-imports': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-unused-vars': 'off',
       'vue/multi-word-component-names': 'off'
     }

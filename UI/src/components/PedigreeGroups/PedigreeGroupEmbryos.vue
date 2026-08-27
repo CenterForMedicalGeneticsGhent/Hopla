@@ -39,7 +39,7 @@ v-model="config.embryoList"
         tile
         >
           <v-img
-            src="../../assets/embryos.png"
+            :src="embryosImg"
           />
         </v-avatar>
       </v-btn>
@@ -55,6 +55,7 @@ v-model="config.embryoList"
 <script>
   //Imports
   import cloneDeep from 'lodash/cloneDeep';
+  import embryosImg from '../../assets/embryos.png';
 
   // Components
   import PedigreeGroup from "./PedigreeGroup.vue";
@@ -82,6 +83,7 @@ v-model="config.embryoList"
     data: function() {
       return {
         counter:0,
+        embryosImg,
       }
     },
     computed:{

@@ -5,7 +5,7 @@ width="220px"
 >
   <v-card-title class="text-subtitle-1"> 
   <v-avatar
-  density="compact" 
+  density="compact"
   size="40"
   tile
   >

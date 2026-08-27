@@ -7,7 +7,7 @@
   <v-row>
     <v-col />
     <v-col>
-      <InputUploadConfig 
+      <InputUploadConfig
       @updateConfig="updateConfig"
       />
     </v-col>

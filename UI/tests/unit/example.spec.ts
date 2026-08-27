@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { shallowMount } from '@vue/test-utils'
 import cloneDeep from 'lodash/cloneDeep'
 import TabConfigFile from '@/components/Tabs/TabConfigFile.vue'

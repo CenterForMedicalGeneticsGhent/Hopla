@@ -33,7 +33,7 @@ imgLicense="Designed by FreePlk from Flaticon"
       tile
       >
         <v-img
-          src="../../assets/siblingNA.png"
+          :src="siblingNAImg"
         />
       </v-avatar>
     </v-btn>
@@ -43,6 +43,7 @@ imgLicense="Designed by FreePlk from Flaticon"
 
 <script>
   import cloneDeep from 'lodash/cloneDeep';
+  import siblingNAImg from '../../assets/siblingNA.png';
 
   // Components
   import PedigreeGroup from "./PedigreeGroup.vue";
@@ -66,6 +67,7 @@ imgLicense="Designed by FreePlk from Flaticon"
     data: function() {
       return {
         counter: 0,
+        siblingNAImg,
       }
     },
     computed:{
