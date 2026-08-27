@@ -1597,14 +1597,14 @@ get_cn_fig <- function(){
 
     cd_object <- CNA(dat_cn$ratio[dat_cn$mask],
                      dat_cn$seqnames[dat_cn$mask],
-                     dat_cn$start[dat_cn$mask], data_type = "logratio", sampleid = "X")
+                     dat_cn$start[dat_cn$mask], data.type = "logratio", sampleid = "X")
     capture.output(
       segmented_cd_object <- segment(cd_object, verbose=1, weights = dat_cn$weight[dat_cn$mask]),
       file = nullfile()
     )
 
     dat_seg <- segmented_cd_object$output
-    dat_seg$loc_end <- dat_seg$loc_end + args$window_size - 1
+    dat_seg$loc.end <- dat_seg$loc.end + args$window_size - 1
 
     cn_plot <- plot_ly(dat_cn[dat_cn$mask,], x =~index, y =~ratio, text =~range, name = s,
                        height = 210 * length(args$samples_no_u),
@@ -1621,10 +1621,10 @@ get_cn_fig <- function(){
     ylim = c(lower, upper)
 
     for (i in 1:nrow(dat_seg)){
-      st <- dat_seg$loc_start[i] + chr_cs[as.character(dat_seg$chrom[i])]
-      e <- dat_seg$loc_end[i] + chr_cs[as.character(dat_seg$chrom[i])]
-      h <- dat_seg$seg_mean[i]
-      text <- paste0(as.character(dat_seg$chrom[i]), ':', dat_seg$loc_start[i], '-', dat_seg$loc_end[i])
+      st <- dat_seg$loc.start[i] + chr_cs[as.character(dat_seg$chrom[i])]
+      e <- dat_seg$loc.end[i] + chr_cs[as.character(dat_seg$chrom[i])]
+      h <- dat_seg$seg.mean[i]
+      text <- paste0(as.character(dat_seg$chrom[i]), ':', dat_seg$loc.start[i], '-', dat_seg$loc.end[i])
       cn_plot <- cn_plot %>%
         add_trace(x = c(st,e), y = c(h, h), name = text,
                   line = list(color = colors[2], width = args$dot_factor),

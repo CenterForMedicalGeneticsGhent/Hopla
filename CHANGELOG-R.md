@@ -42,6 +42,9 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 - Region markers no longer fail with an `add_trace()` argument error; the local
   helper renamed during the snake_case migration shadowed `plotly::add_trace`.
+- Copy-number segmentation again uses the DNAcopy API spelling: the
+  `data.type` argument of `CNA()` and the `loc.start`, `loc.end`, and
+  `seg.mean` output columns were wrongly snake_cased.
 - The installed `hopla` and `hopla-run.R` scripts now load their logging
   helpers from the package namespace instead of the source `R/` directory,
   which is absent from an installed tree.

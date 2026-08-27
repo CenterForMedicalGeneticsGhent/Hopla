@@ -47,6 +47,31 @@ engine_path <- function() {
   stop("Could not locate hopla engine.", call. = FALSE)
 }
 
+engine_local_functions <- function() {
+  pattern <- "^[[:space:]]*([A-Za-z._][A-Za-z0-9._]*)[[:space:]]*(<-|=)[[:space:]]*function.*$"
+  lines <- readLines(engine_path())
+  unique(sub(pattern, "\\1", lines[grepl(pattern, lines)]))
+}
+
+call_parts <- function(expression) {
+  parts <- as.list(expression)
+  # Empty arguments such as `x[i, ]` cannot be evaluated, so probe safely.
+  is_call_part <- function(part) tryCatch(is.call(part), error = function(error) FALSE)
+  parts[vapply(parts, is_call_part, logical(1))]
+}
+
+engine_calls <- function() {
+  calls <- list()
+  walk <- function(expression) {
+    calls[[length(calls) + 1L]] <<- expression
+    for (part in call_parts(expression)) walk(part)
+  }
+  for (expression in parse(engine_path())) {
+    if (is.call(expression)) walk(expression)
+  }
+  calls
+}
+
 is_function_assignment <- function(expression) {
   is.call(expression) &&
     as.character(expression[[1]]) %in% c("<-", "=") &&
@@ -352,6 +377,70 @@ test_that("scripts run from an installed layout without the source R directory",
 
   expect_equal(as.integer(engine_status), 0L)
   expect_equal(as.integer(cli_status), 0L)
+})
+
+test_that("engine passes valid named arguments to package functions", {
+  packages <- c(
+    "plotly", "data.table", "GenomicRanges", "DNAcopy", "vcfR", "htmltools",
+    "kinship2", "scales", "RColorBrewer", "jsonlite", "yaml", "jsonvalidate",
+    "base64enc", "tools", "base", "stats", "utils", "graphics", "grDevices"
+  )
+  for (package in packages) skip_if_not_installed(package)
+
+  locals <- engine_local_functions()
+  resolve <- function(name) {
+    for (package in packages) {
+      if (name %in% getNamespaceExports(package)) {
+        return(get(name, envir = asNamespace(package)))
+      }
+    }
+    NULL
+  }
+
+  invalid <- character()
+  for (expression in engine_calls()) {
+    head <- expression[[1]]
+    if (!is.name(head)) next
+    name <- as.character(head)
+    if (name %in% locals) next
+    candidate <- resolve(name)
+    if (is.null(candidate) || !is.function(candidate)) next
+    formal_names <- names(formals(candidate))
+    if (!length(formal_names) || "..." %in% formal_names) next
+    supplied <- names(expression)
+    supplied <- supplied[!is.na(supplied) & nzchar(supplied)]
+    unmatched <- supplied[!vapply(
+      supplied,
+      function(argument) any(startsWith(formal_names, argument)),
+      logical(1)
+    )]
+    if (length(unmatched)) {
+      invalid <- c(invalid, paste0(name, "(", unmatched, " = )"))
+    }
+  }
+
+  expect_identical(unique(invalid), character())
+})
+
+test_that("engine reads DNAcopy segment output under its real column names", {
+  skip_if_not_installed("DNAcopy")
+  set.seed(42)
+  copy_number <- DNAcopy::CNA(
+    rnorm(200),
+    rep("chr1", 200),
+    seq_len(200) * 100L,
+    data.type = "logratio",
+    sampleid = "X"
+  )
+  capture.output(segmented <- DNAcopy::segment(copy_number, verbose = 0))
+
+  expect_true(
+    all(c("chrom", "loc.start", "loc.end", "seg.mean") %in% names(segmented$output))
+  )
+
+  source_lines <- readLines(engine_path())
+  expect_true(any(grepl("dat_seg\\$loc\\.start", source_lines)))
+  expect_false(any(grepl("dat_seg\\$(loc_start|loc_end|seg_mean)", source_lines)))
 })
 
 test_that("cli rejects unknown log levels", {
