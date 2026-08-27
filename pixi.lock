@@ -1263,6 +1263,7 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/linux-64/cyvcf2-0.34.0-py313hd6fac57_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/htslib-1.23.1-h633afcb_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/merlin-1.1.2-h3be2455_9.conda
+      - conda: https://conda.anaconda.org/bioconda/linux-64/pybigwig-0.3.25-py313h759994b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-auth-0.10.4-hb7a77c6_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-cal-0.9.14-h2aa3ae6_4.conda
@@ -1393,6 +1394,7 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/cyvcf2-0.34.0-py313h56f738b_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/htslib-1.23.1-h58d2225_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/merlin-1.1.2-h84a7dbf_9.conda
+      - conda: https://conda.anaconda.org/bioconda/linux-aarch64/pybigwig-0.3.25-py313hfd04e6b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/aws-c-auth-0.10.4-h03961ac_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/aws-c-cal-0.9.14-h6c1c863_4.conda
@@ -1523,6 +1525,7 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/cyvcf2-0.34.0-py313he3ac920_0.conda
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/htslib-1.23.1-h44a9eb5_0.conda
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/merlin-1.1.2-h0babe12_9.conda
+      - conda: https://conda.anaconda.org/bioconda/osx-arm64/pybigwig-0.3.25-py313h552ea20_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/_python_abi3_support-1.0-hd8ed1ab_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-doc-0.0.5-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-types-0.8.0-pyhd8ed1ab_0.conda
@@ -1653,6 +1656,7 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/linux-64/cyvcf2-0.34.0-py313hd6fac57_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/htslib-1.23.1-h633afcb_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/merlin-1.1.2-h3be2455_9.conda
+      - conda: https://conda.anaconda.org/bioconda/linux-64/pybigwig-0.3.25-py313h759994b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ast-serialize-0.8.0-py310hd8a072f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-auth-0.10.4-hb7a77c6_1.conda
@@ -1798,6 +1802,7 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/cyvcf2-0.34.0-py313h56f738b_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/htslib-1.23.1-h58d2225_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/merlin-1.1.2-h84a7dbf_9.conda
+      - conda: https://conda.anaconda.org/bioconda/linux-aarch64/pybigwig-0.3.25-py313hfd04e6b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/ast-serialize-0.8.0-py310h8c58d24_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/aws-c-auth-0.10.4-h03961ac_1.conda
@@ -1943,6 +1948,7 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/cyvcf2-0.34.0-py313he3ac920_0.conda
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/htslib-1.23.1-h44a9eb5_0.conda
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/merlin-1.1.2-h0babe12_9.conda
+      - conda: https://conda.anaconda.org/bioconda/osx-arm64/pybigwig-0.3.25-py313h552ea20_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/_python_abi3_support-1.0-hd8ed1ab_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-doc-0.0.5-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-types-0.8.0-pyhd8ed1ab_0.conda
@@ -3485,6 +3491,24 @@ packages:
     - merlin >=1.1.2,<2.0a0
   size: 742192
   timestamp: 1787834893888
+- conda: https://conda.anaconda.org/bioconda/linux-64/pybigwig-0.3.25-py313h759994b_1.conda
+  sha256: ac21f12e62a6a84e62f0bdc6598777cda618fcea52587e1d5dccb27d6e26cf7d
+  md5: 15edb43c2b23dacfaa954a8935a93dfa
+  depends:
+  - libcurl >=8.19.0,<9.0a0
+  - libgcc >=14
+  - libzlib >=1.3.2,<2.0a0
+  - numpy >=1.23,<3
+  - numpy >=2.0.0
+  - python >=3.13,<3.14.0a0
+  - python_abi 3.13.* *_cp313
+  license: MIT
+  license_family: MIT
+  run_exports:
+    weak:
+    - pybigwig >=0.3.25,<0.4.0a0
+  size: 76419
+  timestamp: 1776330064707
 - conda: https://conda.anaconda.org/bioconda/linux-aarch64/bioconductor-dnacopy-1.86.0-r45hb960565_0.conda
   sha256: bb9f232cdf0139e92742756ba540c8a709383c5ed059678d96faeeb8c54f1d51
   md5: a6bc7e1aaff5e06fecd1be1da55cff7e
@@ -3616,6 +3640,24 @@ packages:
     - merlin >=1.1.2,<2.0a0
   size: 925384
   timestamp: 1787834664773
+- conda: https://conda.anaconda.org/bioconda/linux-aarch64/pybigwig-0.3.25-py313hfd04e6b_1.conda
+  sha256: aaced4cdbe3060c5488c5c3075c01716ce09dbc883e04b71ae3852ca363049d8
+  md5: 9254ada2e51cffe153c441e918e7179f
+  depends:
+  - libcurl >=8.19.0,<9.0a0
+  - libgcc >=14
+  - libzlib >=1.3.2,<2.0a0
+  - numpy >=1.23,<3
+  - numpy >=2.0.0
+  - python >=3.13,<3.14.0a0
+  - python_abi 3.13.* *_cp313
+  license: MIT
+  license_family: MIT
+  run_exports:
+    weak:
+    - pybigwig >=0.3.25,<0.4.0a0
+  size: 117156
+  timestamp: 1776329630729
 - conda: https://conda.anaconda.org/bioconda/noarch/bioconductor-biocgenerics-0.52.0-r44hdfd78af_3.tar.bz2
   sha256: 372f2a4b5f1802dc76347b1e87d8a75fea204304fa5bb3239e54737907761d7d
   md5: 8a9defade51c2c2a6b90a4474dcdfdfc
@@ -3942,6 +3984,23 @@ packages:
     - merlin >=1.1.2,<2.0a0
   size: 816797
   timestamp: 1787834434876
+- conda: https://conda.anaconda.org/bioconda/osx-arm64/pybigwig-0.3.25-py313h552ea20_1.conda
+  sha256: 5ec5b9ca5742c331e1369bae3381e78049ab7736d44f1f3138c50f463eb2c9fd
+  md5: 1abdbf53f0484c6768893525b9edc94b
+  depends:
+  - libcurl >=8.19.0,<9.0a0
+  - libzlib >=1.3.2,<2.0a0
+  - numpy >=1.23,<3
+  - numpy >=2.0.0
+  - python >=3.13,<3.14.0a0
+  - python_abi 3.13.* *_cp313
+  license: MIT
+  license_family: MIT
+  run_exports:
+    weak:
+    - pybigwig >=0.3.25,<0.4.0a0
+  size: 74900
+  timestamp: 1776329643178
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   build_number: 20
   sha256: 1dd3fffd892081df9726d7eb7e0dea6198962ba775bd88842135a4ddb4deb3c9
