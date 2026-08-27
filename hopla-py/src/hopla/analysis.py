@@ -71,6 +71,91 @@ def variant_statistics(
     return pl.DataFrame(rows)
 
 
+def genotype_counts(
+    sites: SiteTable,
+    matrix: GenotypeMatrix,
+    filtered1: FilteredGenotypes,
+    filtered2: FilteredGenotypes,
+) -> pl.DataFrame:
+    """Count missing, homozygous, and heterozygous calls per filter and sample."""
+    del sites
+    labels = {-1: "missing", 0: "0/0", 1: "0/1", 2: "1/1"}
+    rows = []
+    for level, calls in ((0, matrix.gt), (1, filtered1.gt), (2, filtered2.gt)):
+        for sample_index, sample in enumerate(matrix.samples):
+            values, counts = np.unique(calls[sample_index], return_counts=True)
+            rows.extend(
+                {
+                    "filter_level": level,
+                    "sample": sample,
+                    "genotype": labels[int(value)],
+                    "count": int(count),
+                }
+                for value, count in zip(values, counts, strict=True)
+            )
+    return pl.DataFrame(rows)
+
+
+def variant_depth_table(matrix: GenotypeMatrix, filtered1: FilteredGenotypes) -> pl.DataFrame:
+    """Build compact depth histograms for raw and filter-one calls."""
+    rows = []
+    for level, depths in ((0, matrix.dp.astype(np.float32)), (1, filtered1.dp)):
+        for sample_index, sample in enumerate(matrix.samples):
+            valid = depths[sample_index][np.isfinite(depths[sample_index])]
+            values, counts = np.unique(valid.astype(np.uint32), return_counts=True)
+            rows.extend(
+                {
+                    "filter_level": level,
+                    "sample": sample,
+                    "depth": int(value),
+                    "count": int(count),
+                }
+                for value, count in zip(values, counts, strict=True)
+            )
+    return pl.DataFrame(rows)
+
+
+def variant_density_table(
+    sites: SiteTable,
+    matrix: GenotypeMatrix,
+    filtered1: FilteredGenotypes,
+    filtered2: FilteredGenotypes,
+    window_size: int,
+) -> pl.DataFrame:
+    """Count callable variants in chromosome-aware genomic windows."""
+    rows: list[pl.DataFrame] = []
+    levels = (
+        (0, np.ones(sites.size, dtype=np.bool_), matrix.gt),
+        (1, filtered1.site_mask, filtered1.gt),
+        (2, filtered2.site_mask, filtered2.gt),
+    )
+    for level, site_mask, calls in levels:
+        source = np.flatnonzero(site_mask)
+        starts, keys = _window_ids(sites, site_mask, window_size)
+        chrom = _chrom_names(sites.chrom[source])
+        for sample_index, sample in enumerate(matrix.samples):
+            frame = (
+                pl.DataFrame(
+                    {
+                        "_key": keys,
+                        "chrom": chrom,
+                        "start": starts,
+                        "called": calls[sample_index] >= 0,
+                    }
+                )
+                .group_by("_key", "chrom", "start")
+                .agg(pl.col("called").sum().alias("count"))
+                .with_columns(
+                    (pl.col("start") + window_size - 1).alias("end"),
+                    pl.lit(level).cast(pl.Int8).alias("filter_level"),
+                    pl.lit(sample).alias("sample"),
+                )
+                .drop("_key")
+            )
+            rows.append(frame)
+    return pl.concat(rows)
+
+
 def ado_adi(matrix: GenotypeMatrix, settings: Settings) -> pl.DataFrame:
     """Calculate allelic drop-out and drop-in percentages for complete trios."""
     rows: list[dict[str, object]] = []
@@ -347,6 +432,11 @@ def build_analysis_tables(
     copy_number, segments = copy_number_table(sites, matrix, settings)
     return {
         "variant_stats": variant_statistics(sites, matrix, filtered1, filtered2, settings),
+        "genotype_counts": genotype_counts(sites, matrix, filtered1, filtered2),
+        "variant_depth": variant_depth_table(matrix, filtered1),
+        "variant_density": variant_density_table(
+            sites, matrix, filtered1, filtered2, settings.window_size
+        ),
         "ado_adi": ado_adi(matrix, settings),
         "baf": baf_table(sites, matrix, filtered1),
         "copy_number": copy_number,
@@ -354,6 +444,39 @@ def build_analysis_tables(
         "mendelian": mendelian_table(sites, matrix, filtered1, settings),
         "parent_mapping": parent_mapping_table(sites, matrix, filtered1, settings),
     }
+
+
+def haplotype_concordance(haplotypes: pl.DataFrame) -> pl.DataFrame:
+    """Calculate pairwise concordance for all Merlin sample strands."""
+    rows: list[dict[str, object]] = []
+    sample_strands = [
+        (str(sample), int(strand))
+        for sample, strand in haplotypes.select("sample", "strand").unique().iter_rows()
+    ]
+    for left_index, (left_sample, left_strand) in enumerate(sample_strands):
+        left = haplotypes.filter(
+            (pl.col("sample") == left_sample) & (pl.col("strand") == left_strand)
+        ).select("chrom", "pos", pl.col("letter").alias("left"))
+        for right_sample, right_strand in sample_strands[left_index + 1 :]:
+            right = haplotypes.filter(
+                (pl.col("sample") == right_sample) & (pl.col("strand") == right_strand)
+            ).select("chrom", "pos", pl.col("letter").alias("right"))
+            aligned = left.join(right, on=["chrom", "pos"], how="inner").filter(
+                (pl.col("left") != "X") & (pl.col("right") != "X")
+            )
+            mean = (aligned["left"] == aligned["right"]).mean() if not aligned.is_empty() else None
+            rows.append(
+                {
+                    "sample_a": left_sample,
+                    "strand_a": left_strand,
+                    "sample_b": right_sample,
+                    "strand_b": right_strand,
+                    "concordance_percent": (
+                        round(float(mean) * 100, 2) if isinstance(mean, (int, float)) else None
+                    ),
+                }
+            )
+    return pl.DataFrame(rows)
 
 
 def iter_nonempty(tables: dict[str, pl.DataFrame]) -> Iterable[tuple[str, pl.DataFrame]]:

@@ -95,12 +95,25 @@ def pedigree_svg(settings: Settings) -> str:
             if parent in locations:
                 px, py = locations[parent]
                 links.append(f'<line x1="{px}" y1="{py + 18}" x2="{x}" y2="{y - 18}"/>')
-        shape = (
-            f'<rect x="{x - 18}" y="{y - 18}" width="36" height="36"/>'
-            if settings.genders[index] == "M"
-            else f'<circle cx="{x}" cy="{y}" r="18"/>'
+        annotation = (
+            "R"
+            if sample in settings.reference_ids
+            else "C"
+            if sample in settings.carrier_ids
+            else "A"
+            if sample in settings.affected_ids
+            else "N"
+            if sample in settings.nonaffected_ids
+            else ""
         )
-        nodes.append(shape + f'<text x="{x}" y="{y + 38}">{escape(sample)}</text>')
+        fill = "#fecaca" if annotation == "A" else "#e2e8f0"
+        shape = (
+            f'<rect x="{x - 18}" y="{y - 18}" width="36" height="36" fill="{fill}"/>'
+            if settings.genders[index] == "M"
+            else f'<circle cx="{x}" cy="{y}" r="18" fill="{fill}"/>'
+        )
+        label = f"{sample} ({annotation})" if annotation else sample
+        nodes.append(shape + f'<text x="{x}" y="{y + 38}">{escape(label)}</text>')
     return (
         f'<svg viewBox="0 0 {width} 300" role="img" aria-label="Family tree">'
         '<g stroke="#334155" fill="#e2e8f0" stroke-width="2">'
