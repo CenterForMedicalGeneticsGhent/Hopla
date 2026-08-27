@@ -5,6 +5,7 @@ COPY pixi.toml pixi.lock ./
 RUN pixi install --locked \
     && pixi shell-hook -s bash > /app/entrypoint.sh \
     && printf '\nexec "$@"\n' >> /app/entrypoint.sh \
+    && rm -f /app/.pixi/envs/default/bin/pandoc \
     && chmod 0755 /app/entrypoint.sh
 
 FROM ubuntu:24.04 AS production

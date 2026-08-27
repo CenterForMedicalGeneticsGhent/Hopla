@@ -131,6 +131,7 @@ docker run --rm hopla Rscript /app/hopla.R --version
 Merlin's version should be exactly as given.  
 Plotly's version is ideally no lower than given.  
 For the remaining packages, other versions are very likely to work.  
+Hopla does not invoke Pandoc. Conda may still resolve it transitively through plotly's htmlwidgets/rmarkdown dependency chain; the runtime Docker image removes the unused executable.
 
 See [CHANGELOG-R.md](CHANGELOG-R.md) for changes to the R pipeline scripts.
 
