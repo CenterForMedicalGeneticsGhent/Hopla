@@ -50,7 +50,7 @@ class GenotypeMatrix:
         total = self.ad_ref.astype(np.float32) + self.ad_alt
         result = np.full(total.shape, np.nan, dtype=np.float32)
         np.divide(self.ad_alt, total, out=result, where=total > 0)
-        return result
+        return np.round(result, decimals=3)
 
 
 @dataclass(slots=True, frozen=True)

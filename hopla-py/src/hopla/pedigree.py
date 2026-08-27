@@ -21,16 +21,24 @@ def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix
         & (sites.pos < 21_800_000)
     )
     autosomal_mean = np.mean(matrix.dp[:, autosomal], axis=1)
+    x_mean = (
+        np.mean(matrix.dp[:, x_mask], axis=1)
+        if np.any(x_mask)
+        else np.full(len(matrix.samples), np.nan)
+    )
+    y_mean = (
+        np.mean(matrix.dp[:, y_mask], axis=1)
+        if np.any(y_mask)
+        else np.full(len(matrix.samples), np.nan)
+    )
     x_copies = np.divide(
-        np.mean(matrix.dp[:, x_mask], axis=1) * 2,
+        x_mean * 2,
         autosomal_mean,
         out=np.full(len(matrix.samples), np.nan),
         where=autosomal_mean > 0,
     )
     y_copies = np.divide(
-        np.mean(matrix.dp[:, y_mask], axis=1) * 2
-        if np.any(y_mask)
-        else np.zeros(len(matrix.samples)),
+        y_mean * 2,
         autosomal_mean,
         out=np.full(len(matrix.samples), np.nan),
         where=autosomal_mean > 0,
@@ -45,9 +53,21 @@ def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix
             result[index] = "M"
         else:
             matrix_index = matrix.sample_index[sample]
-            x_gender: Gender = "M" if x_copies[matrix_index] < settings.x_cutoff else "F"
-            y_gender: Gender = "F" if y_copies[matrix_index] < settings.y_cutoff else "M"
-            result[index] = x_gender if x_gender == y_gender else x_gender
+            x_value, y_value = x_copies[matrix_index], y_copies[matrix_index]
+            x_gender: Gender = (
+                "M" if x_value < settings.x_cutoff else "F" if np.isfinite(x_value) else None
+            )
+            y_gender: Gender = (
+                "F" if y_value < settings.y_cutoff else "M" if np.isfinite(y_value) else None
+            )
+            if x_gender is None and y_gender is None:
+                raise ValueError(f"Could not predict gender for sample {sample}.")
+            result[index] = y_gender if y_gender is not None else x_gender
+    unresolved = [
+        sample for sample, gender in zip(settings.sample_ids, result, strict=True) if gender is None
+    ]
+    if unresolved:
+        raise ValueError(f"Gender must be provided for ghost sample(s): {', '.join(unresolved)}")
     return result
 
 
