@@ -1,4 +1,4 @@
-name: Build and publish R pipeline
+name: Build and publish Hopla
 
 on:
   pull_request:
@@ -12,6 +12,37 @@ permissions:
   contents: write
 
 jobs:
+  ui-image:
+    name: Build and push UI image
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Build Image
+        id: build-image
+        uses: redhat-actions/buildah-build@9dc2ade9b5db229966b5025ae266311e12f349c4 # v2
+        with:
+          image: hopla
+          tags: latest ${{ github.event.release.tag_name }}
+          context: ./UI
+          containerfiles: |
+            ./UI/Dockerfile
+      - name: Push To quay.io
+        id: push-to-quay
+        if: github.event_name != 'pull_request'
+        uses: redhat-actions/push-to-registry@5860fc963bf8f2b3221773a023141612f010c469 # v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: quay.io/cmgg
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Print image url
+        if: github.event_name != 'pull_request'
+        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+
   r-package:
     name: Build and check R package
     runs-on: ubuntu-24.04

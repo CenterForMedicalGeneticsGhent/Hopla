@@ -9,7 +9,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
 
 // Components
 import OutputDownloadConfig from "../Outputs/OutputDownloadConfig.vue";
@@ -31,7 +30,7 @@ import {
   parseBafIDs,
 } from "../Parsers/Form2Config";
 
-export default Vue.extend({
+export default {
   name: 'TabConfigFile',
   components:{
     OutputDownloadConfig,
@@ -461,5 +460,5 @@ export default Vue.extend({
   },
   watch:{
   },  
-})
+}
 </script>

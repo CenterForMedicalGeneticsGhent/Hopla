@@ -1,18 +1,17 @@
 <template>
 <v-container>
-  <Form />
+  <HoplaForm />
 </v-container>
 </template>
 
 <script lang="ts">
-  import Vue from 'vue'
-  import Form from '../components/Forms/FormHopla.vue';
+  import HoplaForm from '../components/Forms/FormHopla.vue';
 
-  export default Vue.extend({
+  export default {
     name: 'Home',
 
     components: {
-      Form,
+      HoplaForm,
     },
-  })
+  }
 </script>

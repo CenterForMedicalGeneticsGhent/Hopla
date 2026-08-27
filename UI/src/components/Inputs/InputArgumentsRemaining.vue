@@ -16,16 +16,16 @@
 
 
 <script>
-import Vue from 'vue';
 
 import InputLimitPmToP from "../Inputs/InputLimitPmToP.vue";
 import InputValueOfP from "../Inputs/InputValueOfP.vue";
 import InputRegionsFlankingSize from "../Inputs/InputRegionsFlankingSize.vue";
 
-export default Vue.extend({
+export default {
     name: 'InputArgumentsRemainingFeatures',
+    emits: ['update:modelValue'],
     props:{
-        value: Object,
+        modelValue: Object,
     },
     components:{
       InputLimitPmToP,
@@ -39,10 +39,10 @@ export default Vue.extend({
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         }
       },
     },
@@ -55,5 +55,5 @@ export default Vue.extend({
     watch:{
       //CODE
     },
-})
+}
 </script>

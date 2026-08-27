@@ -7,7 +7,6 @@ export default function parseAfHardLimitIDs(configPedigree){
     var father = configPedigree.configParents.father;
     var mother = configPedigree.configParents.mother;
     var siblings = configPedigree.configSiblings;
-    var embryos = configPedigree.configEmbryos.embryoList;
     //logic for each relative
     var content="";
     //paternalGrandfather

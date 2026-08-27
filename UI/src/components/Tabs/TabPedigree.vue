@@ -47,7 +47,6 @@
 </template>
 
 <script>
-  import Vue from 'vue'
   import InputFamilyID from "../Inputs/InputFamilyID.vue";
   import PedigreeGroupGrandparentsPaternal from "../PedigreeGroups/PedigreeGroupGrandparentsPaternal.vue";
   import PedigreeGroupGrandparentsMaternal from "../PedigreeGroups/PedigreeGroupGrandparentsMaternal.vue";
@@ -56,8 +55,9 @@
   import PedigreeGroupEmbryos from "../PedigreeGroups/PedigreeGroupEmbryos.vue";
 
 
-  export default Vue.extend({
+  export default {
     name: 'TabPedigree',
+    emits: ['update:modelValue'],
     components:{
       InputFamilyID,
       PedigreeGroupGrandparentsPaternal,
@@ -67,7 +67,7 @@
       PedigreeGroupEmbryos,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function(){
       return {
@@ -76,10 +76,10 @@
     computed:{
       config: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         }
       },
     },
@@ -87,5 +87,5 @@
     },
     watch:{
     },  
-    })
+    }
 </script>

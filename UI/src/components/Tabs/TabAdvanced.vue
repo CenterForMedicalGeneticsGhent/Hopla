@@ -16,17 +16,17 @@
 </template>
 
 <script>
-  import Vue from 'vue'
   
   import InputArgumentsRemaining from "../Inputs/InputArgumentsRemaining.vue";
 
-  export default Vue.extend({
+  export default {
     name: 'TabAdvanced',
+    emits: ['update:modelValue'],
     components:{
       InputArgumentsRemaining,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
@@ -35,10 +35,10 @@
     computed:{
       config: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         }
       },
     },
@@ -48,5 +48,5 @@
     watch:{
       //CODE
     },  
-    })
+    }
 </script>

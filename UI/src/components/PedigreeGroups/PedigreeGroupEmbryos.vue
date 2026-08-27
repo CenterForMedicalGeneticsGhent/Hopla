@@ -39,7 +39,7 @@ v-model="config.embryoList"
         tile
         >
           <v-img
-            src="../../assets/embryos.png"
+            :src="embryosImg"
           />
         </v-avatar>
       </v-btn>
@@ -54,8 +54,8 @@ v-model="config.embryoList"
 
 <script>
   //Imports
-  import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
+  import embryosImg from '../../assets/embryos.png';
 
   // Components
   import PedigreeGroup from "./PedigreeGroup.vue";
@@ -69,28 +69,30 @@ v-model="config.embryoList"
 
   
 
-  export default Vue.extend({
+  export default {
     name: 'PedigreeGroupEmbryos',
+    emits: ['update:modelValue'],
     components:{
       PedigreeGroup,
       PatientCardEmbryo,
       InputHeteroIDs,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
         counter:0,
+        embryosImg,
       }
     },
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
-        set: function(d){
-          this.$emit('input',this.config);
+        set: function(){
+          this.$emit('update:modelValue',this.config);
         },
       },
     },
@@ -115,5 +117,5 @@ v-model="config.embryoList"
     watch:{
       //CODE
     },  
-    })
+    }
 </script>

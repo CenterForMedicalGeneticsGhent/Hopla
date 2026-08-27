@@ -28,16 +28,16 @@ class="mt-4"
 
 
 <script>
-import Vue from 'vue';
 import InputChr from "../Inputs/InputChr.vue";
 import InputChrStart from "../Inputs/InputChrStart.vue";
 import InputChrEnd from "../Inputs/InputChrEnd.vue";
 
 
-export default Vue.extend({
+export default {
     name: 'InputRegion',
+    emits: ['update:modelValue'],
     props:{
-        value: Object,
+        modelValue: Object,
     },
     components:{
         InputChr,
@@ -51,10 +51,10 @@ export default Vue.extend({
     computed:{
         config:{
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
     },
@@ -64,5 +64,5 @@ export default Vue.extend({
     watch:{
       //CODE
     },
-})
+}
 </script>

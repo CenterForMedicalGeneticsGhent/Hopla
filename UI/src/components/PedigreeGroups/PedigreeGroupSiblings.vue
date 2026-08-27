@@ -33,7 +33,7 @@ imgLicense="Designed by FreePlk from Flaticon"
       tile
       >
         <v-img
-          src="../../assets/siblingNA.png"
+          :src="siblingNAImg"
         />
       </v-avatar>
     </v-btn>
@@ -42,8 +42,8 @@ imgLicense="Designed by FreePlk from Flaticon"
 </template>
 
 <script>
-  import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
+  import siblingNAImg from '../../assets/siblingNA.png';
 
   // Components
   import PedigreeGroup from "./PedigreeGroup.vue";
@@ -54,27 +54,29 @@ imgLicense="Designed by FreePlk from Flaticon"
   var configSiblingsDefault = cloneDeep(templateSibling);
   configSiblingsDefault.sampleID="siblingID";
 
-  export default Vue.extend({
+  export default {
     name: 'PedigreeGroupSiblings',
+    emits: ['update:modelValue'],
     components:{
       PedigreeGroup,
       PatientCardSibling,
     },
     props:{
-      value: Array,
+      modelValue: Array,
     },
     data: function() {
       return {
         counter: 0,
+        siblingNAImg,
       }
     },
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
     },
@@ -96,5 +98,5 @@ imgLicense="Designed by FreePlk from Flaticon"
     watch:{
       //CODE
     }, 
-    })
+    }
 </script>

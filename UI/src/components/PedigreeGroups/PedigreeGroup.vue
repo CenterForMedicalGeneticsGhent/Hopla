@@ -23,12 +23,17 @@
 </template>
 
 <script>
-  import Vue from 'vue'
+  import grandparents1Img from '../../assets/grandparents1.png';
+  import grandparents2Img from '../../assets/grandparents2.png';
+  import parentsImg from '../../assets/parents.png';
+  import siblingsImg from '../../assets/siblings.png';
+  import embryosImg from '../../assets/embryos.png';
 
-  export default Vue.extend({
+  export default {
     name: 'PedigreeGroup',
+    emits: ['update:modelValue'],
     props:{
-      value: null,
+      modelValue: null,
       title: String,
       imgType: String,
       width:String,
@@ -41,27 +46,27 @@
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
       imgPath: function(){
         if (this.imgType=="grandparents1"){
-          return require('../../assets/grandparents1.png');
+          return grandparents1Img;
         }
         else if (this.imgType=="grandparents2"){
-          return require('../../assets/grandparents2.png');
+          return grandparents2Img;
         }
         else if (this.imgType=="parents"){
-          return require('../../assets/parents.png');
+          return parentsImg;
         }
         else if (this.imgType=="siblings"){
-          return require('../../assets/siblings.png');
+          return siblingsImg;
         }
         else if (this.imgType=="embryos"){
-          return require('../../assets/embryos.png');
+          return embryosImg;
         }
         return false;
       },
@@ -84,5 +89,5 @@
     watch:{
       //CODE
     },
-    })
+    }
 </script>

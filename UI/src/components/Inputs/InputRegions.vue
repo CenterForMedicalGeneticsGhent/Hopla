@@ -10,7 +10,7 @@ flat
     >
         <v-col class="d-flex justify-center align-center">
             <v-btn
-            dense
+            density="compact"
             depressed
             color="green"
             @click="addRegion()"
@@ -35,7 +35,7 @@ flat
         <v-col align="right" class="mr-3">
             <v-btn
             v-if="regions.length>0"
-            dense
+            density="compact"
             depressed
             color="error"
             @click="removeRegion()"
@@ -50,7 +50,6 @@ flat
 
 
 <script>
-import Vue from 'vue';
 import cloneDeep from 'lodash/cloneDeep';
 import InputRegion from "./InputRegion.vue";
 
@@ -61,10 +60,11 @@ var regionDefault = {
     chrEnd: 99999999,
 }
 
-export default Vue.extend({
+export default {
     name: 'InputRegions',
+    emits: ['update:modelValue'],
     props:{
-        value: Array,
+        modelValue: Array,
     },
     components:{
         InputRegion,
@@ -76,10 +76,10 @@ export default Vue.extend({
     computed:{
         regions:{
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
     },
@@ -97,5 +97,5 @@ export default Vue.extend({
     watch:{
       //CODE
     },
-})
+}
 </script>

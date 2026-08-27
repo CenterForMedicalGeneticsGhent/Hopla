@@ -15,7 +15,7 @@ v-if="config['sampleID']=='U5'"
     tile
     >
       <v-img
-        src="../../assets/maternalGrandfather.png"
+        :src="maternalGrandfatherImg"
       />
     </v-avatar>
   </v-btn>
@@ -37,8 +37,8 @@ v-else
 
 <script>
   // Imports
-  import Vue from 'vue'
   import cloneDeep from 'lodash/cloneDeep';
+  import maternalGrandfatherImg from '../../assets/maternalGrandfather.png';
 
   // Components
   import PatientCardGeneral from "./PatientCardGeneral.vue";
@@ -50,25 +50,27 @@ v-else
   configMaternalGrandfatherDefault.sampleID="maternalGrandfatherID";
   
 
-  export default Vue.extend({
+  export default {
     name: 'PatientCardMaternalGrandfather',
+    emits: ['update:modelValue'],
     components: {
       PatientCardGeneral,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
+        maternalGrandfatherImg,
       };
     },
     computed: {
       config: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
       title: function(){
@@ -92,5 +94,5 @@ v-else
     watch:{
       //CODE
     },
-    })
+    }
 </script>

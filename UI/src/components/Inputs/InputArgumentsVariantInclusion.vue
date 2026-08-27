@@ -13,13 +13,13 @@
 
 
 <script>
-import Vue from 'vue';
 import InputAfHardLimit from "./InputAfHardLimit.vue";
 
-export default Vue.extend({
+export default {
     name: 'InputArgumentsVariantInclusion',
+    emits: ['update:modelValue'],
     props:{
-        value: Number,
+        modelValue: Number,
     },
     components:{
       InputAfHardLimit,
@@ -31,10 +31,10 @@ export default Vue.extend({
     computed:{
       afHardLimit: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         }
       },
     },
@@ -47,5 +47,5 @@ export default Vue.extend({
     watch:{
       //CODE
     },
-})
+}
 </script>

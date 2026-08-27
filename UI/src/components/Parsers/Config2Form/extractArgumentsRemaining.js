@@ -1,25 +1,29 @@
+import paramValue from "./paramValue";
+
 export default function extractArgumentsRemaining(paramsObject, config){
     // Retrieve Params
-    var limitPmToP= function(){
-        if (paramsObject["limit.pm.to.P"][0]=="T"){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }();
-    var valueOfP= Number(paramsObject["value.of.P"][0]);
-    var limitBafToP= false;
-    var selfContained= true;
-    var regionsFlankingSize= Number(paramsObject["regions.flanking.size"][0]);
+    var limitPmToP= paramValue(paramsObject,"limit.pm.to.P");
+    var valueOfP= paramValue(paramsObject,"value.of.P");
+    var limitBafToP= paramValue(paramsObject,"limit.baf.to.P");
+    var selfContained= paramValue(paramsObject,"self.contained");
+    var regionsFlankingSize= paramValue(paramsObject,"regions.flanking.size");
     
     // Assign Params
-    config.configAdvanced.remainingFeatures.limitPmToP = limitPmToP;
-    config.configAdvanced.remainingFeatures.valueOfP = valueOfP;
-    config.configAdvanced.remainingFeatures.limitBafToP= limitBafToP;
-    config.configAdvanced.remainingFeatures.selfContained = selfContained;
-    config.configAdvanced.remainingFeatures.regionsFlankingSize = regionsFlankingSize;
-
+    if (limitPmToP!==undefined){
+        config.configAdvanced.remainingFeatures.limitPmToP = (limitPmToP=="T");
+    }
+    if (valueOfP!==undefined){
+        config.configAdvanced.remainingFeatures.valueOfP = Number(valueOfP);
+    }
+    if (limitBafToP!==undefined){
+        config.configAdvanced.remainingFeatures.limitBafToP= (limitBafToP=="T");
+    }
+    if (selfContained!==undefined){
+        config.configAdvanced.remainingFeatures.selfContained = (selfContained=="T");
+    }
+    if (regionsFlankingSize!==undefined){
+        config.configAdvanced.remainingFeatures.regionsFlankingSize = Number(regionsFlankingSize);
+    }
 
     return config;
 }

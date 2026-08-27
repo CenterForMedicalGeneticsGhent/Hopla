@@ -3,15 +3,16 @@
 v-model="chr"
 :items="chrOptions"
 label="Chromosome"
-outlined
+variant="outlined"
 />
 </template>
 
 
 <script>
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: String,
+        modelValue: String,
     },
     data: function(){
         return{
@@ -25,10 +26,10 @@ export default {
     computed:{
         chr: {
             get:function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
     },

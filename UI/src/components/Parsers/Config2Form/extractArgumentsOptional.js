@@ -1,9 +1,13 @@
+import paramValue from "./paramValue";
+
 export default function extractArgumentsOptional(paramsObject, config){
     // Retrieve Params
-    var fileCytoband=paramsObject["cytoband.file"][0];
+    var fileCytoband=paramValue(paramsObject,"cytoband.file");
     
     // Assign Params
-    config.configParameters.fileCytoband = fileCytoband;
+    if (fileCytoband!==undefined){
+        config.configParameters.fileCytoband = fileCytoband;
+    }
 
     return config;
 }

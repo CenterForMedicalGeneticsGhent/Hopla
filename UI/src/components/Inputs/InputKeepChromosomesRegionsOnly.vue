@@ -2,7 +2,7 @@
     <v-radio-group
     class="ma-0 pa-0"
     v-model="config"
-    dense
+    density="compact"
     >
       <v-radio
         label="Show everything"
@@ -21,13 +21,13 @@
 
 
 <script>
-import Vue from 'vue';
 
 
-export default Vue.extend({
+export default {
     name:"InputKeepChromosomesRegionsOnly",
+    emits: ['update:modelValue'],
     props:{
-        value: Object,
+        modelValue: Object,
     },
     data: function(){
       return {
@@ -36,10 +36,10 @@ export default Vue.extend({
     computed:{
       config:{
         get: function(){
-          if (this.value.keepChromosomesOnly==true && this.value.keepRegionsOnly==false){
+          if (this.modelValue.keepChromosomesOnly==true && this.modelValue.keepRegionsOnly==false){
             return 1;
           }
-          else if (this.value.keepChromosomesOnly==false && this.value.keepRegionsOnly==true){
+          else if (this.modelValue.keepChromosomesOnly==false && this.modelValue.keepRegionsOnly==true){
             return 2;
           }
           else {
@@ -47,23 +47,22 @@ export default Vue.extend({
           }
         },
         set: function(d){
-          console.log(d)
           if (d==0){
-            this.$emit('input',{
+            this.$emit('update:modelValue',{
               keepChromosomesOnly:false,
               keepRegionsOnly:false,
 
             });
           }
           else if (d==1){
-            this.$emit('input',{
+            this.$emit('update:modelValue',{
               keepChromosomesOnly:true,
               keepRegionsOnly:false,
 
             });
           }
           else if (d==2){
-            this.$emit('input',{
+            this.$emit('update:modelValue',{
               keepChromosomesOnly:false,
               keepRegionsOnly:true,
             });
@@ -80,5 +79,5 @@ export default Vue.extend({
     watch:{
       //CODE
     }, 
-})
+}
 </script>

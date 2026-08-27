@@ -1,7 +1,6 @@
 import determinePositionSampleID from "./determinePositionSampleID";
 import determinekeepLimitIDHardDP from "./determineKeepLimitIDHardDP";
 import determinekeepLimitIDHardAF from "./determineKeepLimitIDHardAF";
-import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
 import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 
@@ -9,6 +8,10 @@ export default function extractInfoPaternalGrandmother(paramsObject, config){
     // Retrieve Params
     var sampleID=paramsObject.pedigreeMapping.paternalGrandmother;
     var indexOfID=determinePositionSampleID(sampleID,paramsObject["sample.ids"]);
+    if (indexOfID===-1){
+        // Not part of the analysis; keep the placeholder from the form template.
+        return config;
+    }
     var gender=paramsObject["genders"][indexOfID];
     var keepLimitIDHardDP = determinekeepLimitIDHardDP(sampleID,paramsObject["dp.hard.limit.ids"]);
     var keepLimitIDHardAF = determinekeepLimitIDHardAF(sampleID,paramsObject["af.hard.limit.ids"]);

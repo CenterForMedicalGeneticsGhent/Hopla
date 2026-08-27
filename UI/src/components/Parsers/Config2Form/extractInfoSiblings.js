@@ -1,13 +1,13 @@
 import determinePositionSampleID from "./determinePositionSampleID";
 import determinekeepLimitIDHardDP from "./determineKeepLimitIDHardDP";
 import determinekeepLimitIDHardAF from "./determineKeepLimitIDHardAF";
-import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
-import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 
 export default function extractInfoSiblings(paramsObject, config){
     // Retrieve Params
-    var sampleIDs=paramsObject.pedigreeMapping.siblings.filter(id => id !== "");
+    var sampleIDs=paramsObject.pedigreeMapping.siblings.filter(function(id){
+        return id !== "" && determinePositionSampleID(id,paramsObject["sample.ids"]) !== -1;
+    });
     var indicesOfID=sampleIDs.map(function(d){
         return determinePositionSampleID(d,paramsObject["sample.ids"]);
     }); 
@@ -20,13 +20,13 @@ export default function extractInfoSiblings(paramsObject, config){
     var keepLimitIDHardAFs=sampleIDs.map(function(d){
         return determinekeepLimitIDHardAF(d,paramsObject["af.hard.limit.ids"]);
     });
-    var keepLimitIDSoftDPs=sampleIDs.map(function(d){
+    var keepLimitIDSoftDPs=sampleIDs.map(function(){
         return "hide";
     }); 
-    var keepBafIDs=sampleIDs.map(function(d){
+    var keepBafIDs=sampleIDs.map(function(){
         return "hide";
     });
-    var keepInformativeIDs=sampleIDs.map(function(d){
+    var keepInformativeIDs=sampleIDs.map(function(){
         return "hide";
     }); 
     var diseaseStati=sampleIDs.map(function(d){

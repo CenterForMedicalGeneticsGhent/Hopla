@@ -1,7 +1,7 @@
 <template>
 <v-text-field
 label="End"
-outlined
+variant="outlined"
 v-model="chrEnd"
 :key="key"
 />
@@ -10,8 +10,9 @@ v-model="chrEnd"
 
 <script>
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: Number,
+        modelValue: Number,
     },
     data: function(){
         return{
@@ -21,15 +22,15 @@ export default {
     computed:{
         chrEnd:{
             get:function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
                 if (isNaN(d) || Number(d)<=0 ){
-                    this.$emit('input',this.chrEnd);
+                    this.$emit('update:modelValue',this.chrEnd);
                     this.key++ //Update view and reset to previous valid value
                 }
                 else {
-                    this.$emit('input',Number(d));
+                    this.$emit('update:modelValue',Number(d));
                 }
             },
         },

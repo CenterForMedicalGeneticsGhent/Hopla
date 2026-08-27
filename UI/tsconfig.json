@@ -4,17 +4,15 @@
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env",
-      "jest"
+      "vite/client",
+      "vitest/globals"
     ],
     "paths": {
       "@/*": [
@@ -24,8 +22,7 @@
     "lib": [
       "esnext",
       "dom",
-      "dom.iterable",
-      "scripthost"
+      "dom.iterable"
     ]
   },
   "include": [
@@ -33,8 +30,9 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
-, "src/components/Parsers/ParseDpHardLimitIDs.js", "src/components/Parsers/ParseAfHardLimitIDs.js", "src/components/Parsers/ParseKeepHeteroIDs.js", "src/components/Parsers/ParseKeepInformativeIDs.js", "src/components/Parsers/ParseDpSoftLimitIDs.js", "src/components/Parsers/ParseNonAffectedIDs.js", "src/components/Parsers/ParseAffectedIDs.js", "src/components/Parsers/ParseCarrierIDs.js", "src/components/Parsers/ParseBafIDs.js"  ],
+    "tests/**/*.tsx",
+    "vite.config.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

@@ -1,0 +1,43 @@
+name: UI CI
+
+on:
+  pull_request:
+    paths:
+      - "UI/**"
+      - ".github/workflows/ui-ci.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "UI/**"
+      - ".github/workflows/ui-ci.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: UI
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: UI/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn test:unit
+      - run: yarn build
+      - name: Build production container
+        uses: redhat-actions/buildah-build@9dc2ade9b5db229966b5025ae266311e12f349c4 # v2
+        with:
+          image: hopla-ui-ci
+          tags: test
+          context: ./UI
+          containerfiles: |
+            ./UI/Dockerfile

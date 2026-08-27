@@ -5,7 +5,7 @@ width="220px"
 >
   <v-card-title class="text-subtitle-1"> 
   <v-avatar
-  dense 
+  density="compact"
   size="40"
   tile
   >
@@ -19,7 +19,7 @@ width="220px"
    <InputGender v-model="config.gender" :genderLocked="genderLocked" />
   </v-card-title>
   <v-card-text
-  dense
+  density="compact"
   class=""
   >
     <InputSampleID v-model="config.sampleID" />
@@ -30,7 +30,7 @@ width="220px"
     <InputBafIDs v-model="config.keepBafIDs" v-if="config.keepBafIDs!='hide'"/>
     <InputAffected v-model="config.diseaseStatus" />
     <v-btn
-    dense
+    density="compact"
     depressed
     color="error"
     @click="removeCard()"
@@ -43,7 +43,6 @@ width="220px"
 
 <script>
   // Imports
-  import Vue from 'vue'
   import InputSampleID from "../Inputs/InputSampleID.vue";
   import InputGender from "../Inputs/InputGender.vue";
   import InputInformativeIDs from "../Inputs/InputInformativeIDs.vue";
@@ -53,8 +52,20 @@ width="220px"
   import InputKeepLimitIDSoftDP from "../Inputs/InputKeepLimitIDSoftDP.vue";
   import InputBafIDs from "../Inputs/InputBafIDs.vue";
 
-  export default Vue.extend({
+  import embryosImg from "../../assets/embryos.png";
+  import siblingNAImg from "../../assets/siblingNA.png";
+  import siblingBoyImg from "../../assets/siblingBoy.png";
+  import siblingGirlImg from "../../assets/siblingGirl.png";
+  import fatherImg from "../../assets/father.png";
+  import motherImg from "../../assets/mother.png";
+  import paternalGrandfatherImg from "../../assets/paternalGrandfather.png";
+  import paternalGrandmotherImg from "../../assets/paternalGrandmother.png";
+  import maternalGrandfatherImg from "../../assets/maternalGrandfather.png";
+  import maternalGrandmotherImg from "../../assets/maternalGrandmother.png";
+
+  export default {
     name: 'PatientCardGeneral',
+    emits: ['update:modelValue', 'removeCard'],
     components: {
       InputSampleID,
       InputKeepLimitIDHardDP,
@@ -66,7 +77,7 @@ width="220px"
       InputAffected,
     },
     props:{
-      value: Object,
+      modelValue: Object,
       title: String,
       cardType: String,
       genderLocked:Boolean,
@@ -78,10 +89,10 @@ width="220px"
     computed:{
       config: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
       color: function(){
@@ -103,34 +114,34 @@ width="220px"
       imgSrc: function(){
         var cardType=this.cardType;
         if (cardType=="embryo"){
-          return require("../../assets/embryos.png")
+          return embryosImg;
         }
         else if (cardType=="siblingNA"){
-          return require("../../assets/siblingNA.png")
+          return siblingNAImg;
         }
         else if (cardType=="siblingBoy"){
-          return require("../../assets/siblingBoy.png")
+          return siblingBoyImg;
         }
         else if (cardType=="siblingGirl"){
-          return require("../../assets/siblingGirl.png")
+          return siblingGirlImg;
         }
         else if (cardType=="father"){
-          return require("../../assets/father.png")
+          return fatherImg;
         }
         else if (cardType=="mother"){
-          return require("../../assets/mother.png")
+          return motherImg;
         }
         else if (cardType=="paternalGrandfather"){
-          return require("../../assets/paternalGrandfather.png")
+          return paternalGrandfatherImg;
         }
         else if (cardType=="paternalGrandmother"){
-          return require("../../assets/paternalGrandmother.png")
+          return paternalGrandmotherImg;
         }
         else if (cardType=="maternalGrandfather"){
-          return require("../../assets/maternalGrandfather.png")
+          return maternalGrandfatherImg;
         }
         else if (cardType=="maternalGrandmother"){
-          return require("../../assets/maternalGrandmother.png")
+          return maternalGrandmotherImg;
         }
         return "";
       }
@@ -146,5 +157,5 @@ width="220px"
     watch:{
       //CODE
     },  
-  })
+  }
 </script>

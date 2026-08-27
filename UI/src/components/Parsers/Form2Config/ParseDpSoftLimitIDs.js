@@ -1,12 +1,5 @@
 export default function parseDpSoftLimitIDs(configPedigree){
     //IDs
-    var paternalGrandfather = configPedigree.configGrandParentsPaternal.paternalGrandfather;
-    var paternalGrandmother = configPedigree.configGrandParentsPaternal.paternalGrandmother;
-    var maternalGrandfather = configPedigree.configGrandParentsMaternal.maternalGrandfather;
-    var maternalGrandmother = configPedigree.configGrandParentsMaternal.maternalGrandmother;
-    var father = configPedigree.configParents.father;
-    var mother = configPedigree.configParents.mother;
-    var siblings = configPedigree.configSiblings;
     var embryos = configPedigree.configEmbryos.embryoList;
     //logic for each relative
     var content="";

@@ -1,6 +1,6 @@
 <template>
     <v-avatar 
-    dense
+    density="compact"
     size="30"
     :color="color"
     @mouseover="hover = true"
@@ -15,6 +15,10 @@
 
 
 <script>
+import maleImg from "../../assets/male.png";
+import femaleImg from "../../assets/female.png";
+import genderUnknownImg from "../../assets/genderUnknown.png";
+
 const genderOptions = [
     {gender:"M", color:"rgba(0,120,255,0.2)"},
     {gender:"F", color:"rgba(255,0,0,0.2)"},
@@ -22,8 +26,9 @@ const genderOptions = [
 ];
 
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: String,
+        modelValue: String,
         genderLocked: Boolean,
     },
     data: function(){
@@ -34,10 +39,10 @@ export default {
     computed:{
         genderOptionChosen: {
             get: function(){
-                return this.getGenderIndex(this.value);
+                return this.getGenderIndex(this.modelValue);
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
         color: function(){
@@ -50,13 +55,13 @@ export default {
         imgSrc: function(){
             var gender=this.gender;
             if (gender==="M"){
-                return require("../../assets/male.png");
+                return maleImg;
             }
             else if (gender==="F"){
-                return require("../../assets/female.png");
+                return femaleImg;
             }
             else if (gender==="NA"){
-                return require("../../assets/genderUnknown.png");
+                return genderUnknownImg;
             }
             return false;
         },

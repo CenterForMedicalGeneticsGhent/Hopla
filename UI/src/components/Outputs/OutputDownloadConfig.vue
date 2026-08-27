@@ -1,7 +1,7 @@
 <template>
 <v-btn
 color="primary"
-dense
+density="compact"
 @click="downloadFile()"
 >
     Download
@@ -10,9 +10,9 @@ dense
 
 
 <script>
-import Vue from "vue";
 
-export default Vue.extend({    
+export default {
+    name: "OutputDownloadConfig",
     props:{
         textToDownload: String,
         fileNameDefault:String,
@@ -30,10 +30,15 @@ export default Vue.extend({
     methods:{
         downloadFile: function(){
             // Params
-            var text = this.textToDownload; 
-            var fileName = this.fileNameDefault;
+            var text = this.textToDownload || "";
+            var fileName = (this.fileNameDefault || "hopla-config.txt")
+                .replace(/[^A-Za-z0-9._-]/g, "_")
+                .replace(/^\.+/, "");
+            if (fileName.length === 0) {
+                fileName = "hopla-config.txt";
+            }
             // make blob from text
-            var blob = new Blob([text]);
+            var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
             // create object url
             var url = URL.createObjectURL(blob);
             
@@ -43,6 +48,7 @@ export default Vue.extend({
             elm.setAttribute("download", fileName);//set default download name
             elm.click();
             elm.remove();
+            URL.revokeObjectURL(url);
         },
     },
     watch:{
@@ -51,5 +57,5 @@ export default Vue.extend({
     mounted: function(){
         //code
     }
-})
+}
 </script>
