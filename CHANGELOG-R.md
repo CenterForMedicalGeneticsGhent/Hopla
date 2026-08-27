@@ -42,6 +42,9 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 - Region markers no longer fail with an `add_trace()` argument error; the local
   helper renamed during the snake_case migration shadowed `plotly::add_trace`.
+- The installed `hopla` and `hopla-run.R` scripts now load their logging
+  helpers from the package namespace instead of the source `R/` directory,
+  which is absent from an installed tree.
 - Renamed the remaining engine helpers that shadowed package functions
   (`trim` and a local `parse`) to `trim_whitespace` and
   `parse_chromosome_tables`.

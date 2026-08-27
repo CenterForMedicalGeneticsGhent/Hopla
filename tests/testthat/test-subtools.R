@@ -317,6 +317,43 @@ test_that("engine helpers do not shadow attached package exports", {
   expect_identical(intersect(defined, exported), character())
 })
 
+rscript <- function() file.path(R.home("bin"), "Rscript")
+
+hopla_namespace_available <- function() {
+  output <- suppressWarnings(system2(
+    rscript(),
+    c("-e", shQuote("cat(requireNamespace('hopla', quietly = TRUE))")),
+    stdout = TRUE,
+    stderr = FALSE
+  ))
+  any(grepl("TRUE", output, fixed = TRUE))
+}
+
+test_that("scripts run from an installed layout without the source R directory", {
+  skip_if_not(hopla_namespace_available(), "hopla is not installed")
+
+  exec_dir <- file.path(tempfile("hopla-installed"), "exec")
+  dir.create(exec_dir, recursive = TRUE)
+  file.copy(hopla_cli_path(), file.path(exec_dir, "hopla"))
+  file.copy(engine_path(), file.path(exec_dir, "hopla-run.R"))
+
+  engine_status <- system2(
+    rscript(),
+    c(shQuote(file.path(exec_dir, "hopla-run.R")), "-h"),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+  cli_status <- system2(
+    rscript(),
+    c(shQuote(file.path(exec_dir, "hopla")), "-V"),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+
+  expect_equal(as.integer(engine_status), 0L)
+  expect_equal(as.integer(cli_status), 0L)
+})
+
 test_that("cli rejects unknown log levels", {
   expect_equal(hopla_cli_status("-L"), 2L)
   expect_equal(hopla_cli_status("-L", "nope"), 2L)

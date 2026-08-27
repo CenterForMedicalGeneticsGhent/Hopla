@@ -12,6 +12,9 @@ if (file.exists(development_source)) {
 } else {
   suppressPackageStartupMessages(library(hopla))
   version <- as.character(utils::packageVersion("hopla"))
+  for (helper in c("hopla_log", "hopla_fail", "hopla_init_log_level")) {
+    assign(helper, get(helper, envir = asNamespace("hopla")))
+  }
 }
 
 usage <- function() {

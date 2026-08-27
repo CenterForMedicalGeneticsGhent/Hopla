@@ -6,7 +6,18 @@ minimum_r_version <- '4.4.0'
 script_arg <- grep('^--file=', commandArgs(trailingOnly = FALSE), value = TRUE)
 script_file <- if (length(script_arg)) sub('^--file=', '', script_arg[1]) else 'exec/hopla-run.R'
 hopla_log_source <- file.path(dirname(normalizePath(script_file, mustWork = FALSE)), '..', 'R', 'log.R')
-if (file.exists(hopla_log_source)) source(hopla_log_source)
+if (file.exists(hopla_log_source)) {
+  source(hopla_log_source)
+} else {
+  hopla_namespace <- tryCatch(asNamespace('hopla'), error = function(error) NULL)
+  if (is.null(hopla_namespace)){
+    cat('ERROR: Could not load the Hopla logging helpers.\n', file = stderr())
+    quit(status = 1)
+  }
+  for (helper in c('hopla_log', 'hopla_fail', 'hopla_log_level', 'hopla_init_log_level')){
+    assign(helper, get(helper, envir = hopla_namespace))
+  }
+}
 hopla_init_log_level()
 
 # Structure:
