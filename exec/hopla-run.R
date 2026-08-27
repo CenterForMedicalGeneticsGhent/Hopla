@@ -1242,7 +1242,7 @@ get_haplo_profiles <- function(){
 
     ## layout
 
-    p <- p %>% layout(xaxis = list(title = list(text=c, standoff=10), showticklabels = F,
+    p <- p %>% layout(xaxis = list(title = c, showticklabels = F,
                                    zeroline = F, showgrid = F), showlegend = F,
                       yaxis = list(title = '',showticklabels = F, zeroline = F, showgrid = F,
                                    fixedrange = T, range = c(-1, length(args$samples_no_u) * 3 + 1)),
@@ -1491,7 +1491,7 @@ get_var_dis_fig <- function(vcf_list){
                                    line = list(color = colors[1], alpha = .5)),
                      type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
 
-  var_dis <- var_dis %>% layout(xaxis = list(title = list(text='', standoff = 1), showticklabels = F,
+  var_dis <- var_dis %>% layout(xaxis = list(title = '', showticklabels = F,
                                              zeroline = F, showgrid = F),
                                 showlegend = F, yaxis = list(title = 'variant count', zeroline = F),
                                 hovermode = 'x unified')
@@ -1647,8 +1647,7 @@ get_cn_fig <- function(){
                   mode='lines+markers', inherit = T)
     }
 
-    cn_plot <- cn_plot %>% layout(xaxis = list(title = list(text=args$samples_out[args$sample_ids == s],
-                                                            standoff = 1),
+    cn_plot <- cn_plot %>% layout(xaxis = list(title = args$samples_out[args$sample_ids == s],
                                                showticklabels = F, zeroline = F, showgrid = F),
                                   showlegend = F, yaxis = list(title = 'log2(ratio)', zeroline = F, range = ylim))
 
@@ -1786,7 +1785,7 @@ get_men_err_fig <- function(child, father, mother, n_rel){
 
   ylim = c(0, max(x$trio, x$fat, x$mot, 50, na.rm = T))
 
-  me_plot <- me_plot %>% layout(xaxis = list(title = list(text=args$samples_out[args$sample_ids == child], standoff = 5),
+  me_plot <- me_plot %>% layout(xaxis = list(title = args$samples_out[args$sample_ids == child],
                                              showticklabels = F, zeroline = F, showgrid = F),
                                 showlegend = F, yaxis = list(title = 'mendelian error count', zeroline = F, range = ylim))
 
@@ -1836,7 +1835,7 @@ get_region_baf <- function(){
       if (which(args$samples_no_u == s) %% 4 != 1) {
         yaxis = list(title = '', showticklabels = F, zeroline = F, range = c(-15,115), fixedrange = T)
       }
-      baf <- baf %>% layout(xaxis = list(title = list(text=args$samples_out[args$sample_ids == s], standoff = 1),
+      baf <- baf %>% layout(xaxis = list(title = args$samples_out[args$sample_ids == s],
                                          showticklabels = F, zeroline = F, showgrid = F),
                             showlegend = F, yaxis = yaxis)
 
@@ -1878,7 +1877,7 @@ get_genome_baf <- function(s){
     if (which(chrs == chr) %% 4 != 1) {
       yaxis = list(title = '', showticklabels = F, zeroline = F, range = c(-15,125), fixedrange = T)
     }
-    baf <- baf %>% layout(xaxis = list(title = list(text=chr, standoff = 1),
+    baf <- baf %>% layout(xaxis = list(title = chr,
                                        showticklabels = F, zeroline = F, showgrid = F),
                           showlegend = F, yaxis = yaxis)
 
@@ -1978,7 +1977,7 @@ get_pm <- function(child, father, mother){
                    type = 'scatter', mode = 'markers', hoverinfo = 'text', height = 1000,
                    hoverlabel=list(bgcolor=~col))
 
-    upd <- upd %>% layout(xaxis = list(title = list(text=chr, standoff = 1),
+    upd <- upd %>% layout(xaxis = list(title = chr,
                                        showticklabels = F, zeroline = F, showgrid = F),
                           yaxis = list(title = '', showticklabels = F, zeroline = F,
                                        range = c(.5,6), fixedrange = T, showgrid = F),
@@ -2010,7 +2009,7 @@ get_pm <- function(child, father, mother){
                  marker = list(color =~ 'white'),
                  type = 'scatter', mode = 'markers', hoverinfo = 'none', height = 1000)
 
-  upd <- upd %>% layout(xaxis = list(title = list(text='', standoff = 1),
+  upd <- upd %>% layout(xaxis = list(title = '',
                                      showticklabels = F, zeroline = F, showgrid = F),
                         yaxis = list(title = '', showticklabels = F, zeroline = F,
                                      range = c(.5,6), fixedrange = T, showgrid = F),

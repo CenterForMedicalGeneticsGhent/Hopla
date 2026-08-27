@@ -455,6 +455,27 @@ test_that("scripts run from an installed layout without the source R directory",
   expect_equal(as.integer(cli_status), 0L)
 })
 
+test_that("axes without tick labels do not set a title standoff", {
+  # Plotly derives the standoff from the tick-label depth, so a standoff on an
+  # axis with hidden tick labels drops every title at the top of the figure.
+  offenders <- character()
+  for (expression in engine_calls()) {
+    head <- expression[[1]]
+    if (!is.name(head) || !identical(as.character(head), "list")) next
+    supplied <- as.list(expression)[-1]
+    names(supplied) <- names(expression)[-1]
+    hides_ticks <- identical(supplied[["showticklabels"]], quote(F)) ||
+      identical(supplied[["showticklabels"]], FALSE)
+    if (!hides_ticks) next
+    title <- supplied[["title"]]
+    if (is.call(title) && "standoff" %in% names(title)) {
+      offenders <- c(offenders, deparse(title, width.cutoff = 500L)[1])
+    }
+  }
+
+  expect_identical(offenders, character())
+})
+
 test_that("engine passes valid named arguments to package functions", {
   packages <- c(
     "plotly", "data.table", "GenomicRanges", "DNAcopy", "vcfR", "htmltools",
