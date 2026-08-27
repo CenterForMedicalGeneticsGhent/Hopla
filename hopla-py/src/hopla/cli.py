@@ -12,7 +12,7 @@ import polars as pl
 import typer
 
 from hopla import __version__
-from hopla.analysis import build_analysis_tables
+from hopla.analysis import build_analysis_tables, haplotype_concordance
 from hopla.convert import convert_settings
 from hopla.cytobands import fetch_hg38, load_cytobands
 from hopla.export import export_parquet
@@ -130,6 +130,8 @@ def run_command(
                 tables["haplotypes"] = run_merlin(
                     out_dir / f"{settings.fam_id}-merlin", sites, matrix, filtered2, settings
                 )
+                if settings.concordance_table:
+                    tables["haplotype_concordance"] = haplotype_concordance(tables["haplotypes"])
             if export_parquet_data:
                 logging.info("Writing portable Parquet exports")
                 export_parquet(out_dir / f"{settings.fam_id}-export", settings.fam_id, tables)
