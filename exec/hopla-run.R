@@ -2483,7 +2483,7 @@ compress_widget_data <- function(html){
     'function inflate(element){',
     'var binary=atob(element.textContent.trim()),bytes=new Uint8Array(binary.length);',
     'for(var i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);',
-    'var stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream(\"gzip\"));',
+    'var stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream(\"deflate\"));',
     'return new Response(stream).text().then(function(json){',
     'element.textContent=json;element.type=\"application/json\";',
     '});',
