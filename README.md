@@ -36,9 +36,9 @@ docker run --rm hopla hopla -V
 
 # Settings file
 
-The `run` subtool accepts exactly one `.yaml`, `.yml`, or `.json` settings file. It validates the complete document against [`inst/schema/hopla.schema.json`](inst/schema/hopla.schema.json) before loading the VCF or analysis packages. Unknown properties, invalid types, missing mandatory values, and out-of-range values fail immediately.
+The `run` subtool accepts exactly one `.yaml`, `.yml`, or `.json` settings file. It validates the complete document against [`inst/schema/hopla.schema.json`](inst/schema/hopla.schema.json) before loading the VCF or analysis packages.
 
-`vcf_file` and `sample_ids` are mandatory. All other properties use the defaults encoded in the schema and analysis engine. Lists must be YAML/JSON arrays; use `null` for an unknown parent or gender.
+`vcf_file` and `sample_ids` are mandatory. Lists must be YAML/JSON arrays; use `null` for an unknown parent or gender.
 
 ```yaml
 vcf_file: /data/family.vcf.gz
@@ -54,16 +54,7 @@ info:
   - "Inheritance: Autosomal Recessive"
 ```
 
-See [`example/settings.yaml`](example/settings.yaml) for a complete example and [`inst/schema/hopla.schema.json`](inst/schema/hopla.schema.json) for every option, type, default, and constraint.
-
-Legacy `key=value` settings files can be converted to validated YAML:
-
-```bash
-pixi run hopla convert example/legacy-settings.txt
-# writes example/legacy-settings.yaml unless OUTPUT is given
-```
-
-Dotted keys such as `vcf.file` and `min.seg.var.X` are mapped to snake_case schema properties. Empty assignments are omitted so schema defaults apply. `NA` in parent and gender lists becomes YAML `null`. The converted document is validated before it is written.
+Every setting, type, default, derived filter default, and constraint is documented in [`docs/settings.md`](docs/settings.md). See [`example/settings.yaml`](example/settings.yaml) for a complete file. Convert a legacy `key=value` settings file with `hopla convert`; details are in the same document.
 
 # Dependencies (automatically installed with [easy install](#Easy-install))
 - R (v4.4 or newer)

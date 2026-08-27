@@ -31,6 +31,8 @@ scope unless a task explicitly names it.
 - Analysis configuration is accepted only as YAML or JSON.
 - Encode every supported setting, type, default, and basic constraint in
   `inst/schema/hopla.schema.json`.
+- Keep the user-facing settings reference in `docs/settings.md` in sync with the
+  schema and engine defaults.
 - Validate settings against the schema before loading a VCF or the heavy
   analysis packages. Reject unknown properties.
 - Keep the CLI small:

@@ -14,6 +14,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Added a standard CRAN source-package layout and testthat coverage.
 - Added `run`, `convert`, `concordance`, and `transform` subtools to the `hopla` command.
 - Added conversion from the legacy `key=value` settings format to schema-validated YAML.
+- Added `docs/settings.md` with the full settings reference (types, defaults,
+  constraints, and legacy key mapping).
 - Added snake_case linting through lintr, available as the pixi `lint` task and
   enforced in CI.
 

@@ -4,6 +4,7 @@
 ^\.pixi$
 ^\.dockerignore$
 ^Dockerfile$
+^docs$
 ^UI$
 ^pixi\.lock$
 ^pixi\.toml$
