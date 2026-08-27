@@ -1523,13 +1523,12 @@ get_var_depth_hist <- function(vcf_list){
       binned <- graphics::hist(depths, breaks = number_of_bins, plot = F)
       depth_counts <- data.frame(
         depth = binned$mids,
-        count = binned$counts,
-        width = diff(binned$breaks)
+        count = binned$counts
       )
     } else {
-      depth_counts <- data.frame(depth = numeric(), count = integer(), width = numeric())
+      depth_counts <- data.frame(depth = numeric(), count = integer())
     }
-    hist <- plot_ly(depth_counts, x = ~depth, y = ~count, width = ~width, type = "bar", hoverinfo = 'x+y',
+    hist <- plot_ly(depth_counts, x = ~depth, y = ~count, type = "bar", hoverinfo = 'x+y',
                     marker = list(color = colors[1]), height = 200 * ceiling(length(args$samples_no_u) / 4))
     hist <- hist %>% layout(xaxis = list(title = list(text= args$samples_out[args$sample_ids == s] , standoff = 1),
                                          zeroline = F, showgrid = F),
