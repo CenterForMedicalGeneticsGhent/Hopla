@@ -11,3 +11,6 @@ hopla transform family-a-flow.txt family-b-flow.txt 1
 
 The command validates settings before reading the VCF and writes a compact,
 offline HTML report. Merlin 1.1.2 remains an optional external dependency.
+
+See [portable and IGV exports](docs/exports.md) and the
+[igv.js feasibility evaluation](docs/igvjs-evaluation.md).
