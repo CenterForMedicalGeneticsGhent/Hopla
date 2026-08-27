@@ -1826,7 +1826,7 @@ get_region_baf <- function(){
       colnames(dat) <- c('id', 'index', 'AF')
       dat <- dat[!is.na(dat$AF),]
 
-      baf <- plot_ly(dat, x =~index, y =~AF, text =~id, height = 200 * ceiling(length(args$samples_no_u) / 4),
+      baf <- plot_ly(dat, x =~index, y =~AF, text =~id, height = 300 * ceiling(length(args$samples_no_u) / 4),
                      marker = list(color = colors[1], alpha = .5,
                                    size = args$dot_factor * 2, line = list(color = colors[1], alpha = .5)),
                      type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
@@ -1871,7 +1871,7 @@ get_genome_baf <- function(s){
     baf <- plot_ly(dat, x = ~index, y = ~AF, text =~id,
                    marker = list(color = colors[1], alpha = .5, size = args$dot_factor * 2,
                                  line = list(color = colors[1], alpha = .5)),
-                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 1.5)
+                   type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 2)
 
     yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,125), fixedrange = T)
     if (which(chrs == chr) %% 4 != 1) {
@@ -2312,7 +2312,8 @@ get_html_list <- function(){
     regions_baf <- get_region_baf()
     for (region in names(regions_baf)){
       html_list <- append_list(html_list, tags$h4(region))
-      html_list <- append_list(html_list, do_subplot(regions_baf[[region]], n_col = 4))
+      html_list <- append_list(html_list, do_subplot(regions_baf[[region]], n_col = 4,
+                                                     margin = c(.02, .02, .07, .07)))
     }
   }
 
@@ -2328,7 +2329,8 @@ get_html_list <- function(){
     }
     for (s in args$baf_ids){
       html_list <- append_list(html_list, tags$h4(args$samples_out[args$sample_ids == s]))
-      html_list <- append_list(html_list, do_subplot(get_genome_baf(s), n_col = 2, panning = .015, margin = .012))
+      html_list <- append_list(html_list, do_subplot(get_genome_baf(s), n_col = 2, panning = .015,
+                                                     margin = c(.012, .012, .02, .02)))
     }
   }
 
