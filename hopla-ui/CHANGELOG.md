@@ -23,6 +23,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   tasks and an independent CI workflow.
 - Published UI containers now use `quay.io/cmgg/hopla` with `ui-`-prefixed
   tags.
+- Documented that the UI is an optional local helper for writing the settings
+  file; Hopla can run from a hand-edited YAML or JSON config.
 
 ### Fixed
 

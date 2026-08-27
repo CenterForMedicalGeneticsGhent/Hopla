@@ -7,7 +7,9 @@
 This directory is the CRAN-compatible source tree for the `hopla` R package,
 CLI, genomic family analysis engine, and self-contained interactive reports.
 The monorepo directory is named `hopla-r`; the installed R package and command
-remain `hopla`.
+remain `hopla`. Analysis is driven by a YAML or JSON settings file that can be
+written by hand; the optional [web UI](../hopla-ui/) is a local helper for
+that file and is not required to run Hopla.
 
 Read the [full R package manual](docs/README.md) for installation, CLI,
 settings, output, architecture, and contribution guidance.

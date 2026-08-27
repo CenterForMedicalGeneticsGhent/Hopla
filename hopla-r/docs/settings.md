@@ -7,6 +7,10 @@ The file is validated against [`inst/schema/hopla.schema.json`](../inst/schema/h
 before the VCF or analysis packages are loaded. Unknown properties, invalid
 types, missing mandatory values, and out-of-range values fail immediately.
 
+The optional [web UI](../../hopla-ui/docs/README.md) can help assemble that
+file, but it is not required. Settings can be created and edited by hand. The
+UI is intended as a local, short-lived helper rather than a standing service.
+
 Command-line flags no longer override individual analysis options. Paths for
 the VCF, output directory, and cytoband table are CLI arguments, not settings
 properties:

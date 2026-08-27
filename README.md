@@ -8,7 +8,12 @@ configuration editor.
 | Package | Description | Documentation |
 |---------|-------------|---------------|
 | [`hopla-r/`](hopla-r/) | CRAN-compatible R package, CLI, analysis engine, and interactive report generator. Its installed R package name remains `hopla`. | [R package manual](hopla-r/docs/README.md) |
-| [`hopla-ui/`](hopla-ui/) | Vue 3 application for creating Hopla configuration files locally in the browser. | [UI README](hopla-ui/README.md) and [UI docs](hopla-ui/docs/README.md) |
+| [`hopla-ui/`](hopla-ui/) | Optional local helper for creating Hopla configuration files in the browser. | [UI README](hopla-ui/README.md) and [UI docs](hopla-ui/docs/README.md) |
+
+The UI is not required to run Hopla. Analysis takes a YAML or JSON settings
+file that can be created and edited by hand; the UI only helps write that file.
+It is meant to run locally as a short-lived application, not as a standing
+service.
 
 The repository root owns the shared `pixi.toml`, `pixi.lock`, CI workflows, and
 contributor guidance. Each package keeps its source, tests, Dockerfile,

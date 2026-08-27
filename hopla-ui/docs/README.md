@@ -1,8 +1,11 @@
 # Web UI
 
 The Vue 3 application lives in `hopla-ui/`, independently from the
-CRAN-compatible package in `hopla-r/`. It creates Hopla configuration files in
-the browser and does not upload input data. UI changes are recorded in
+CRAN-compatible package in `hopla-r/`. It is a local helper for writing the
+YAML or JSON settings file that `hopla run` consumes. It is not required to
+run Hopla: that file can be created and edited manually. The UI is meant to be
+started locally, used briefly to produce a config, and then stopped. It does
+not upload input data. UI changes are recorded in
 [`CHANGELOG.md`](../CHANGELOG.md).
 
 The app uses Vuetify 3, Vite, TypeScript, ESLint, and Vitest.

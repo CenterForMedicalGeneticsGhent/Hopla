@@ -26,7 +26,7 @@ Install badges for the published Bioconda package:
 ## Input
 
 - A (multisample) `vcf.gz` file. In the authors’ tests this was produced with gatk-haplotype and gatk-haplotype-joint through [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/), **with a predefined target**.
-- A YAML or JSON [settings file](settings.md) describing the family and analysis options.
+- A YAML or JSON [settings file](settings.md) describing the family and analysis options. Create it by hand or with the optional local [web UI](../../hopla-ui/docs/README.md); the UI is not required to run Hopla.
 - The VCF path and output directory are command-line arguments, not settings keys.
 
 ## Quick start

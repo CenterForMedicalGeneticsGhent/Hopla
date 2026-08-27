@@ -1,8 +1,10 @@
 # Hopla web UI
 
-The UI is a Vue 3 and Vuetify 3 single-page application that creates Hopla
-configuration files entirely in the browser. It does not upload genomic or
-configuration data to a server.
+The UI is a Vue 3 and Vuetify 3 single-page application that helps create
+Hopla configuration files in the browser. It is optional: Hopla itself only
+needs a YAML or JSON settings file, which can be written and edited by hand.
+The app is meant to run locally as a short-lived helper, not as a standing
+service. It does not upload genomic or configuration data to a server.
 
 See the [UI documentation](docs/README.md) for architecture, development, and
 container details.
