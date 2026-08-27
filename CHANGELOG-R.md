@@ -40,6 +40,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 ### Fixed
 
+- Region markers no longer fail with an `add_trace()` argument error; the local
+  helper renamed during the snake_case migration shadowed `plotly::add_trace`.
 - User and input errors now return a non-zero process status.
 - Help and version output no longer load the analysis package stack.
 - DNAcopy output suppression no longer leaves an open sink after an error.

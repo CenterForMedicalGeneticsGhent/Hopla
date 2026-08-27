@@ -28,6 +28,42 @@ hopla_cli_path <- function() {
   stop("Could not locate hopla CLI.", call. = FALSE)
 }
 
+engine_path <- function() {
+  candidates <- c(
+    file.path(getwd(), "exec", "hopla-run.R"),
+    file.path(getwd(), "..", "..", "exec", "hopla-run.R"),
+    file.path(getwd(), "..", "exec", "hopla-run.R")
+  )
+  for (candidate in candidates) {
+    normalized <- normalizePath(candidate, mustWork = FALSE)
+    if (file.exists(normalized)) {
+      return(normalized)
+    }
+  }
+  installed <- system.file("exec", "hopla-run.R", package = "hopla")
+  if (nzchar(installed)) {
+    return(installed)
+  }
+  stop("Could not locate hopla engine.", call. = FALSE)
+}
+
+is_function_assignment <- function(expression) {
+  is.call(expression) &&
+    as.character(expression[[1]]) %in% c("<-", "=") &&
+    is.call(expression[[3]]) &&
+    identical(as.character(expression[[3]][[1]]), "function")
+}
+
+engine_functions <- function() {
+  env <- new.env(parent = asNamespace("plotly"))
+  for (expression in parse(engine_path())) {
+    if (is_function_assignment(expression)) {
+      eval(expression, env)
+    }
+  }
+  env
+}
+
 schema_path <- function() {
   candidates <- c(
     file.path(getwd(), "inst", "schema", "hopla.schema.json"),
@@ -236,6 +272,50 @@ test_that("log level filters stdout records", {
   hopla_log_level("info")
   logged <- capture.output(hopla:::hopla_log("info", "keep-me"))
   expect_match(logged, "INFO keep-me")
+})
+
+test_that("mark_region draws region and flank traces", {
+  skip_if_not_installed("plotly")
+  engine <- engine_functions()
+  engine$args <- list(regions_flanking_size = 50, dot_factor = 2)
+  engine$colors <- rep("#1f78b4", 12)
+  engine$letters <- c("A", "B")
+
+  marked <- engine$mark_region(
+    plotly::plot_ly(),
+    c(chr1 = 0),
+    c(0, 1),
+    "chr1:100-200",
+    c(chr1 = 1000)
+  )
+  without_flanks <- engine$mark_region(
+    plotly::plot_ly(),
+    c(chr1 = 0),
+    c(0, 1),
+    "chr1:100-200",
+    c(chr1 = 1000),
+    plot_flanks = FALSE
+  )
+
+  expect_s3_class(marked, "plotly")
+  expect_equal(
+    length(marked$x$attrs) - length(without_flanks$x$attrs),
+    2L
+  )
+})
+
+test_that("engine helpers do not shadow plotly or data.table exports", {
+  skip_if_not_installed("plotly")
+  # trim() and parse() predate the package layout and are scoped so that the
+  # shadowed base/GenomicRanges functions are never needed alongside them.
+  allowed <- c("trim", "parse")
+  defined <- setdiff(ls(engine_functions()), allowed)
+  exported <- c(
+    getNamespaceExports("plotly"),
+    getNamespaceExports("data.table")
+  )
+
+  expect_identical(intersect(defined, exported), character())
 })
 
 test_that("cli rejects unknown log levels", {

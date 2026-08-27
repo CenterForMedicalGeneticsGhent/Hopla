@@ -1005,7 +1005,7 @@ mark_region <- function(fig, chr_cs, ylim, region, chr_lengths, plot_flanks = T)
   flank_start <- paste0(c, ':', scales::comma(flank_s, accuracy = 1))
   flank_end <- paste0(c, ':', scales::comma(flank_e, accuracy = 1))
 
-  add_trace <- function(fig, xs, text, size = 1/2){
+  add_region_trace <- function(fig, xs, text, size = 1/2){
     fig <- fig %>% add_trace(x = xs, y = ylim, name = 'region',
                              hoverinfo = "text", line = list(color = colors[length(letters) + 1], width = args$dot_factor * size),
                              text = text, type='scatter', marker = list(color = colors[length(letters) + 1], size = .1),
@@ -1013,12 +1013,12 @@ mark_region <- function(fig, chr_cs, ylim, region, chr_lengths, plot_flanks = T)
     return(fig)
   }
 
-  fig <- add_trace(fig, c(chr_cs[c] + s, chr_cs[c] + s), paste0(region_start, ' (region start)'))
-  fig <- add_trace(fig, c(chr_cs[c] + e, chr_cs[c] + e), paste0(region_end, ' (region end)'))
+  fig <- add_region_trace(fig, c(chr_cs[c] + s, chr_cs[c] + s), paste0(region_start, ' (region start)'))
+  fig <- add_region_trace(fig, c(chr_cs[c] + e, chr_cs[c] + e), paste0(region_end, ' (region end)'))
 
   if (plot_flanks){
-    fig <- add_trace(fig, rep(chr_cs[c] + flank_s, 2), paste0(flank_start, ' (flank start)'), 1/4)
-    fig <- add_trace(fig, rep(chr_cs[c] + flank_e, 2), paste0(flank_end, ' (flank end)'), 1/4)
+    fig <- add_region_trace(fig, rep(chr_cs[c] + flank_s, 2), paste0(flank_start, ' (flank start)'), 1/4)
+    fig <- add_region_trace(fig, rep(chr_cs[c] + flank_e, 2), paste0(flank_end, ' (flank end)'), 1/4)
   }
   return(fig)
 }
