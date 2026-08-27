@@ -532,6 +532,7 @@ test_that("scripts run from an installed layout without the source R directory",
   package_dir <- tempfile("hopla-installed")
   exec_dir <- file.path(package_dir, "exec")
   module_dir <- file.path(package_dir, "engine")
+  dir.create(exec_dir, recursive = TRUE)
   dir.create(module_dir, recursive = TRUE)
   file.copy(hopla_cli_path(), file.path(exec_dir, "hopla"))
   file.copy(engine_path(), file.path(exec_dir, "hopla-run.R"))
