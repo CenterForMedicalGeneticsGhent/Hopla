@@ -1,0 +1,34 @@
+# Changelog
+
+All notable changes to the Hopla web UI are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.2.0] - 2026-08-27
+
+### Added
+
+- Automated configuration import/export regression tests.
+- Pull-request CI for linting, unit tests, and production builds.
+- Content Security Policy and browser security headers for the nginx image.
+- Validation and user-facing errors for imported configuration files.
+
+### Changed
+
+- Upgraded from Vue 2, Vue CLI 4, Webpack 4, and Vuetify 2 to Vue 3, Vite,
+  and Vuetify 3.
+- Upgraded the build runtime to Node.js 22 and the production server to a
+  pinned, unprivileged nginx image.
+- Replaced external font and icon stylesheets with locally bundled assets.
+- Made container dependency installation reproducible with the Yarn lockfile.
+- Sanitized downloaded configuration filenames.
+- Updated the release workflow and UI development documentation.
+
+### Removed
+
+- Unused Vuex, class-component, and property-decorator dependencies.
+- The unused scaffold About route and test.
+- End-of-life Vue CLI, Webpack, Babel, and Jest configuration.
+
+[0.2.0]: https://github.com/CenterForMedicalGeneticsGhent/Hopla/compare/v0.1.0...v0.2.0
