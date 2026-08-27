@@ -10,10 +10,6 @@ flow_fixture <- function(path, reverse = FALSE) {
 }
 
 hopla_cli_path <- function() {
-  installed <- system.file("exec", "hopla", package = "hopla")
-  if (nzchar(installed)) {
-    return(installed)
-  }
   candidates <- c(
     file.path(getwd(), "exec", "hopla"),
     file.path(getwd(), "..", "..", "exec", "hopla"),
@@ -25,14 +21,14 @@ hopla_cli_path <- function() {
       return(normalized)
     }
   }
+  installed <- system.file("exec", "hopla", package = "hopla")
+  if (nzchar(installed)) {
+    return(installed)
+  }
   stop("Could not locate hopla CLI.", call. = FALSE)
 }
 
 schema_path <- function() {
-  installed <- system.file("schema", "hopla.schema.json", package = "hopla")
-  if (nzchar(installed)) {
-    return(installed)
-  }
   candidates <- c(
     file.path(getwd(), "inst", "schema", "hopla.schema.json"),
     file.path(getwd(), "..", "..", "inst", "schema", "hopla.schema.json")
@@ -42,6 +38,10 @@ schema_path <- function() {
     if (file.exists(normalized)) {
       return(normalized)
     }
+  }
+  installed <- system.file("schema", "hopla.schema.json", package = "hopla")
+  if (nzchar(installed)) {
+    return(installed)
   }
   stop("Could not locate hopla schema.", call. = FALSE)
 }
