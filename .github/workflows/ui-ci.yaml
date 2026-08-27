@@ -33,3 +33,11 @@ jobs:
       - run: yarn lint
       - run: yarn test:unit
       - run: yarn build
+      - name: Build production container
+        uses: redhat-actions/buildah-build@9dc2ade9b5db229966b5025ae266311e12f349c4 # v2
+        with:
+          image: hopla-ui-ci
+          tags: test
+          context: ./UI
+          containerfiles: |
+            ./UI/Dockerfile
