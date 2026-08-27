@@ -30,16 +30,18 @@ The rest of the manual is [docs/README.md](docs/README.md).
 - The installed analysis engine lives under `exec/`; the schema lives under
   `inst/schema/`.
 - Keep `exec/hopla-run.R` as the orchestration entry point. Private engine
-  functions belong in the ordered `exec/lib/` modules:
+  functions belong in the ordered `inst/engine/` modules:
   - `00-input.R` — settings, inputs, cytobands, and filters
   - `10-merlin.R` — Merlin execution, parsing, and correction
   - `20-plot-helpers.R` — shared visualization helpers
   - `30-haplotype-plots.R` — haplotype profiles and tables
   - `40-analysis-plots.R` — analysis-specific plots
   - `50-report.R` — report assembly and self-contained HTML serialization
-- Files in `exec/lib/` are private executable modules. Do not source them from
-  `R/`, add them to `NAMESPACE`, or expose them as package APIs. Preserve their
-  numeric load order and verify they survive `R CMD build` and `R CMD INSTALL`.
+- Files in `inst/engine/` are private executable modules. CRAN installs them as
+  `engine/` because nested `exec/` directories are not installed. Do not source
+  them from `R/`, add them to `NAMESPACE`, or expose them as package APIs.
+  Preserve their numeric load order and verify they survive `R CMD build` and
+  `R CMD INSTALL`.
 - Keep [docs/architecture.md](docs/architecture.md) aligned with this structure.
 - Keep the package version, CLI version, pixi version, and R changelog release
   in sync. CLI-breaking changes require a major version bump.

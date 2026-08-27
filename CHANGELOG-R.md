@@ -29,7 +29,7 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 ### Changed
 
-- Split the analysis engine into ordered private modules under `exec/lib/`;
+- Split the analysis engine into ordered private modules under `inst/engine/`;
   `hopla-run.R` now contains only module loading and pipeline orchestration.
 - Switched the report text, plots, and tables to a modern sans-serif system
   font stack; no web font is downloaded or embedded.

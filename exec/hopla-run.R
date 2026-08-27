@@ -21,24 +21,35 @@ if (file.exists(hopla_log_source)) {
 hopla_init_log_level()
 
 engine_dir <- dirname(normalizePath(script_file, mustWork = FALSE))
-engine_module_dir <- file.path(engine_dir, 'lib')
-engine_modules <- file.path(
-  engine_module_dir,
-  c(
-    '00-input.R',
-    '10-merlin.R',
-    '20-plot-helpers.R',
-    '30-haplotype-plots.R',
-    '40-analysis-plots.R',
-    '50-report.R'
-  )
+engine_module_names <- c(
+  '00-input.R',
+  '10-merlin.R',
+  '20-plot-helpers.R',
+  '30-haplotype-plots.R',
+  '40-analysis-plots.R',
+  '50-report.R'
 )
+engine_module_dirs <- c(
+  file.path(engine_dir, '..', 'inst', 'engine'),
+  file.path(engine_dir, '..', 'engine')
+)
+complete_module_dir <- vapply(
+  engine_module_dirs,
+  function(dir) all(file.exists(file.path(dir, engine_module_names))),
+  logical(1)
+)
+engine_module_dir <- engine_module_dirs[complete_module_dir][1]
+if (!length(engine_module_dir) || is.na(engine_module_dir)){
+  hopla_fail('Could not locate the Hopla engine modules.')
+}
+engine_modules <- file.path(engine_module_dir, engine_module_names)
 missing_modules <- engine_modules[!file.exists(engine_modules)]
 if (length(missing_modules)){
   hopla_fail('Could not load Hopla engine module(s): ', paste(basename(missing_modules), collapse = ', '))
 }
 for (module in engine_modules) sys.source(module, envir = globalenv())
-rm(engine_module_dir, engine_modules, missing_modules, module)
+rm(complete_module_dir, engine_module_dir, engine_module_dirs, engine_module_names,
+   engine_modules, missing_modules, module)
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------

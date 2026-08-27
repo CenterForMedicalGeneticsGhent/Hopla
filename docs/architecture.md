@@ -13,14 +13,15 @@ inst/schema/                installed settings schema
 tests/testthat/              package and executable integration tests
 exec/hopla                  command dispatcher
 exec/hopla-run.R            analysis entry point and orchestration
-exec/lib/                   private analysis-engine modules
+inst/engine/                private analysis-engine modules
 ```
 
-The files under `exec/lib/` are implementation modules for the executable, not
-public package-namespace APIs. `R CMD build` includes them in the source
-package, and `R CMD INSTALL` installs them beside `hopla-run.R`. The entry point
-resolves that directory from its own path, so the same loader works from a
-source checkout and an installed package.
+The files under `inst/engine/` are implementation modules for the executable,
+not public package-namespace APIs. CRAN package rules install only files
+directly under `exec/`, not its subdirectories, while `inst/` is copied
+recursively. `R CMD INSTALL` therefore installs these modules as `engine/` next
+to the installed `exec/` directory. The entry point resolves the source or
+installed location from its own path.
 
 ## Engine modules
 
@@ -52,7 +53,7 @@ supported API.
   comments, `NAMESPACE`, and `man/` documentation.
 - Keep command parsing in `exec/hopla`.
 - Keep analysis orchestration in `exec/hopla-run.R`.
-- Put private engine functions in the narrowest relevant `exec/lib/` module.
+- Put private engine functions in the narrowest relevant `inst/engine/` module.
 - Keep the settings schema in `inst/schema/hopla.schema.json`.
 - Add behavior and installed-layout coverage in `tests/testthat/`.
 

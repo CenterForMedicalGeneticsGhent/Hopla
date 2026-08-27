@@ -48,7 +48,12 @@ engine_path <- function() {
 }
 
 engine_module_paths <- function() {
-  module_dir <- file.path(dirname(engine_path()), "lib")
+  engine_dir <- dirname(engine_path())
+  candidates <- c(
+    file.path(engine_dir, "..", "inst", "engine"),
+    file.path(engine_dir, "..", "engine")
+  )
+  module_dir <- candidates[dir.exists(candidates)][1]
   sort(list.files(module_dir, pattern = "\\.R$", full.names = TRUE))
 }
 
@@ -524,8 +529,9 @@ test_that("engine entry point loads the documented private modules", {
 test_that("scripts run from an installed layout without the source R directory", {
   skip_if_not(hopla_namespace_available(), "hopla is not installed")
 
-  exec_dir <- file.path(tempfile("hopla-installed"), "exec")
-  module_dir <- file.path(exec_dir, "lib")
+  package_dir <- tempfile("hopla-installed")
+  exec_dir <- file.path(package_dir, "exec")
+  module_dir <- file.path(package_dir, "engine")
   dir.create(module_dir, recursive = TRUE)
   file.copy(hopla_cli_path(), file.path(exec_dir, "hopla"))
   file.copy(engine_path(), file.path(exec_dir, "hopla-run.R"))
