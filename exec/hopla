@@ -1,13 +1,13 @@
 #!/usr/bin/env Rscript
 
-script.arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
-script.file <- if (length(script.arg)) sub("^--file=", "", script.arg[1]) else "exec/hopla"
-package.root <- normalizePath(file.path(dirname(script.file), ".."), mustWork = FALSE)
-development.source <- file.path(package.root, "R", "hopla.R")
+script_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+script_file <- if (length(script_arg)) sub("^--file=", "", script_arg[1]) else "exec/hopla"
+package_root <- normalizePath(file.path(dirname(script_file), ".."), mustWork = FALSE)
+development_source <- file.path(package_root, "R", "hopla.R")
 
-if (file.exists(development.source)) {
-  source(development.source)
-  version <- read.dcf(file.path(package.root, "DESCRIPTION"), fields = "Version")[1]
+if (file.exists(development_source)) {
+  source(development_source)
+  version <- read.dcf(file.path(package_root, "DESCRIPTION"), fields = "Version")[1]
 } else {
   suppressPackageStartupMessages(library(hopla))
   version <- as.character(utils::packageVersion("hopla"))
@@ -16,45 +16,183 @@ if (file.exists(development.source)) {
 usage <- function() {
   cat(
     "Usage:\n",
-    "  hopla run SETTINGS.{yaml,yml,json}\n",
-    "  hopla concordance FLOW1 FLOW2 [--relative]\n",
-    "  hopla transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
+    "  hopla [-hV] [--] run SETTINGS.{yaml,yml,json}\n",
+    "  hopla [-hV] [--] concordance [-r] FLOW1 FLOW2\n",
+    "  hopla [-hV] [--] transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
     "MODE is 1 for matching strands or 2 for crossed strands.\n",
     sep = ""
   )
 }
 
-fail <- function(message) {
+usage_error <- function(message) {
   cat("ERROR: ", message, "\n", file = stderr(), sep = "")
   usage()
+  quit(status = 2)
+}
+
+runtime_error <- function(message) {
+  cat("ERROR: ", message, "\n", file = stderr(), sep = "")
   quit(status = 1)
 }
 
-args <- commandArgs(trailingOnly = TRUE)
-if (!length(args) || args[1] %in% c("-h", "--help")) {
-  usage()
-  quit(status = 0)
-}
-if (args[1] %in% c("-v", "--version")) {
+show_version <- function() {
   cat("v", version, "\n", sep = "")
   quit(status = 0)
 }
 
+show_help <- function() {
+  usage()
+  quit(status = 0)
+}
+
+remaining_operands <- function(args, index) {
+  if (index > length(args)) character() else args[index:length(args)]
+}
+
+after_option_terminator <- function(args, index) {
+  remaining_operands(args, index + 1L)
+}
+
+parse_short_options <- function(token, allow_relative = FALSE, relative = FALSE) {
+  options <- strsplit(sub("^-", "", token), "", fixed = TRUE)[[1]]
+  for (option in options) {
+    if (option == "h") show_help()
+    if (option == "V") show_version()
+    if (option == "r" && allow_relative) {
+      relative <- TRUE
+      next
+    }
+    usage_error(paste0("unknown option: -", option))
+  }
+  relative
+}
+
+parse_global_options <- function(args) {
+  index <- 1L
+  while (index <= length(args)) {
+    token <- args[[index]]
+    if (token == "--") {
+      return(list(operands = after_option_terminator(args, index)))
+    }
+    if (token == "--help") show_help()
+    if (token == "--version") show_version()
+    if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-") && token != "-") {
+      parse_short_options(token)
+      index <- index + 1L
+      next
+    }
+    break
+  }
+  list(operands = remaining_operands(args, index))
+}
+
+parse_concordance_options <- function(args) {
+  relative <- FALSE
+  index <- 1L
+  while (index <= length(args)) {
+    token <- args[[index]]
+    if (token == "--") {
+      return(list(relative = relative, operands = after_option_terminator(args, index)))
+    }
+    if (token == "--help") show_help()
+    if (token == "--version") show_version()
+    if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-") && token != "-") {
+      relative <- parse_short_options(token, allow_relative = TRUE, relative = relative)
+      index <- index + 1L
+      next
+    }
+    break
+  }
+  list(relative = relative, operands = remaining_operands(args, index))
+}
+
+parse_transform_options <- function(args) {
+  index <- 1L
+  while (index <= length(args)) {
+    token <- args[[index]]
+    if (token == "--") {
+      return(list(operands = after_option_terminator(args, index)))
+    }
+    if (token == "--help") show_help()
+    if (token == "--version") show_version()
+    if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-") && token != "-") {
+      parse_short_options(token)
+      index <- index + 1L
+      next
+    }
+    break
+  }
+  list(operands = remaining_operands(args, index))
+}
+
+parse_run_options <- function(args) {
+  index <- 1L
+  while (index <= length(args)) {
+    token <- args[[index]]
+    if (token == "--") {
+      return(list(operands = after_option_terminator(args, index)))
+    }
+    if (token == "--help") show_help()
+    if (token == "--version") show_version()
+    if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-") && token != "-") {
+      parse_short_options(token)
+      index <- index + 1L
+      next
+    }
+    break
+  }
+  list(operands = remaining_operands(args, index))
+}
+
+args <- commandArgs(trailingOnly = TRUE)
+if (!length(args)) {
+  usage_error("missing subcommand.")
+}
+
+parsed <- parse_global_options(args)
+args <- parsed$operands
+if (!length(args)) {
+  usage_error("missing subcommand.")
+}
+
+subcommand <- args[[1]]
+operands <- args[-1]
+
 status <- tryCatch({
   switch(
-    args[1],
+    subcommand,
     run = {
-      if (length(args) != 2L) fail("run expects one settings file.")
-      hopla_run(args[2], file.path(package.root, "exec", "hopla-run.R"))
+      parsed_run <- parse_run_options(operands)
+      run_operands <- parsed_run$operands
+      if (length(run_operands) != 1L) {
+        usage_error("run expects one settings file.")
+      }
+      engine_status <- hopla_run(
+        run_operands[[1]],
+        file.path(package_root, "exec", "hopla-run.R")
+      )
+      if (!is.null(engine_status) && is.numeric(engine_status) && engine_status != 0L) {
+        quit(status = as.integer(engine_status))
+      }
+      0L
     },
     concordance = {
-      if (!(length(args) %in% 3:4)) fail("concordance expects two flow tables.")
-      if (length(args) == 4L && args[4] != "--relative") {
-        fail("the only concordance option is --relative.")
+      parsed_concordance <- parse_concordance_options(operands)
+      concordance_operands <- parsed_concordance$operands
+      if (length(concordance_operands) != 2L) {
+        usage_error("concordance expects two flow tables.")
       }
-      values <- hopla_concordance(args[2], args[3], relative = length(args) == 4L)
-      first <- sub("-.*$", "", basename(args[2]))
-      second <- sub("-.*$", "", basename(args[3]))
+      values <- hopla_concordance(
+        concordance_operands[[1]],
+        concordance_operands[[2]],
+        relative = parsed_concordance$relative
+      )
+      first <- sub("-.*$", "", basename(concordance_operands[[1]]))
+      second <- sub("-.*$", "", basename(concordance_operands[[2]]))
       labels <- c(
         paste0(first, "-1 vs ", second, "-1"),
         paste0(first, "-1 vs ", second, "-2"),
@@ -65,12 +203,21 @@ status <- tryCatch({
       0L
     },
     transform = {
-      if (!(length(args) %in% 4:5)) fail("transform expects two flow tables, MODE, and optional OUTPUT.")
-      output <- if (length(args) == 5L) args[5] else NULL
-      hopla_transform(args[2], args[3], args[4], output)
+      parsed_transform <- parse_transform_options(operands)
+      transform_operands <- parsed_transform$operands
+      if (!(length(transform_operands) %in% 3:4)) {
+        usage_error("transform expects two flow tables, MODE, and optional OUTPUT.")
+      }
+      output <- if (length(transform_operands) == 4L) transform_operands[[4]] else NULL
+      hopla_transform(
+        transform_operands[[1]],
+        transform_operands[[2]],
+        transform_operands[[3]],
+        output
+      )
       0L
     },
-    fail(paste0("unknown subtool: ", args[1]))
+    usage_error(paste0("unknown subcommand: ", subcommand))
   )
 }, error = function(error) {
   cat("ERROR: ", conditionMessage(error), "\n", file = stderr(), sep = "")

@@ -64,7 +64,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Test Docker image
-        run: docker run --rm hopla:${{ github.sha }} hopla --version
+        run: docker run --rm hopla:${{ github.sha }} hopla -V
 
       - name: Save Docker image artifact
         run: |

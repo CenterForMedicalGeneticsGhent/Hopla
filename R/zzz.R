@@ -1,3 +1,3 @@
 utils::globalVariables(c(
-  "chr", "flowA.hexcol", "flowB.hexcol", "input.order", "pos"
+  "chr", "flowA.hexcol", "flowB.hexcol", "input_order", "pos"
 ))

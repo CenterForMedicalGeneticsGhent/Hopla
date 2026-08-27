@@ -27,7 +27,7 @@ The root Dockerfile builds a minimal Linux image from `pixi.lock`; it is separat
 
 ```bash
 docker build -t hopla .
-docker run --rm hopla hopla --version
+docker run --rm hopla hopla -V
 ```
 
 # Input
@@ -38,15 +38,15 @@ docker run --rm hopla hopla --version
 
 The `run` subtool accepts exactly one `.yaml`, `.yml`, or `.json` settings file. It validates the complete document against [`inst/schema/hopla.schema.json`](inst/schema/hopla.schema.json) before loading the VCF or analysis packages. Unknown properties, invalid types, missing mandatory values, and out-of-range values fail immediately.
 
-`vcf.file` and `sample.ids` are mandatory. All other properties use the defaults encoded in the schema and analysis engine. Lists must be YAML/JSON arrays; use `null` for an unknown parent or gender.
+`vcf_file` and `sample_ids` are mandatory. All other properties use the defaults encoded in the schema and analysis engine. Lists must be YAML/JSON arrays; use `null` for an unknown parent or gender.
 
 ```yaml
-vcf.file: /data/family.vcf.gz
-sample.ids: [sample_C, sample_B, sample_A]
-father.ids: [null, null, sample_C]
-mother.ids: [null, null, sample_B]
+vcf_file: /data/family.vcf.gz
+sample_ids: [sample_C, sample_B, sample_A]
+father_ids: [null, null, sample_C]
+mother_ids: [null, null, sample_B]
 genders: [M, F, null]
-run.merlin: true
+run_merlin: true
 regions:
   - chr7:117480025-117668665
 info:
@@ -112,7 +112,7 @@ Info as provided by `info`.
 
 ## Family tree
 
-If two or more samples are provided, the family structure is shown as defined by `sample.ids`, `father.ids` and `mother.ids`. Annotations are added according to `reference.ids`, `carrier.ids`, `affected.ids`, `nonaffected.ids` (these are re-used throughout the HTML). Squares are males and circles are females, as given by `genders`, or as predicted by `X.cutoff` and `Y.cutoff`.
+If two or more samples are provided, the family structure is shown as defined by `sample_ids`, `father_ids` and `mother_ids`. Annotations are added according to `reference_ids`, `carrier_ids`, `affected_ids`, `nonaffected_ids` (these are re-used throughout the HTML). Squares are males and circles are females, as given by `genders`, or as predicted by `x_cutoff` and `y_cutoff`.
 
 ## Filter 0: single nucleotide variants
 
@@ -129,9 +129,9 @@ Includes variant tables, allelic drop-out (ADO) & allelic drop-in (ADI) for ever
 
 The quality of these copy number profiles depends on how the vcf files were generated. It is highly advised to use a bam-based software to verify copy number, such as [WisecondorX](https://github.com/CenterForMedicalGeneticsGhent/WisecondorX/).
 
-## Filter 1: filter 0, dp.hard.limit, af.hard.limit and dp.soft.limit
+## Filter 1: filter 0, dp_hard_limit, af_hard_limit and dp_soft_limit
 
-This section contains tables/plots applied to single nucleotide variants that are filtered by `dp.hard.limit`, `af.hard.limit` and `dp.soft.limit`.
+This section contains tables/plots applied to single nucleotide variants that are filtered by `dp_hard_limit`, `af_hard_limit` and `dp_soft_limit`.
 
 ### Variant statistics
 
@@ -143,7 +143,7 @@ For each provided region, given by `regions`, a BAF profile is shown per sample.
 
 ### B-allele frequency (BAF), genome-wide
 
-Genome-wide BAF profiles are included for samples given in `baf.ids`.
+Genome-wide BAF profiles are included for samples given in `baf_ids`.
 
 ### Mendelian errors
 
@@ -160,7 +160,7 @@ Useful for hetero/iso-uniparental disomy (UPD) detection, as an additional quali
 
 Variants of the child/embryo are distributed per parental origin. Symbols above the chromosome bands represent informative variants of the father, while symbols below represent informative variants of the mother. The top and bottom tracks per parental origin represent variants for which the embryo is heterozygous and homozygous, respectively.  
 
-## Filter 2: filter 0, filer 1, keep.informative.ids and keep.hetero.ids
+## Filter 2: filter 0, filer 1, keep_informative_ids and keep_hetero_ids
 
 ### Variant statistics
 
@@ -168,13 +168,13 @@ Similar to previous 'Variant statistics' sections, but ADO/ADI is not calculated
 
 ### Haplotyping by Merlin
 
-Merlin is executed if more than one sample is provided in `sample.ids`, and `run.merlin: true` is set.
+Merlin is executed if more than one sample is provided in `sample_ids`, and `run_merlin: true` is set.
 
 Different haplotypes are given by colors. Haplotypes are relative between individuals/strands within a family (i.e., same-haplotype colors are not constant between HTML output files). Details at each variant can be obtained by mouse hovering.  
 
-*Note 1*: Raw Merlin haplotypes can be corrected using `window.size.voting`. Nearby variants vote on the haplotype at each position, weighted by `window.size.voting / (distance + window.size.voting / 2) - 1`. Corrected haplotypes use a circle symbol; raw genotypes remain available on hover.
+*Note 1*: Raw Merlin haplotypes can be corrected using `window_size_voting`. Nearby variants vote on the haplotype at each position, weighted by `window_size_voting / (distance + window_size_voting / 2) - 1`. Corrected haplotypes use a circle symbol; raw genotypes remain available on hover.
 
-*Note 2*: haplotypes from Merlin can be further corrected using `min.seg.var`. A haplotype stretch needs to have at least `min.seg.var` variants. If not, the haplotype segment is corrected to its neighbouring haplotype segments. Corrected haplotypes are shown using a circle symbol (instead of squares). The raw uncorrected genotyping data can be consulted at any time by mouse hovering.
+*Note 2*: haplotypes from Merlin can be further corrected using `min_seg_var`. A haplotype stretch needs to have at least `min_seg_var` variants. If not, the haplotype segment is corrected to its neighbouring haplotype segments. Corrected haplotypes are shown using a circle symbol (instead of squares). The raw uncorrected genotyping data can be consulted at any time by mouse hovering.
 
 *Note 3*: There is no haplotyping executed when the given family structure does not allow it (i.e., when no reference sample is provided, there will be no breakpoints in the haplotyping strands).  
 
@@ -182,4 +182,4 @@ Different haplotypes are given by colors. Haplotypes are relative between indivi
 
 ### Haplotyping by Merlin: strand concordance
 
-If `concordance.table: true` is set, the concordance in haplotyping patterns between strands of different family members is shown in form of a pairwise comparative table. The concordance per strand is calculated as [(same-haplotype variants between strands)/(total number of evaluated variants)].
+If `concordance_table: true` is set, the concordance in haplotyping patterns between strands of different family members is shown in form of a pairwise comparative table. The concordance per strand is calculated as [(same-haplotype variants between strands)/(total number of evaluated variants)].

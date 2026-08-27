@@ -23,4 +23,4 @@ RUN printf '#!/bin/sh\nexec /app/.pixi/envs/default/lib/R/library/hopla/exec/hop
     && chmod 0755 /usr/local/bin/hopla
 
 ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
-CMD ["hopla", "--help"]
+CMD ["hopla", "-h"]

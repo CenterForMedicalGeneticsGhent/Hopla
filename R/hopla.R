@@ -49,20 +49,20 @@ hopla_concordance <- function(flow1, flow2, relative = FALSE) {
     stop("Flow tables must contain chr, pos, flowA.hexcol, and flowB.hexcol.", call. = FALSE)
   }
 
-  first[, input.order := .I]
+  first[, input_order := .I]
   flows <- merge(
     first[, .(
-      chr, pos, input.order,
-      flowA.1 = flowA.hexcol, flowB.1 = flowB.hexcol
+      chr, pos, input_order,
+      flow_a_1 = flowA.hexcol, flow_b_1 = flowB.hexcol
     )],
     second[, .(
       chr, pos,
-      flowA.2 = flowA.hexcol, flowB.2 = flowB.hexcol
+      flow_a_2 = flowA.hexcol, flow_b_2 = flowB.hexcol
     )],
     by = c("chr", "pos"),
     sort = FALSE
   )
-  data.table::setorder(flows, input.order)
+  data.table::setorder(flows, input_order)
   if (!nrow(flows)) stop("Flow tables have no shared markers.", call. = FALSE)
 
   concordance <- function(x, y) {
@@ -78,10 +78,10 @@ hopla_concordance <- function(flow1, flow2, relative = FALSE) {
   }
 
   c(
-    `1 vs 1` = concordance(flows$flowA.1, flows$flowA.2),
-    `1 vs 2` = concordance(flows$flowA.1, flows$flowB.2),
-    `2 vs 1` = concordance(flows$flowB.1, flows$flowA.2),
-    `2 vs 2` = concordance(flows$flowB.1, flows$flowB.2)
+    `1 vs 1` = concordance(flows$flow_a_1, flows$flow_a_2),
+    `1 vs 2` = concordance(flows$flow_a_1, flows$flow_b_2),
+    `2 vs 1` = concordance(flows$flow_b_1, flows$flow_a_2),
+    `2 vs 2` = concordance(flows$flow_b_1, flows$flow_b_2)
   )
 }
 
@@ -109,10 +109,10 @@ hopla_transform <- function(flow1, flow2, mode, output = NULL) {
     stop("Flow tables must contain chr, pos, flowA.hexcol, and flowB.hexcol.", call. = FALSE)
   }
 
-  second.rows <- second[first, on = .(chr, pos), which = TRUE]
-  matched <- !is.na(second.rows)
+  second_rows <- second[first, on = .(chr, pos), which = TRUE]
+  matched <- !is.na(second_rows)
   first <- first[matched]
-  second <- second[second.rows[matched]]
+  second <- second[second_rows[matched]]
   if (!nrow(first)) stop("Flow tables have no shared markers.", call. = FALSE)
 
   if (mode == 1L) {
