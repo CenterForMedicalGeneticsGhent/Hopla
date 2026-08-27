@@ -1,32 +1,109 @@
-name: Build and Push Image
-on: [release]
+name: Build and publish R pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, master]
+  release:
+    types: [published]
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    name: Build and push image
-    runs-on: ubuntu-20.04
-
+  r-package:
+    name: Build and check R package
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Build Image
-        id: build-image
-        uses: redhat-actions/buildah-build@v2
+      - uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          image: hopla
-          tags: latest ${{ github.event.release.tag_name }}
-          context: ./UI
-          containerfiles: |
-            ./UI/Dockerfile
-      - name: Push To quay.io
-        id: push-to-quay
-        uses: redhat-actions/push-to-registry@v2
+          pixi-version: v0.77.1
+          cache: true
+          locked: true
+          environments: dev
+
+      - name: Build source package
+        run: |
+          pixi run -e dev R CMD build .
+          mkdir -p dist
+          mv hopla_*.tar.gz dist/
+
+      - name: Check source package
+        run: pixi run -e dev R CMD check --no-manual dist/hopla_*.tar.gz
+
+      - name: Upload R package artifact
+        uses: actions/upload-artifact@v4
         with:
-          image: ${{ steps.build-image.outputs.image }}
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: quay.io/cmgg
+          name: hopla-r-package
+          path: dist/hopla_*.tar.gz
+
+      - name: Attach R package to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/hopla_*.tar.gz
+
+  docker-image:
+    name: Build R pipeline image
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          load: true
+          tags: hopla:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: docker run --rm hopla:${{ github.sha }} hopla --version
+
+      - name: Save Docker image artifact
+        run: |
+          mkdir -p dist
+          docker save hopla:${GITHUB_SHA} | gzip -9 > dist/hopla-image-linux-64.tar.gz
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hopla-docker-image
+          path: dist/hopla-image-linux-64.tar.gz
+
+      - name: Log in to Quay
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
-      - name: Print image url
-        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+      - name: Publish Docker tags
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: quay.io/cmgg/hopla
+        run: |
+          tags=("$IMAGE:${GITHUB_SHA}")
+          if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
+            package_version="$(awk '/^Version:/{print $2}' DESCRIPTION)"
+            tags+=("$IMAGE:${package_version}" "$IMAGE:stable")
+          else
+            tags+=("$IMAGE:latest")
+          fi
+          for tag in "${tags[@]}"; do
+            docker tag "hopla:${GITHUB_SHA}" "$tag"
+            docker push "$tag"
+          done
+
+      - name: Attach Docker image to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/hopla-image-linux-64.tar.gz

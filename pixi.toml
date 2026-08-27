@@ -1,6 +1,6 @@
 [workspace]
 name = "hopla"
-version = "1.1.0"
+version = "2.0.0"
 description = "Genomic family analysis and interactive reporting"
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64"]
@@ -17,11 +17,24 @@ r-base64enc = ">=0.1_3"
 r-scales = ">=1.4"
 bioconductor-genomicranges = ">=1.54"
 bioconductor-dnacopy = ">=1.76"
+r-jsonlite = ">=2.0.0,<3"
+r-yaml = ">=2.3.12,<3"
+r-jsonvalidate = ">=1.5.0,<2"
 
 [target.linux-64.dependencies]
 merlin = "1.1.2.*"
 
 [tasks]
-hopla = "Rscript hopla.R"
-concordance = "Rscript concordance.R"
-transform = "Rscript transform.R"
+hopla = "Rscript exec/hopla"
+concordance = "Rscript exec/hopla concordance"
+transform = "Rscript exec/hopla transform"
+
+[feature.dev.dependencies]
+r-testthat = ">=3.3.2,<4"
+
+[feature.dev.tasks]
+check = "R CMD build . && R CMD check --no-manual hopla_2.0.0.tar.gz"
+
+[environments]
+default = []
+dev = ["dev"]

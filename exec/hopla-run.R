@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-version <- 'v1.1.0'
+version <- 'v2.0.0'
 minimum.r.version <- '4.4.0'
 
 # Structure:
@@ -41,125 +41,76 @@ split.strands <- function(x){
   data.table::tstrsplit(x, '|', fixed = T, keep = 1:2)
 }
 
-numeric.args <- c('dp.hard.limit', 'af.hard.limit', 'dp.soft.limit',
-                  'min.seg.var', 'min.seg.var.X', 'window.size.voting',
-                  'window.size.voting.X', 'X.cutoff', 'Y.cutoff', 'window.size',
-                  'regions.flanking.size', 'value.of.P', 'dot.factor')
-boolean.args <- c('run.merlin', 'keep.chromosomes.only', 'keep.regions.only',
-                  'concordance.table', 'limit.baf.to.P', 'limit.pm.to.P',
-                  'self.contained', 'cairo')
+array.args <- c(
+  'sample.ids', 'father.ids', 'mother.ids', 'genders',
+  'dp.hard.limit.ids', 'af.hard.limit.ids', 'dp.soft.limit.ids',
+  'keep.informative.ids', 'keep.hetero.ids', 'regions', 'reference.ids',
+  'carrier.ids', 'affected.ids', 'nonaffected.ids', 'info', 'baf.ids'
+)
 
-#' Coerce one command-line value to its declared type.
-#' @param arg A single argument name.
-#' @param value A character value, optionally comma-separated.
-#' @return A character, numeric, or logical vector.
-format.value <- function(arg, value){
-  stopifnot(is.character(arg), length(arg) == 1, is.character(value))
-  if (!(arg %in% names(args))){
-    cat(paste0('ERROR: Argument --', arg, ' does not exist.\n'))
-    quit(status=1)
-  }
-  
-  value = sapply(strsplit(value, ',')[[1]], function(x) trim(x))
-  
-  ## replace NAs
-  value[value %in% c('', 'NA')] = NA
-  
-  ## tranform when needed
-  if (arg %in% numeric.args) value = as.numeric(value)
-  if (arg %in% boolean.args) value = as.logical(value)
-  return(value)
-}
-
-#' Overlay command-line options onto the global argument defaults.
-#' @param cmd.args A character vector from `commandArgs()`.
-#' @return A named list of resolved arguments.
-get.cmd.args <- function(cmd.args){
-  stopifnot(is.character(cmd.args))
-  i <- 1L
-  while (i <= length(cmd.args)){
-    token <- cmd.args[i]
-    if (!grepl('^--', token)){
-      cat(paste0('ERROR: Unexpected positional argument: ', token, '\n'), file = stderr())
-      quit(status = 1)
-    }
-
-    if (grepl('=', token, fixed = T)){
-      arg <- sub('^--([^=]+)=.*$', '\\1', token)
-      value <- sub('^--[^=]+=', '', token)
-      i <- i + 1L
-    } else {
-      arg <- sub('^--', '', token)
-      has.value <- i < length(cmd.args) && !grepl('^--', cmd.args[i + 1L])
-      if (arg %in% boolean.args && !has.value){
-        value <- 'TRUE'
-        i <- i + 1L
-      } else {
-        if (!has.value){
-          cat(paste0('ERROR: Missing value for --', arg, '.\n'), file = stderr())
-          quit(status = 1)
-        }
-        value <- cmd.args[i + 1L]
-        i <- i + 2L
-      }
-    }
-    value <- format.value(arg, value)
-    args[[arg]] <- value
-  }
-  return(args)
-}
-
-#' Print generated command-line help.
-#' @param defaults A named list of option defaults.
+#' Print command-line help.
 #' @return Invisible `NULL`.
-print.help <- function(defaults){
-  stopifnot(is.list(defaults), !is.null(names(defaults)))
-  cat('Usage: hopla --vcf.file FILE --sample.ids ID[,ID...] [options]\n\n')
-  cat('Options may be written as --name value or --name=value.\n')
-  cat('A bare boolean option sets it to TRUE. Settings files remain supported with --settings FILE.\n\n')
-  cat('General:\n')
-  cat('  -h, --help                 Show this help and exit\n')
-  cat('  -v, --version              Show the version and exit\n')
-  cat('      --settings FILE        Load arguments from a settings file\n\n')
-  cat('Analysis options:\n')
-  for (arg in names(defaults)){
-    type <- if (arg %in% boolean.args) 'boolean' else if (arg %in% numeric.args) 'numeric' else 'string/list'
-    default <- if (length(defaults[[arg]])) paste(defaults[[arg]], collapse = ',') else 'none'
-    cat(sprintf('      --%-25s %-11s default: %s\n', arg, type, default))
-  }
+print.help <- function(){
+  cat('Usage: hopla SETTINGS.{yaml,yml,json}\n\n')
+  cat('The settings file is validated against hopla.schema.json before analysis.\n')
+  cat('Use YAML or JSON arrays for list options such as sample.ids and regions.\n\n')
+  cat('  -h, --help       Show this help and exit\n')
+  cat('  -v, --version    Show the version and exit\n')
   invisible(NULL)
 }
 
-#' Read a Hopla settings file.
+#' Read and validate a Hopla YAML or JSON settings file.
 #' @param settings.file Path to a settings file.
-#' @return A named argument list.
-get.file.args <- function(settings.file){
+#' @param defaults A named list of default values.
+#' @param schema.file Path to the Hopla JSON Schema.
+#' @return A validated argument list overlaid on the defaults.
+get.settings.args <- function(settings.file, defaults, schema.file){
   if (!file.exists(settings.file)){
-    cat('ERROR: File given by --settings does not exist. Please Correct.\n')
+    cat(paste0('ERROR: Settings file does not exist: ', settings.file, '\n'), file = stderr())
     quit(status=1)
   }
-  at.info = F
-  for (line in suppressWarnings(readLines(settings.file))){
-    ## info parsing
-    if (!at.info) line = gsub("'", '', gsub('"', '', line))
-    if (at.info) line = gsub('\t', '    ', line)
-    if (line == 'end.info'){ at.info = F ; next }
-    if (at.info){ args$info <- c(args$info, line) ; next }
-    if (line == 'start.info'){ at.info = T ; next }
-    
-    ## skip comments
-    if (substr(trim(line), 1, 1) %in% c('#', '')) next
-    line <- trim(strsplit(line, '#', fixed = T)[[1]][1])
-    
-    ## parse argument
-    arg <- trim(strsplit(line, '=')[[1]][1])
-    value <- strsplit(line, '=')[[1]][2]
-    value <- format.value(arg, value)
-    
-    if (substr(line, nchar(line), nchar(line)) != '=' & 
-        grepl('=', line, fixed = T)) args[[arg]] <- value
+  if (!file.exists(schema.file)){
+    cat(paste0('ERROR: Settings schema does not exist: ', schema.file, '\n'), file = stderr())
+    quit(status=1)
   }
-  return(args)
+
+  extension <- tolower(tools::file_ext(settings.file))
+  if (!(extension %in% c('yaml', 'yml', 'json'))){
+    cat('ERROR: Settings file must use a .yaml, .yml, or .json extension.\n', file = stderr())
+    quit(status=1)
+  }
+
+  if (extension == 'json'){
+    json <- paste(readLines(settings.file, warn = F), collapse = '\n')
+  } else {
+    yaml.settings <- yaml::read_yaml(settings.file)
+    if (!is.list(yaml.settings) || is.null(names(yaml.settings))){
+      cat('ERROR: YAML settings must contain a mapping at the document root.\n', file = stderr())
+      quit(status=1)
+    }
+    for (arg in intersect(names(yaml.settings), array.args)){
+      if (!is.list(yaml.settings[[arg]])) yaml.settings[[arg]] <- as.list(yaml.settings[[arg]])
+    }
+    json <- jsonlite::toJSON(yaml.settings, auto_unbox = T, null = 'null', na = 'null')
+  }
+
+  valid <- jsonvalidate::json_validate(json, schema.file, verbose = T)
+  if (!isTRUE(valid)){
+    cat('ERROR: Settings validation failed:\n', file = stderr())
+    errors <- attr(valid, 'errors')
+    cat(paste(capture.output(print(errors)), collapse = '\n'), '\n', file = stderr())
+    quit(status=1)
+  }
+
+  settings <- jsonlite::fromJSON(json, simplifyVector = T)
+  for (arg in names(settings)){
+    value <- settings[[arg]]
+    if (arg %in% array.args && is.list(value)){
+      value <- vapply(value, function(x) if (is.null(x)) NA_character_ else as.character(x), character(1))
+    }
+    defaults[[arg]] <- unname(value)
+  }
+  defaults
 }
 
 #' Validate and derive dependent arguments.
@@ -210,8 +161,8 @@ post.process.args <- function(args){
       return(NULL)
     }
     if (length(not.in(args[[arg]], args$sample.ids))){
-      cat(paste0('ERROR: Fetched from argument --', arg,', \'', not.in(args[[arg]], args$sample.ids),
-                 '\' could not be found in the provided --sample.ids. Please correct.\n'))
+      cat(paste0('ERROR: Value from setting ', arg, ', \'', not.in(args[[arg]], args$sample.ids),
+                 '\' could not be found in sample.ids. Please correct.\n'))
       quit(status=1)
     }
   }
@@ -229,8 +180,8 @@ post.process.args <- function(args){
     if (arg == 'sample.ids'){
       if (length(args$sample.ids) > 1){
         if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
-          cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
-              '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
+          cat('ERROR: More than one sample is given in sample.ids. Provide their relation using ',
+              'father.ids and/or mother.ids. Otherwise, run separately.\n')
           quit(status=1)
         }
       }
@@ -246,7 +197,7 @@ post.process.args <- function(args){
     for (same.length.arg in c('father.ids', 'mother.ids', 'genders')){
       if (arg == same.length.arg){
         if (!(length(args$sample.ids) == length(args[[same.length.arg]]))){
-          cat(paste0('ERROR: Arguments --sample.ids and --', same.length.arg,' should be of the same length. Please correct.\n'))
+          cat(paste0('ERROR: Settings sample.ids and ', same.length.arg,' should be of the same length. Please correct.\n'))
           quit(status=1)
         }
       }
@@ -294,13 +245,13 @@ post.process.args <- function(args){
     
     if (arg == 'vcf.file'){
       if (!file.exists(args$vcf.file)){
-        cat('ERROR: the file given by --vcf.file does not exist. Please correct.\n')
+        cat('ERROR: The file given by vcf.file does not exist. Please correct.\n')
         quit(status=1)
       }
     }
     if (arg == 'cytoband.file'){
       if (length(args$cytoband.file) & !file.exists(args$cytoband.file)){
-        cat('ERROR: the file given by --vcf.file does not exist. Please correct.\n')
+        cat('ERROR: The file given by cytoband.file does not exist. Please correct.\n')
         quit(status=1)
       }
     }
@@ -386,10 +337,10 @@ load.samples <- function(args){
   
   snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1 & vcf.A$CHROM %in% c(chrs, 'chrY')
   available.samples <- colnames(vcf@gt)[-1]
-  cat('  ... available samples in --vcf.file: ', paste0(available.samples, collapse = ','), '\n')
+  cat('  ... available samples in vcf.file: ', paste0(available.samples, collapse = ','), '\n')
   missing.samples <- args$samples.no.u[!(args$samples.no.u %in% available.samples)]
   if (length(missing.samples)){
-    cat(paste0('ERROR: Sample(s) not found in --vcf.file: ', paste(missing.samples, collapse = ', '), '.\n'))
+    cat(paste0('ERROR: Sample(s) not found in vcf.file: ', paste(missing.samples, collapse = ', '), '.\n'))
     quit(status=1)
   }
 
@@ -2621,7 +2572,7 @@ if ('--version' %in% cmd.args | '-v' %in% cmd.args){
 }
 
 if ('--help' %in% cmd.args | '-h' %in% cmd.args){
-  print.help(args)
+  print.help()
   quit(status=0)
 }
 if (getRversion() < minimum.r.version){
@@ -2629,29 +2580,21 @@ if (getRversion() < minimum.r.version){
   quit(status=1)
 }
 
-settings.i <- grep('^--settings($|=)', cmd.args)
-if (length(settings.i) > 1){
-  cat('ERROR: --settings may only be supplied once.\n', file = stderr())
+if (length(cmd.args) != 1){
+  cat('ERROR: Provide exactly one YAML or JSON settings file. Run --help for usage.\n', file = stderr())
   quit(status=1)
 }
-if (length(settings.i)){
-  i <- settings.i[1]
-  if (grepl('=', cmd.args[i], fixed = T)){
-    settings.file <- sub('^--settings=', '', cmd.args[i])
-    cmd.args <- cmd.args[-i]
-  } else {
-    if (i == length(cmd.args)){
-      cat('ERROR: Missing value for --settings.\n', file = stderr())
-      quit(status=1)
-    }
-    settings.file <- cmd.args[i + 1L]
-    cmd.args <- cmd.args[-c(i, i + 1L)]
-  }
-  args <- get.file.args(settings.file)
-}
-args <- get.cmd.args(cmd.args)
+
+script.arg <- grep('^--file=', commandArgs(trailingOnly = F), value = T)
+script.file <- if (length(script.arg)) sub('^--file=', '', script.arg[1]) else 'exec/hopla-run.R'
+schema.candidates <- c(
+  file.path(dirname(normalizePath(script.file)), '..', 'schema', 'hopla.schema.json'),
+  file.path(dirname(normalizePath(script.file)), '..', 'inst', 'schema', 'hopla.schema.json')
+)
+schema.file <- schema.candidates[file.exists(schema.candidates)][1]
+args <- get.settings.args(cmd.args[1], args, schema.file)
 args <- post.process.args(args)
-rm(cmd.args)
+rm(cmd.args, schema.candidates, schema.file, script.arg, script.file)
 
 # -----
 # Library

@@ -1,0 +1,80 @@
+#!/usr/bin/env Rscript
+
+script.arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+script.file <- if (length(script.arg)) sub("^--file=", "", script.arg[1]) else "exec/hopla"
+package.root <- normalizePath(file.path(dirname(script.file), ".."), mustWork = FALSE)
+development.source <- file.path(package.root, "R", "hopla.R")
+
+if (file.exists(development.source)) {
+  source(development.source)
+  version <- read.dcf(file.path(package.root, "DESCRIPTION"), fields = "Version")[1]
+} else {
+  suppressPackageStartupMessages(library(hopla))
+  version <- as.character(utils::packageVersion("hopla"))
+}
+
+usage <- function() {
+  cat(
+    "Usage:\n",
+    "  hopla run SETTINGS.{yaml,yml,json}\n",
+    "  hopla concordance FLOW1 FLOW2 [--relative]\n",
+    "  hopla transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
+    "MODE is 1 for matching strands or 2 for crossed strands.\n",
+    sep = ""
+  )
+}
+
+fail <- function(message) {
+  cat("ERROR: ", message, "\n", file = stderr(), sep = "")
+  usage()
+  quit(status = 1)
+}
+
+args <- commandArgs(trailingOnly = TRUE)
+if (!length(args) || args[1] %in% c("-h", "--help")) {
+  usage()
+  quit(status = 0)
+}
+if (args[1] %in% c("-v", "--version")) {
+  cat("v", version, "\n", sep = "")
+  quit(status = 0)
+}
+
+status <- tryCatch({
+  switch(
+    args[1],
+    run = {
+      if (length(args) != 2L) fail("run expects one settings file.")
+      hopla_run(args[2], file.path(package.root, "exec", "hopla-run.R"))
+    },
+    concordance = {
+      if (!(length(args) %in% 3:4)) fail("concordance expects two flow tables.")
+      if (length(args) == 4L && args[4] != "--relative") {
+        fail("the only concordance option is --relative.")
+      }
+      values <- hopla_concordance(args[2], args[3], relative = length(args) == 4L)
+      first <- sub("-.*$", "", basename(args[2]))
+      second <- sub("-.*$", "", basename(args[3]))
+      labels <- c(
+        paste0(first, "-1 vs ", second, "-1"),
+        paste0(first, "-1 vs ", second, "-2"),
+        paste0(first, "-2 vs ", second, "-1"),
+        paste0(first, "-2 vs ", second, "-2")
+      )
+      cat(paste0(labels, ": ", values, "%\n"), sep = "")
+      0L
+    },
+    transform = {
+      if (!(length(args) %in% 4:5)) fail("transform expects two flow tables, MODE, and optional OUTPUT.")
+      output <- if (length(args) == 5L) args[5] else NULL
+      hopla_transform(args[2], args[3], args[4], output)
+      0L
+    },
+    fail(paste0("unknown subtool: ", args[1]))
+  )
+}, error = function(error) {
+  cat("ERROR: ", conditionMessage(error), "\n", file = stderr(), sep = "")
+  1L
+})
+
+quit(status = status)
