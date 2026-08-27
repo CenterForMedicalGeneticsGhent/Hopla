@@ -34,7 +34,7 @@ Details: [install.md](install.md).
 - `vcf_file` and `out_dir` are CLI paths, not settings properties. Validate that the VCF file and output directory exist. `OUT_DIR` defaults to the current working directory.
 - `convert` maps the legacy `key=value` settings format to schema-validated YAML.
 - Return zero for help, version, and successful commands; return status 2 for invalid usage and status 1 for runtime failures.
-- Global options are `-h` and `-V` (not `-v`). Use `--` to terminate option parsing. Options must precede operands. `concordance` accepts `-r` for relative comparison.
+- Global options are `-h`, `-V` (not `-v`), and `-L LEVEL` (`error`, `warn`, `info`, `debug`; default `info`). Use `--` to terminate option parsing. Options must precede operands. `concordance` accepts `-r` for relative comparison. `run` also accepts `-L` before its operands.
 
 ## Performance and output
 

@@ -17,17 +17,31 @@ require_existing_run_paths <- function(vcf_file, out_dir) {
 #' @param vcf_file Path to a (multisample) `vcf.gz` file. Must exist.
 #' @param out_dir Output directory. Defaults to the current working directory
 #'   and must already exist.
+#' @param log_level Log verbosity: `error`, `warn`, `info`, or `debug`.
+#'   Inherited by the analysis engine.
 #' @param engine Optional path to the Hopla engine. Intended for development and
 #'   testing; installed packages locate it automatically.
 #' @return The engine process exit status, invisibly.
 #' @export
-hopla_run <- function(settings, vcf_file, out_dir = getwd(), engine = NULL) {
+hopla_run <- function(
+  settings,
+  vcf_file,
+  out_dir = getwd(),
+  engine = NULL,
+  log_level = NULL
+) {
   stopifnot(
     is.character(settings), length(settings) == 1L,
     is.character(vcf_file), length(vcf_file) == 1L,
     is.character(out_dir), length(out_dir) == 1L
   )
   require_existing_run_paths(vcf_file, out_dir)
+  if (is.null(log_level)) {
+    log_level <- hopla_log_level()
+  } else {
+    hopla_log_level(log_level)
+    log_level <- hopla_log_level()
+  }
 
   if (is.null(engine)) {
     engine <- system.file("exec", "hopla-run.R", package = "hopla")
@@ -39,6 +53,16 @@ hopla_run <- function(settings, vcf_file, out_dir = getwd(), engine = NULL) {
   if (!length(engine) || !file.exists(engine)) {
     stop("Could not locate the Hopla analysis engine.", call. = FALSE)
   }
+
+  previous_level <- Sys.getenv("HOPLA_LOG_LEVEL", unset = NA_character_)
+  Sys.setenv(HOPLA_LOG_LEVEL = log_level)
+  on.exit({
+    if (is.na(previous_level)) {
+      Sys.unsetenv("HOPLA_LOG_LEVEL")
+    } else {
+      Sys.setenv(HOPLA_LOG_LEVEL = previous_level)
+    }
+  }, add = TRUE)
 
   status <- system2(
     file.path(R.home("bin"), "Rscript"),
@@ -340,10 +364,11 @@ hopla_convert_settings <- function(legacy, output = NULL, schema = NULL) {
   raw <- parse_legacy_settings_file(legacy)
   cli_only <- intersect(names(raw), c("vcf_file", "out_dir"))
   if (length(cli_only)) {
-    message(
+    message <- paste0(
       "Note: ", paste(cli_only, collapse = ", "),
       " belong on the CLI and were omitted from the YAML."
     )
+    hopla_log("info", message)
     raw[cli_only] <- NULL
   }
 

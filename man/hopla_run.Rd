@@ -2,7 +2,7 @@
 \alias{hopla_run}
 \title{Run a Hopla Analysis}
 \usage{
-hopla_run(settings, vcf_file, out_dir = getwd(), engine = NULL)
+hopla_run(settings, vcf_file, out_dir = getwd(), engine = NULL, log_level = NULL)
 }
 \arguments{
   \item{settings}{Path to a YAML or JSON settings file.}
@@ -10,6 +10,9 @@ hopla_run(settings, vcf_file, out_dir = getwd(), engine = NULL)
   \item{out_dir}{Output directory. Defaults to the current working directory
     and must already exist.}
   \item{engine}{Optional analysis-engine path for development and testing.}
+  \item{log_level}{Optional log verbosity (\code{error}, \code{warn},
+    \code{info}, or \code{debug}). Defaults to the current
+    \code{hopla_log_level()}.}
 }
 \value{The engine process exit status, invisibly.}
 \description{

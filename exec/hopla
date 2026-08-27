@@ -6,6 +6,7 @@ package_root <- normalizePath(file.path(dirname(script_file), ".."), mustWork = 
 development_source <- file.path(package_root, "R", "hopla.R")
 
 if (file.exists(development_source)) {
+  source(file.path(package_root, "R", "log.R"))
   source(development_source)
   version <- read.dcf(file.path(package_root, "DESCRIPTION"), fields = "Version")[1]
 } else {
@@ -16,24 +17,25 @@ if (file.exists(development_source)) {
 usage <- function() {
   cat(
     "Usage:\n",
-    "  hopla [-hV] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF\n",
-    "  hopla [-hV] [--] convert LEGACY [OUTPUT]\n",
-    "  hopla [-hV] [--] concordance [-r] FLOW1 FLOW2\n",
-    "  hopla [-hV] [--] transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
+    "  hopla [-hV] [-L LEVEL] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF\n",
+    "  hopla [-hV] [-L LEVEL] [--] convert LEGACY [OUTPUT]\n",
+    "  hopla [-hV] [-L LEVEL] [--] concordance [-r] FLOW1 FLOW2\n",
+    "  hopla [-hV] [-L LEVEL] [--] transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
     "MODE is 1 for matching strands or 2 for crossed strands.\n",
     "OUT_DIR defaults to the current working directory.\n",
+    "LEVEL is error, warn, info, or debug (default info).\n",
     sep = ""
   )
 }
 
 usage_error <- function(message) {
-  cat("ERROR: ", message, "\n", file = stderr(), sep = "")
+  hopla_log("error", message)
   usage()
   quit(status = 2)
 }
 
 runtime_error <- function(message) {
-  cat("ERROR: ", message, "\n", file = stderr(), sep = "")
+  hopla_log("error", message)
   quit(status = 1)
 }
 
@@ -70,15 +72,29 @@ parse_short_options <- function(token, allow_relative = FALSE, relative = FALSE)
 }
 
 parse_global_options <- function(args) {
+  log_level <- Sys.getenv("HOPLA_LOG_LEVEL", "info")
   index <- 1L
   while (index <= length(args)) {
     token <- args[[index]]
     if (token == "--") {
-      return(list(operands = after_option_terminator(args, index)))
+      return(list(log_level = log_level, operands = after_option_terminator(args, index)))
     }
     if (token == "--help") show_help()
     if (token == "--version") show_version()
+    if (token %in% c("-L", "--log-level")) {
+      if (index == length(args)) {
+        usage_error("missing value for -L.")
+      }
+      log_level <- args[[index + 1L]]
+      index <- index + 2L
+      next
+    }
     if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-L") && nchar(token) > 2L) {
+      log_level <- substring(token, 3L)
+      index <- index + 1L
+      next
+    }
     if (startsWith(token, "-") && token != "-") {
       parse_short_options(token)
       index <- index + 1L
@@ -86,7 +102,7 @@ parse_global_options <- function(args) {
     }
     break
   }
-  list(operands = remaining_operands(args, index))
+  list(log_level = log_level, operands = remaining_operands(args, index))
 }
 
 parse_concordance_options <- function(args) {
@@ -152,11 +168,16 @@ parse_convert_options <- function(args) {
 
 parse_run_options <- function(args) {
   out_dir <- getwd()
+  log_level <- NULL
   index <- 1L
   while (index <= length(args)) {
     token <- args[[index]]
     if (token == "--") {
-      return(list(out_dir = out_dir, operands = after_option_terminator(args, index)))
+      return(list(
+        out_dir = out_dir,
+        log_level = log_level,
+        operands = after_option_terminator(args, index)
+      ))
     }
     if (token == "--help") show_help()
     if (token == "--version") show_version()
@@ -168,9 +189,22 @@ parse_run_options <- function(args) {
       index <- index + 2L
       next
     }
+    if (token %in% c("-L", "--log-level")) {
+      if (index == length(args)) {
+        usage_error("missing value for -L.")
+      }
+      log_level <- args[[index + 1L]]
+      index <- index + 2L
+      next
+    }
     if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
     if (startsWith(token, "-o") && nchar(token) > 2L) {
       out_dir <- substring(token, 3L)
+      index <- index + 1L
+      next
+    }
+    if (startsWith(token, "-L") && nchar(token) > 2L) {
+      log_level <- substring(token, 3L)
       index <- index + 1L
       next
     }
@@ -181,7 +215,7 @@ parse_run_options <- function(args) {
     }
     break
   }
-  list(out_dir = out_dir, operands = remaining_operands(args, index))
+  list(out_dir = out_dir, log_level = log_level, operands = remaining_operands(args, index))
 }
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -191,6 +225,10 @@ if (!length(args)) {
 
 parsed <- parse_global_options(args)
 args <- parsed$operands
+tryCatch(
+  hopla_log_level(parsed$log_level),
+  error = function(error) usage_error(conditionMessage(error))
+)
 if (!length(args)) {
   usage_error("missing subcommand.")
 }
@@ -207,11 +245,18 @@ status <- tryCatch({
       if (length(run_operands) != 2L) {
         usage_error("run expects a settings file and a VCF file.")
       }
+      if (!is.null(parsed_run$log_level)) {
+        tryCatch(
+          hopla_log_level(parsed_run$log_level),
+          error = function(error) usage_error(conditionMessage(error))
+        )
+      }
       engine_status <- hopla_run(
         run_operands[[1]],
         run_operands[[2]],
         parsed_run$out_dir,
-        file.path(package_root, "exec", "hopla-run.R")
+        engine = file.path(package_root, "exec", "hopla-run.R"),
+        log_level = hopla_log_level()
       )
       if (!is.null(engine_status) && is.numeric(engine_status) && engine_status != 0L) {
         quit(status = as.integer(engine_status))
@@ -276,7 +321,7 @@ status <- tryCatch({
     usage_error(paste0("unknown subcommand: ", subcommand))
   )
 }, error = function(error) {
-  cat("ERROR: ", conditionMessage(error), "\n", file = stderr(), sep = "")
+  hopla_log("error", conditionMessage(error))
   1L
 })
 

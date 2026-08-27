@@ -1,13 +1,19 @@
 # Command line
 
-The `hopla` command is small. Global options are `-h` and `-V` (not `-v`). Use `--` to end option parsing. Options must precede operands.
+The `hopla` command is small. Global options are `-h`, `-V` (not `-v`), and
+`-L LEVEL` / `--log-level LEVEL`. Use `--` to end option parsing. Options must
+precede operands.
 
 ```
-hopla [-hV] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF
-hopla [-hV] [--] convert LEGACY [OUTPUT]
-hopla [-hV] [--] concordance [-r] FLOW1 FLOW2
-hopla [-hV] [--] transform FLOW1 FLOW2 MODE [OUTPUT]
+hopla [-hV] [-L LEVEL] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF
+hopla [-hV] [-L LEVEL] [--] convert LEGACY [OUTPUT]
+hopla [-hV] [-L LEVEL] [--] concordance [-r] FLOW1 FLOW2
+hopla [-hV] [-L LEVEL] [--] transform FLOW1 FLOW2 MODE [OUTPUT]
 ```
+
+`-L` may also appear among `run` options, before the settings and VCF operands.
+
+- `LEVEL` is `error`, `warn`, `info`, or `debug` (default `info`). `warning` aliases `warn`; `quiet` aliases `error`. The `HOPLA_LOG_LEVEL` environment variable sets the same default. Error and warning records go to standard error; information and debug records go to standard output, each prefixed with a timestamp and the level name. Major analysis steps log at `info`; per-sample, per-chromosome, and per-plot progress logs at `debug`.
 
 - `run` validates one settings file against [`inst/schema/hopla.schema.json`](../inst/schema/hopla.schema.json) before loading the VCF or analysis packages, then writes the HTML report.
 - `VCF` and `OUT_DIR` are filesystem paths, not settings keys. Both must already exist. The engine does not create a missing output directory. `-o OUT_DIR` defaults to the current working directory (`$PWD`).

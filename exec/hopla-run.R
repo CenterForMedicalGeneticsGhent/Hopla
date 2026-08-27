@@ -3,6 +3,12 @@
 version <- 'v2.0.0'
 minimum_r_version <- '4.4.0'
 
+script_arg <- grep('^--file=', commandArgs(trailingOnly = FALSE), value = TRUE)
+script_file <- if (length(script_arg)) sub('^--file=', '', script_arg[1]) else 'exec/hopla-run.R'
+hopla_log_source <- file.path(dirname(normalizePath(script_file, mustWork = FALSE)), '..', 'R', 'log.R')
+if (file.exists(hopla_log_source)) source(hopla_log_source)
+hopla_init_log_level()
+
 # Structure:
 ## - Functions for ...
 ### -> parameter & vcf loading and parsing
@@ -67,18 +73,15 @@ print_help <- function(){
 #' @return A validated argument list overlaid on the defaults.
 get_settings_args <- function(settings_file, defaults, schema_file){
   if (!file.exists(settings_file)){
-    cat(paste0('ERROR: Settings file does not exist: ', settings_file, '\n'), file = stderr())
-    quit(status=2)
+    hopla_fail('Settings file does not exist: ', settings_file, status = 2)
   }
   if (!file.exists(schema_file)){
-    cat(paste0('ERROR: Settings schema does not exist: ', schema_file, '\n'), file = stderr())
-    quit(status=2)
+    hopla_fail('Settings schema does not exist: ', schema_file, status = 2)
   }
 
   extension <- tolower(tools::file_ext(settings_file))
   if (!(extension %in% c('yaml', 'yml', 'json'))){
-    cat('ERROR: Settings file must use a .yaml, .yml, or .json extension.\n', file = stderr())
-    quit(status=2)
+    hopla_fail('Settings file must use a .yaml, .yml, or .json extension.', status = 2)
   }
 
   if (extension == 'json'){
@@ -86,8 +89,7 @@ get_settings_args <- function(settings_file, defaults, schema_file){
   } else {
     yaml_settings <- yaml::read_yaml(settings_file)
     if (!is.list(yaml_settings) || is.null(names(yaml_settings))){
-      cat('ERROR: YAML settings must contain a mapping at the document root.\n', file = stderr())
-      quit(status=2)
+      hopla_fail('YAML settings must contain a mapping at the document root.', status = 2)
     }
     for (arg in intersect(names(yaml_settings), array_args)){
       if (!is.list(yaml_settings[[arg]])) yaml_settings[[arg]] <- as.list(yaml_settings[[arg]])
@@ -97,10 +99,8 @@ get_settings_args <- function(settings_file, defaults, schema_file){
 
   valid <- jsonvalidate::json_validate(json, schema_file, verbose = T)
   if (!isTRUE(valid)){
-    cat('ERROR: Settings validation failed:\n', file = stderr())
     errors <- attr(valid, 'errors')
-    cat(paste(capture.output(print(errors)), collapse = '\n'), '\n', file = stderr())
-    quit(status=2)
+    hopla_fail('Settings validation failed:\n', paste(capture.output(print(errors)), collapse = '\n'), status = 2)
   }
 
   settings <- jsonlite::fromJSON(json, simplifyVector = T)
@@ -147,8 +147,7 @@ post_process_args <- function(args){
   man_args <- c('sample_ids')
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man_args){
-      cat(paste0('ERROR: Argument --', arg, ' is mandatory. Please provide.\n'))
-      quit(status=1)
+      hopla_fail('Setting ', arg, ' is mandatory. Please provide.')
     }
   }
 
@@ -162,44 +161,39 @@ post_process_args <- function(args){
       return(NULL)
     }
     if (length(not_in(args[[arg]], args$sample_ids))){
-      cat(paste0('ERROR: Value from setting ', arg, ', \'', not_in(args[[arg]], args$sample_ids),
-                 '\' could not be found in sample_ids. Please correct.\n'))
-      quit(status=1)
+      hopla_fail('Value from setting ', arg, ', \'', not_in(args[[arg]], args$sample_ids),
+                 '\' could not be found in sample_ids. Please correct.')
     }
   }
 
-  cat('Selected parameters ...\n')
+  hopla_log('info', 'Selected parameters ...')
   for (arg in names(args)[!(names(args) %in% c('samples_u', 'samples_no_u'))]){
     if (!length(args[[arg]])) next
-    cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
+    hopla_log('info', '  ... ', arg, ': ', paste(args[[arg]], collapse = ','))
 
     if (any(is.na(args[[arg]])) & !(arg %in% c('father_ids', 'mother_ids', 'genders'))){
-      cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,'. Please correct.\n'))
-      quit(status=1)
+      hopla_fail('No NA allowed in setting ', arg, '. Please correct.')
     }
 
     if (arg == 'sample_ids'){
       if (length(args$sample_ids) > 1){
         if (!length(which(!is.na(args$mother_ids))) & !length(which(!is.na(args$father_ids)))){
-          cat('ERROR: More than one sample is given in sample_ids. Provide their relation using ',
-              'father_ids and/or mother_ids. Otherwise, run separately.\n')
-          quit(status=1)
+          hopla_fail('More than one sample is given in sample_ids. Provide their relation using ',
+              'father_ids and/or mother_ids. Otherwise, run separately.')
         }
       }
     }
 
     if (arg == 'genders'){
       if (!all(args$genders %in% c('M', 'F', NA))){
-        cat("ERROR: Setting 'genders' should be coded as 'M', 'F' or 'NA'. Please correct.\n")
-        quit(status=1)
+        hopla_fail("Setting 'genders' should be coded as 'M', 'F' or 'NA'. Please correct.")
       }
     }
 
     for (same_length_arg in c('father_ids', 'mother_ids', 'genders')){
       if (arg == same_length_arg){
         if (!(length(args$sample_ids) == length(args[[same_length_arg]]))){
-          cat(paste0('ERROR: Settings sample_ids and ', same_length_arg,' should be of the same length. Please correct.\n'))
-          quit(status=1)
+          hopla_fail('Settings sample_ids and ', same_length_arg,' should be of the same length. Please correct.')
         }
       }
     }
@@ -214,52 +208,46 @@ post_process_args <- function(args){
     if (arg %in% c('dp_hard_limit_ids', 'af_hard_limit_ids', 'dp_soft_limit_ids',
                    'keep_informative_ids', 'keep_hetero_ids', 'baf_ids')){
       if (length(intersect(args[[arg]], args$samples_u))){
-        cat(paste0('ERROR: \'U\' IDs not allowed in --', arg, '. Please correct.\n'))
-        quit(status=1)
+        hopla_fail("'U' IDs not allowed in setting ", arg, '. Please correct.')
       }
     }
 
     if (arg == 'run_merlin' & args$run_merlin){
       if (length(args$sample_ids) == 1){
-        cat(paste0('WARNING: Only one sample provided. Setting run_merlin FALSE.\n'))
+        hopla_log('warn', 'Only one sample provided. Setting run_merlin FALSE.')
         args$run_merlin = F
       }
       if ((Sys.which('merlin') == '' | Sys.which('minx') == '') & args$run_merlin){
-        cat(paste0('WARNING: Merlin executables folder could not be located in $PATH. Setting run_merlin FALSE.\n'))
+        hopla_log('warn', 'Merlin executables folder could not be located in $PATH. Setting run_merlin FALSE.')
         args$run_merlin = F
       }
     }
 
     if (arg == 'keep_informative_ids'){
       if (!(length(args[[arg]]) %in% c(0,2))){
-        cat(paste0('ERROR: No or two samples should be given at keep_informative_ids. Please correct.\n'))
-        quit(status=1)
+        hopla_fail('No or two samples should be given at keep_informative_ids. Please correct.')
       }
     }
 
     if (arg == 'merlin_model'){
       if (!(args$merlin_model %in% c('sample', 'best'))){
-        cat('ERROR: Argument merlin_model should be coded as \'sample\' or \'best\'. Please correct.\n')
-        quit(status=1)
+        hopla_fail('Setting merlin_model should be coded as \'sample\' or \'best\'. Please correct.')
       }
     }
 
     if (arg == 'cytoband_file'){
       if (length(args$cytoband_file) & !file.exists(args$cytoband_file)){
-        cat('ERROR: The file given by cytoband_file does not exist. Please correct.\n')
-        quit(status=1)
+        hopla_fail('The file given by cytoband_file does not exist. Please correct.')
       }
     }
     if (arg == 'value_of_p'){
       if (args$value_of_p <= 0 | args$value_of_p > 1){
-        cat('ERROR: value_of_p should be within ]0, 1]. Please correct.\n')
-        quit(status=1)
+        hopla_fail('value_of_p should be within ]0, 1]. Please correct.')
       }
     }
     if (arg == 'af_hard_limit'){
       if (args$af_hard_limit < 0 | args$af_hard_limit >= 1){
-        cat('ERROR: af_hard_limit should be within [0, 1[. Please correct.\n')
-        quit(status=1)
+        hopla_fail('af_hard_limit should be within [0, 1[. Please correct.')
       }
     }
   }
@@ -295,24 +283,19 @@ default_cytoband_url <- 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/databas
 #' @return Path to the uncompressed cytoband file.
 fetch_hg38_cytoband_file <- function(url = default_cytoband_url){
   stopifnot(is.character(url), length(url) == 1)
-  cat('No cytoband_file given; downloading hg38 cytoBand.txt.gz from UCSC ...\n')
+  hopla_log('info', 'No cytoband_file given; downloading hg38 cytoBand.txt.gz from UCSC ...')
   compressed <- tempfile('hopla-cytoBand', fileext = '.txt.gz')
   uncompressed <- tempfile('hopla-cytoBand', fileext = '.txt')
   status <- tryCatch(
     utils::download.file(url, compressed, mode = 'wb', quiet = TRUE),
     error = function(error) {
-      cat(
-        'ERROR: Could not download the default cytoband file from UCSC: ',
-        conditionMessage(error), '\n',
-        file = stderr(), sep = ''
-      )
-      quit(status = 1)
+      hopla_fail('Could not download the default cytoband file from UCSC: ',
+                  conditionMessage(error))
     }
   )
   if (!identical(as.integer(status), 0L) || !file.exists(compressed) ||
       isTRUE(file.info(compressed)$size == 0)) {
-    cat('ERROR: Could not download the default cytoband file from UCSC.\n', file = stderr())
-    quit(status = 1)
+    hopla_fail('Could not download the default cytoband file from UCSC.')
   }
 
   input <- gzfile(compressed, open = 'rt')
@@ -320,8 +303,7 @@ fetch_hg38_cytoband_file <- function(url = default_cytoband_url){
   close(input)
   unlink(compressed)
   if (!length(lines)) {
-    cat('ERROR: Downloaded cytoband file is empty.\n', file = stderr())
-    quit(status = 1)
+    hopla_fail('Downloaded cytoband file is empty.')
   }
   writeLines(lines, uncompressed)
   uncompressed
@@ -333,7 +315,7 @@ fetch_hg38_cytoband_file <- function(url = default_cytoband_url){
 get_cytobands <- function(file){
   cytobands <- list()
   chrs_to_index <- sapply(chrs, function(x) which(chrs == x))
-  cat('Loading and parsing cytoband file ...\n')
+  hopla_log('info', 'Loading and parsing cytoband file ...')
   cyto <- read.csv(file, sep = '\t', header = F, stringsAsFactors = F)
   if (substr(cyto$V1[1], 1, 3) != 'chr') cyto$V1 <- paste0('chr', cyto$V1)
   cyto$V4[cyto$V4 == ''] <- cyto$V5[cyto$V4 == '']
@@ -357,7 +339,7 @@ get_cytobands <- function(file){
 #' @param args A validated argument list.
 #' @return A named list of sample data frames.
 load_samples <- function(args){
-  cat('Loading vcf.gz ...\n')
+  hopla_log('info', 'Loading vcf.gz ...')
   vcf <- read.vcfR(args$vcf_file, verbose = F)
 
   ## vcf_a (annot)
@@ -371,11 +353,10 @@ load_samples <- function(args){
 
   snp_mask <- nchar(vcf_a$REF) == 1 & nchar(vcf_a$ALT) == 1 & vcf_a$CHROM %in% c(chrs, 'chrY')
   available_samples <- colnames(vcf@gt)[-1]
-  cat('  ... available samples in vcf_file: ', paste0(available_samples, collapse = ','), '\n')
+  hopla_log('info', '  ... available samples in vcf_file: ', paste0(available_samples, collapse = ','))
   missing_samples <- args$samples_no_u[!(args$samples_no_u %in% available_samples)]
   if (length(missing_samples)){
-    cat(paste0('ERROR: Sample(s) not found in vcf_file: ', paste(missing_samples, collapse = ', '), '.\n'))
-    quit(status=1)
+    hopla_fail('Sample(s) not found in vcf_file: ', paste(missing_samples, collapse = ', '), '.')
   }
 
   vcf_a <- vcf_a[snp_mask,]
@@ -387,10 +368,10 @@ load_samples <- function(args){
 
   vcfs <- list()
   pos_out <- scales::comma(vcf_a$POS, accuracy = 1)
-  cat('Parsing variants, working ...\n')
+  hopla_log('info', 'Parsing variants, working ...')
 
   for (sample in args$samples_no_u){
-    cat(paste0('  ... at ', sample, '\n'))
+    hopla_log('debug', '  ... at ', sample)
     ad <- data.table::tstrsplit(allele_depths[,sample], ',', fixed = T, type.convert = as.numeric, keep = 1:2)
     total_ad <- ad[[1]] + ad[[2]]
     vcf_b <- data.frame(
@@ -421,7 +402,7 @@ load_samples <- function(args){
 #' @param genders A character vector containing M, F, or NA.
 #' @return A completed character vector.
 predict_genders <- function(genders){
-  cat('Predicting genders ...\n')
+  hopla_log('info', 'Predicting genders ...')
 
   x_pos_mask <- which(vcfs[[1]]$CHROM %in% 'chrX')
   x_copies <- sapply(args$samples_no_u, function(s) mean(vcfs[[s]]$DP[x_pos_mask]) /
@@ -438,50 +419,48 @@ predict_genders <- function(genders){
 
   for (s in args$sample_ids[is.na(genders)]){
     if (s %in% args$mother_ids){
-      cat(paste0('  ... ', s, ' is included in mother_ids, setting gender: F\n'))
+      hopla_log('debug', '  ... ', s, ' is included in mother_ids, setting gender: F')
       genders[args$sample_ids == s] = 'F'
       next
     }
     if (s %in% args$father_ids){
-      cat(paste0('  ... ', s, ' is included in father_ids, setting gender: M\n'))
+      hopla_log('debug', '  ... ', s, ' is included in father_ids, setting gender: M')
       genders[args$sample_ids == s] = 'M'
       next
     }
     if (s %in% args$samples_u){
-      cat(paste0('ERROR: gender of ', s, ' cannot be derived (no data), please provide manually using --genders.\n'))
-      quit(status=1)
+      hopla_fail('gender of ', s, ' cannot be derived (no data), please provide manually using genders.')
     }
     x_gender = x_model[args$samples_no_u == s]
     y_gender = y_model[args$samples_no_u == s]
     if (!is.na(y_gender) & !is.na(x_gender)){
       if (x_gender == y_gender){
-        cat(paste0('  ... predicted gender of ', s, ': ', x_gender, '\n'))
+        hopla_log('debug', '  ... predicted gender of ', s, ': ', x_gender)
         genders[args$sample_ids == s] <- x_gender
       } else {
-        cat(paste0('WARNING: X & Y model do not correspond in ', s, ', it is advised to provide this gender manually using --genders\n'))
-        cat(paste0('  ... defaulting to Y model: ', y_gender, '\n'))
+        hopla_log('warn', 'X & Y model do not correspond in ', s, ', it is advised to provide this gender manually using genders')
+        hopla_log('debug', '  ... defaulting to Y model: ', y_gender)
         genders[args$sample_ids == s] <- y_gender
       }
     }
     if (is.na(y_gender) & !is.na(x_gender)){
-      cat(paste0('WARNING: for ', s, ', there is not enough data to predict gender based on the Y model.\n'))
-      cat(paste0('  ... defaulting to X model: ', x_gender, '\n'))
+      hopla_log('warn', 'for ', s, ', there is not enough data to predict gender based on the Y model.')
+      hopla_log('debug', '  ... defaulting to X model: ', x_gender)
       genders[args$sample_ids == s] <- x_gender
     }
     if (!is.na(y_gender) & is.na(x_gender)){
-      cat(paste0('WARNING: for ', s, ', there is not enough data to predict gender based on the X model.\n'))
-      cat(paste0('  ... defaulting to Y model: ', y_gender, '\n'))
+      hopla_log('warn', 'for ', s, ', there is not enough data to predict gender based on the X model.')
+      hopla_log('debug', '  ... defaulting to Y model: ', y_gender)
       genders[args$sample_ids == s] <- y_gender
     }
     if (is.na(y_gender) & is.na(x_gender)){
-      cat(paste0('ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using --genders.\n'))
-      quit(status=1)
+      hopla_fail('gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using genders.')
     }
   }
-  cat(paste0('  ... values of X model (~ X copies):\n'))
-  cat(paste0('         ',paste0(names(x_copies), '=', paste0(round(x_copies, 2)), collapse = '; '), '\n'))
-  cat(paste0('  ... values of Y model (~ Y copies):\n'))
-  cat(paste0('         ',paste0(names(y_copies), '=', paste0(round(y_copies, 2)), collapse = '; '), '\n'))
+  hopla_log('debug', '  ... values of X model (~ X copies):')
+  hopla_log('debug', '         ', paste0(names(x_copies), '=', paste0(round(x_copies, 2)), collapse = '; '))
+  hopla_log('debug', '  ... values of Y model (~ Y copies):')
+  hopla_log('debug', '         ', paste0(names(y_copies), '=', paste0(round(y_copies, 2)), collapse = '; '))
   return(genders)
 }
 
@@ -524,7 +503,7 @@ add_ghosts <- function(args){
 #' @param vcf_list A named list of sample data frames.
 #' @return A filtered list of sample data frames.
 apply_filter1 <- function(vcf_list){
-  cat('Applying filter 1 ...\n')
+  hopla_log('info', 'Applying filter 1 ...')
 
   ## hard filters
   ### AF
@@ -544,8 +523,7 @@ apply_filter1 <- function(vcf_list){
 
   hard_mask <- keep_these_1 & keep_these_2
   if (!any(hard_mask)){
-    cat('ERROR: No variants remain after applying filter 1.\n')
-    quit(status=1)
+    hopla_fail('No variants remain after applying filter 1.')
   }
 
   for (sample in args$samples_no_u){
@@ -568,8 +546,7 @@ apply_filter1 <- function(vcf_list){
     x$GENO[hom_alt] <- paste0(x$ALT, '/', x$ALT)[hom_alt]
 
     if (all(x$GENO == 'N/N')){
-      cat(paste0('ERROR: No variants remain for sample ', sample ,' after applying filter 1.\n'))
-      quit(status=1)
+      hopla_fail('No variants remain for sample ', sample ,' after applying filter 1.')
     }
 
     vcf_list[[sample]] <- x
@@ -581,7 +558,7 @@ apply_filter1 <- function(vcf_list){
 #' @param vcf_list A named list of sample data frames.
 #' @return A filtered list of sample data frames.
 apply_filter2 <- function(vcf_list){
-  cat('Applying filter 2 ...\n')
+  hopla_log('info', 'Applying filter 2 ...')
 
   new_mask <- rep(T, nrow(vcf_list[[1]]))
   if (length(args$keep_informative_ids) == 2){
@@ -591,7 +568,7 @@ apply_filter2 <- function(vcf_list){
       informative_mask[which(vcf_list[[sample]]$GT == '0/1' & vcf_list[[other]]$GT %in% c('0/0', '1/1'))] <- T
     }
     if (all(args$genders[args$sample_ids %in% args$keep_informative_ids] == 'M')){
-      cat(paste0('WARNING: parameter keep_informative_ids contains male samples only, will only apply to autosomes.\n'))
+      hopla_log('warn', 'parameter keep_informative_ids contains male samples only, will only apply to autosomes.')
       informative_mask[vcf_list[[1]]$CHROM == chrs[23]] = T
     }
     new_mask <- new_mask & informative_mask
@@ -606,8 +583,7 @@ apply_filter2 <- function(vcf_list){
   }
 
   if (!all(chrs %in% unique(vcf_list[[1]]$CHROM[new_mask]))){
-    cat('ERROR: No variants remain in at least one of the chromosomes after applying filter 2.\n')
-    quit(status=1)
+    hopla_fail('No variants remain in at least one of the chromosomes after applying filter 2.')
   }
 
   for (sample in args$samples_no_u){
@@ -686,7 +662,7 @@ run_merlin <- function(args, vcfs_filtered2){
 
   ## execute 1
 
-  cat('Running Merlin --error ...\n')
+  hopla_log('info', 'Running Merlin --error ...')
   system(paste0('"', as.character(Sys.which("merlin")), '"',
                 ' -d "', args$merlin_dir, 'merlin.dat"',
                 ' -p "', args$merlin_dir, 'merlin.ped"',
@@ -702,7 +678,7 @@ run_merlin <- function(args, vcfs_filtered2){
 
   ## prepare run 2
 
-  cat('Parsing & removing unlikely variants ...\n')
+  hopla_log('info', 'Parsing & removing unlikely variants ...')
 
   unl_var <- as.character(read.table(paste0(args$merlin_dir, 'merlin.err'), header = T)[,3])
   unl_var_x <- as.character(read.table(paste0(args$merlin_dir, 'merlinX.err'), header = T)[,3])
@@ -738,7 +714,7 @@ run_merlin <- function(args, vcfs_filtered2){
   ## run 2
 
 
-  cat(paste0('Running Merlin --', args$merlin_model,' ...\n'))
+  hopla_log('info', 'Running Merlin --', args$merlin_model,' ...')
 
   system(paste0('"', as.character(Sys.which("merlin")), '"',
                 ' -d "', args$merlin_dir, 'merlin.dat"',
@@ -765,7 +741,7 @@ run_merlin <- function(args, vcfs_filtered2){
 #' @return A list containing genotype, flow, and marker-map lists.
 parse_merlin <- function(args){
 
-  cat('Loading & parsing Merlin output ...\n')
+  hopla_log('info', 'Loading & parsing Merlin output ...')
 
   get_table_order <- function(file){
     all_chr <- readLines(file)
@@ -935,9 +911,9 @@ correct_profiles <- function(args, parsed_flow){
   }
 
   if (args$window_size_voting != 0 | args$min_seg_var != 0){
-    cat('Correcting haplotypes, working ...\n')
+    hopla_log('info', 'Correcting haplotypes, working ...')
     for (chr in chrs[1:22]){
-      cat(paste0('  ... at ', chr, '\n'))
+      hopla_log('debug', '  ... at ', chr)
       pos = map_list[[chr]][,2]
       for (i in 1:length(args$samples_no_u)){
         v = parsed_flow[[chr]][,i]
@@ -963,9 +939,9 @@ correct_profiles <- function(args, parsed_flow){
   }
 
   if (args$window_size_voting_x != 0 | args$min_seg_var_x != 0){
-    if (args$window_size_voting == 0 & args$min_seg_var == 0) cat('Correcting haplotypes, working ...\n')
+    if (args$window_size_voting == 0 & args$min_seg_var == 0) hopla_log('info', 'Correcting haplotypes, working ...')
     chr = chrs[23]
-    cat(paste0('  ... at ', chr, '\n'))
+    hopla_log('debug', '  ... at ', chr)
     pos = map_list[[chr]][,2]
     for (i in 1:length(args$samples_no_u)){
       v = parsed_flow[[chr]][,i]
@@ -2054,7 +2030,7 @@ get_pm <- function(child, father, mother){
 #' Assemble the complete interactive report.
 #' @return An htmltools tag list containing Plotly htmlwidgets.
 get_html_list <- function(){
-  cat('Generating visualizations, working ...\n')
+  hopla_log('info', 'Generating visualizations, working ...')
 
   html_list <- list()
   append_list <- function(list, x){
@@ -2132,7 +2108,7 @@ get_html_list <- function(){
   ## pedigree
 
   if (length(args$samples_no_u) > 1){
-    cat('  ... at pedigree \n')
+    hopla_log('debug', '  ... at pedigree')
 
     html_list <- add_main_header(html_list, "Family tree")
 
@@ -2194,12 +2170,12 @@ get_html_list <- function(){
     return(html_list)
   }
 
-  cat('  ... at total number of variants (raw) \n')
+  hopla_log('debug', '  ... at total number of variants (raw)')
 
   html_list <- append_list(html_list, tags$h4("Total number of variants"))
   html_list <- add_tot_number_of_variants(html_list, vcfs)
 
-  cat('  ... at number of variants table (raw) \n')
+  hopla_log('debug', '  ... at number of variants table (raw)')
 
   html_list <- append_list(html_list, tags$h4("Number of variants table"))
   html_list <- append_list(html_list, get_plotly_table(vcfs))
@@ -2228,21 +2204,21 @@ get_html_list <- function(){
 
   ## var depth
 
-  cat('  ... at variant depth (raw) \n')
+  hopla_log('debug', '  ... at variant depth (raw)')
 
   html_list <- append_list(html_list, tags$h4("Variant depth"))
   html_list <- append_list(html_list, do_subplot(get_var_depth_hist(vcfs), n_col = 4))
 
   ## number of variants
 
-  cat('  ... at number of variants profile (raw) \n')
+  hopla_log('debug', '  ... at number of variants profile (raw)')
 
   html_list <- append_list(html_list, tags$h4("Number of variants profile"))
   html_list <- append_list(html_list, do_subplot(list(get_var_dis_fig(vcfs))))
 
   ## copy number
 
-  cat('  ... at vcf-based copy number (raw) \n')
+  hopla_log('debug', '  ... at vcf-based copy number (raw)')
 
   html_list <- append_list(html_list, tags$h3("Vcf-based copy number (bam-based verification recommended)"))
   html_list <- append_list(html_list, do_subplot(get_cn_fig()))
@@ -2255,12 +2231,12 @@ get_html_list <- function(){
 
   html_list <- append_list(html_list, tags$h3("Variant statistics"))
 
-  cat('  ... at total number of variants (filter 1) \n')
+  hopla_log('debug', '  ... at total number of variants (filter 1)')
 
   html_list <- append_list(html_list, tags$h4("Total number of variants"))
   html_list <- add_tot_number_of_variants(html_list, vcfs_filtered)
 
-  cat('  ... at number of variants table (filter 1) \n')
+  hopla_log('debug', '  ... at number of variants table (filter 1)')
 
   html_list <- append_list(html_list, tags$h4("Number of variants table"))
   html_list <- append_list(html_list, get_plotly_table(vcfs_filtered))
@@ -2292,14 +2268,14 @@ get_html_list <- function(){
 
   ## var depth
 
-  cat('  ... at variant depth (filter 1) \n')
+  hopla_log('debug', '  ... at variant depth (filter 1)')
 
   html_list <- append_list(html_list, tags$h4("Variant depth"))
   html_list <- append_list(html_list, do_subplot(get_var_depth_hist(vcfs_filtered), n_col = 4))
 
   ## number of variants
 
-  cat('  ... at number of variants profile (filter 1) \n')
+  hopla_log('debug', '  ... at number of variants profile (filter 1)')
 
   html_list <- append_list(html_list, tags$h4("Number of variants profile"))
   html_list <- append_list(html_list, do_subplot(list(get_var_dis_fig(vcfs_filtered))))
@@ -2307,7 +2283,7 @@ get_html_list <- function(){
   ## BAF
 
   if (length(args$regions)){
-    cat('  ... at B-allele frequency (regions; filter 1) \n')
+    hopla_log('debug', '  ... at B-allele frequency (regions; filter 1)')
     html_list <- append_list(html_list, tags$h3("B-allele frequency (BAF), region(s) of interest"))
     regions_baf <- get_region_baf()
     for (region in names(regions_baf)){
@@ -2319,7 +2295,7 @@ get_html_list <- function(){
   ## BAF detail
 
   if (length(args$baf_ids)){
-    cat('  ... at B-allele frequency (genome-wide; filter 1) \n')
+    hopla_log('debug', '  ... at B-allele frequency (genome-wide; filter 1)')
     if (args$limit_baf_to_p){
       html_list <- append_list(html_list,
                                tags$h3(paste0("B-allele frequency (BAF), genome-wide, only ", args$value_of_p * 100,"% of data")))
@@ -2349,7 +2325,7 @@ get_html_list <- function(){
       }
     }
     if (length(men_err_plots)){
-      cat('  ... at mendelian errors (filter 1) \n')
+      hopla_log('debug', '  ... at mendelian errors (filter 1)')
 
       html_list <- append_list(html_list, tags$h3("Mendelian errors"))
       html_list <- append_list(html_list, do_subplot(men_err_plots, n_col = 1))
@@ -2359,7 +2335,7 @@ get_html_list <- function(){
   ## Parent mapping
 
   if (length(args$sample_ids) > 1){
-    cat('  ... at parent mapping (filter 1) \n')
+    hopla_log('debug', '  ... at parent mapping (filter 1)')
     if (args$limit_pm_to_p){
       html_list <- append_list(html_list, tags$h3(paste0("Parent mapping, only", args$value_of_p * 100,"% of data")))
     } else {
@@ -2387,26 +2363,26 @@ get_html_list <- function(){
 
   html_list <- append_list(html_list, tags$h3("Variant statistics"))
 
-  cat('  ... at total number of variants (filter 2) \n')
+  hopla_log('debug', '  ... at total number of variants (filter 2)')
 
   html_list <- append_list(html_list, tags$h4("Total number of variants"))
   html_list <- add_tot_number_of_variants(html_list, vcfs_filtered2)
 
-  cat('  ... at number of variants table (filter 2) \n')
+  hopla_log('debug', '  ... at number of variants table (filter 2)')
 
   html_list <- append_list(html_list, tags$h4("Number of variants table"))
   html_list <- append_list(html_list, get_plotly_table(vcfs_filtered2))
 
   ## var depth
 
-  cat('  ... at variant depth (filter 2) \n')
+  hopla_log('debug', '  ... at variant depth (filter 2)')
 
   html_list <- append_list(html_list, tags$h4("Variant depth"))
   html_list <- append_list(html_list, do_subplot(get_var_depth_hist(vcfs_filtered2), n_col = 4))
 
   ## number of variants
 
-  cat('  ... at number of variants profile (filter 2) \n')
+  hopla_log('debug', '  ... at number of variants profile (filter 2)')
 
   html_list <- append_list(html_list, tags$h4("Number of variants profile"))
   html_list <- append_list(html_list, do_subplot(list(get_var_dis_fig(vcfs_filtered2))))
@@ -2415,7 +2391,7 @@ get_html_list <- function(){
 
   if (args$run_merlin){
 
-    cat('  ... at Merlin (filter 2) \n')
+    hopla_log('debug', '  ... at Merlin (filter 2)')
 
     html_list <- append_list(html_list, tags$h3("Haplotyping by Merlin"))
     html_list <- append_list(html_list, do_subplot(get_haplo_profiles(), n_col = 2, panning = .015, margin = .007,
@@ -2433,7 +2409,7 @@ get_html_list <- function(){
 #' Inline local report dependencies without Pandoc.
 #' @return Invisible `NULL`.
 transform_to_selfcontained <- function(){
-  cat('Converting to self-contained HTML ...\n')
+  hopla_log('info', 'Converting to self-contained HTML ...')
 
   replace_matches <- function(text, pattern, replacement){
     match <- gregexpr(pattern, text, perl = T)[[1]]
@@ -2610,13 +2586,11 @@ if ('--help' %in% cmd_args | '-h' %in% cmd_args){
   quit(status=0)
 }
 if (getRversion() < minimum_r_version){
-  cat(paste0('ERROR: Hopla requires R >= ', minimum_r_version, '; found ', getRversion(), '.\n'), file = stderr())
-  quit(status=2)
+  hopla_fail('Hopla requires R >= ', minimum_r_version, '; found ', getRversion(), '.', status = 2)
 }
 
 if (length(cmd_args) != 3){
-  cat('ERROR: Provide a settings file, VCF path, and output directory. Run -h for usage.\n', file = stderr())
-  quit(status=2)
+  hopla_fail('Provide a settings file, VCF path, and output directory. Run -h for usage.', status = 2)
 }
 
 script_arg <- grep('^--file=', commandArgs(trailingOnly = F), value = T)
@@ -2630,12 +2604,10 @@ args <- get_settings_args(cmd_args[1], args, schema_file)
 args$vcf_file <- cmd_args[2]
 args$out_dir <- cmd_args[3]
 if (!file.exists(args$vcf_file) || dir.exists(args$vcf_file)){
-  cat(paste0('ERROR: VCF file does not exist: ', args$vcf_file, '\n'), file = stderr())
-  quit(status=1)
+  hopla_fail('VCF file does not exist: ', args$vcf_file)
 }
 if (!dir.exists(args$out_dir)){
-  cat(paste0('ERROR: Output directory does not exist: ', args$out_dir, '\n'), file = stderr())
-  quit(status=1)
+  hopla_fail('Output directory does not exist: ', args$out_dir)
 }
 args <- post_process_args(args)
 rm(cmd_args, schema_candidates, schema_file, script_arg, script_file)
@@ -2730,7 +2702,7 @@ if (args$run_merlin){
 
 html_list <- get_html_list()
 
-cat('Saving to HTML ...\n')
+hopla_log('info', 'Saving to HTML ...')
 save_html(html_list, file = paste0(args$out_bs, 'output.html'), libdir = paste0(args$out_bs, 'output_files'))
 rm(html_list)
 invisible(gc())
@@ -2741,7 +2713,7 @@ if (args$self_contained) transform_to_selfcontained()
 # -----
 
 if (args$run_merlin){
-  cat('Saving Merlin output to tables ...\n')
+  hopla_log('info', 'Saving Merlin output to tables ...')
   for (sample in args$samples_no_u){
     i = which(args$samples_no_u == sample)
     geno_values <- unlist(lapply(chrs, function(chr) parsed_geno[[chr]][,i]), use.names = F)

@@ -226,3 +226,20 @@ test_that("cli run requires settings and vcf and checks path existence", {
   expect_equal(hopla_cli_status("run", settings, missing_vcf), 1L)
   expect_equal(hopla_cli_status("run", "-o", missing_dir, settings, tempfile()), 1L)
 })
+
+test_that("log level filters stdout records", {
+  previous <- hopla_log_level()
+  on.exit(hopla_log_level(previous), add = TRUE)
+
+  hopla_log_level("warn")
+  expect_identical(capture.output(hopla:::hopla_log("info", "skip-me")), character())
+  hopla_log_level("info")
+  logged <- capture.output(hopla:::hopla_log("info", "keep-me"))
+  expect_match(logged, "INFO keep-me")
+})
+
+test_that("cli rejects unknown log levels", {
+  expect_equal(hopla_cli_status("-L"), 2L)
+  expect_equal(hopla_cli_status("-L", "nope"), 2L)
+  expect_equal(hopla_cli_status("-L", "debug", "-h"), 0L)
+})

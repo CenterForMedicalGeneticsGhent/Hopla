@@ -1,5 +1,6 @@
 export(hopla_concordance)
 export(hopla_convert_settings)
+export(hopla_log_level)
 export(hopla_run)
 export(hopla_transform)
 import(data.table)

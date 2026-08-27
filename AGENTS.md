@@ -42,7 +42,7 @@ The rest of the manual is [docs/README.md](docs/README.md).
 - Validate settings against the schema before loading a VCF or the heavy
   analysis packages. Reject unknown properties.
 - Keep the CLI small:
-  - `hopla run [-o OUT_DIR] SETTINGS VCF`
+  - `hopla [-L LEVEL] run [-o OUT_DIR] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
@@ -52,9 +52,10 @@ The rest of the manual is [docs/README.md](docs/README.md).
 - `convert` maps the legacy `key=value` settings format to schema-validated YAML.
 - Return zero for help, version, and successful commands; return status 2 for
   invalid usage and status 1 for runtime failures.
-- Global options are `-h` and `-V` (not `-v`). Use `--` to terminate option
-  parsing. Options must precede operands. `concordance` accepts `-r` for relative
-  comparison.
+- Global options are `-h`, `-V` (not `-v`), and `-L LEVEL` (`error`, `warn`,
+  `info`, `debug`; default `info`). Use `--` to terminate option parsing.
+  Options must precede operands. `concordance` accepts `-r` for relative
+  comparison. `run` also accepts `-L` before its operands.
 
 ## Performance and output
 
