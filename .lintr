@@ -1,0 +1,4 @@
+linters: list(
+    object_name_linter(styles = "snake_case")
+  )
+exclusions: list("UI")

@@ -25,6 +25,9 @@ jobs:
           locked: true
           environments: dev
 
+      - name: Lint R code
+        run: pixi run -e dev lint
+
       - name: Build source package
         run: |
           pixi run -e dev R CMD build .

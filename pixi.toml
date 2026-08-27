@@ -31,9 +31,11 @@ transform = "Rscript exec/hopla transform"
 
 [feature.dev.dependencies]
 r-testthat = ">=3.3.2,<4"
+r-lintr = ">=3.2,<4"
 
 [feature.dev.tasks]
 check = "R CMD build . && R CMD check --no-manual hopla_2.0.0.tar.gz"
+lint = "Rscript tools/lint.R"
 
 [environments]
 default = []

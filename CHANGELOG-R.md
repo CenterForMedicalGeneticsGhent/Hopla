@@ -13,6 +13,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Added validated YAML and JSON settings-file support.
 - Added a standard CRAN source-package layout and testthat coverage.
 - Added `run`, `concordance`, and `transform` subtools to the `hopla` command.
+- Added snake_case linting through lintr, available as the pixi `lint` task and
+  enforced in CI.
 
 ### Changed
 

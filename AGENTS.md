@@ -61,6 +61,8 @@ scope unless a task explicitly names it.
 ## Verification
 
 - Run `pixi install --locked`.
+- Run `pixi run -e dev lint`; CI lint failures must be fixed, not suppressed
+  globally.
 - Run package tests and `R CMD check --no-manual`.
 - Test YAML and JSON validation, including rejection of unknown or mistyped
   settings.
