@@ -2,3 +2,7 @@
 *.lock
 !pixi.lock
 .pixi/
+*merlin
+*.html
+.DS_Store
+tests/assets
