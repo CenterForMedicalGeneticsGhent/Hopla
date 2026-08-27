@@ -2432,25 +2432,80 @@ get_html_list <- function(){
   return(html_list)
 }
 
+#' Replace all regular-expression matches in a string.
+#' @param text A character scalar.
+#' @param pattern A Perl-compatible regular expression.
+#' @param replacement A function that transforms one match.
+#' @return The transformed string.
+replace_matches <- function(text, pattern, replacement){
+  match <- gregexpr(pattern, text, perl = T)[[1]]
+  if (match[1] == -1) return(text)
+  lengths <- attr(match, 'match.length')
+  for (i in rev(seq_along(match))){
+    value <- substr(text, match[i], match[i] + lengths[i] - 1)
+    text <- paste0(
+      substr(text, 1, match[i] - 1),
+      replacement(value),
+      substr(text, match[i] + lengths[i], nchar(text))
+    )
+  }
+  text
+}
+
+#' Compress htmlwidget JSON payloads for browser-side inflation.
+#' @param html A complete HTML document.
+#' @return The HTML document with compressed widget data.
+compress_widget_data <- function(html){
+  compressed_count <- 0L
+  html <- replace_matches(
+    html,
+    '<script(?=[^>]*\\btype=[\"\']application/json[\"\'])(?=[^>]*\\bdata-for=[\"\'][^\"\']+[\"\'])[^>]*>.*?</script>',
+    function(tag){
+      opening_end <- regexpr('>', tag, fixed = T)[1]
+      opening <- substr(tag, 1, opening_end)
+      payload <- substr(tag, opening_end + 1L, nchar(tag) - nchar('</script>'))
+      encoded <- base64enc::base64encode(memCompress(charToRaw(enc2utf8(payload)), type = 'gzip'))
+      if (nchar(encoded) >= nchar(payload)) return(tag)
+      compressed_count <<- compressed_count + 1L
+      opening <- sub(
+        'type=[\"\']application/json[\"\']',
+        'type=\"application/gzip+json\"',
+        opening
+      )
+      paste0(opening, encoded, '</script>')
+    }
+  )
+  if (!compressed_count) return(html)
+
+  bootstrap <- paste0(
+    '<script>(function(){',
+    'var original=window.HTMLWidgets.staticRender,preparation;',
+    'function inflate(element){',
+    'var binary=atob(element.textContent.trim()),bytes=new Uint8Array(binary.length);',
+    'for(var i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);',
+    'var stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream(\"gzip\"));',
+    'return new Response(stream).text().then(function(json){',
+    'element.textContent=json;element.type=\"application/json\";',
+    '});',
+    '}',
+    'window.HTMLWidgets.staticRender=function(){',
+    'var context=this,args=arguments;',
+    'if(!preparation)preparation=Promise.all(Array.from(document.querySelectorAll(',
+    '\"script[type=\\\"application/gzip+json\\\"][data-for]\"',
+    ')).map(inflate));',
+    'return preparation.then(function(){return original.apply(context,args);}).catch(function(error){',
+    'console.error(\"Could not decompress Hopla report data\",error);',
+    '});',
+    '};',
+    '})();</script>'
+  )
+  sub('</head>', paste0(bootstrap, '\n</head>'), html, fixed = T)
+}
+
 #' Inline local report dependencies without Pandoc.
 #' @return Invisible `NULL`.
 transform_to_selfcontained <- function(){
   hopla_log('info', 'Converting to self-contained HTML ...')
-
-  replace_matches <- function(text, pattern, replacement){
-    match <- gregexpr(pattern, text, perl = T)[[1]]
-    if (match[1] == -1) return(text)
-    lengths <- attr(match, 'match.length')
-    for (i in rev(seq_along(match))){
-      value <- substr(text, match[i], match[i] + lengths[i] - 1)
-      text <- paste0(
-        substr(text, 1, match[i] - 1),
-        replacement(value),
-        substr(text, match[i] + lengths[i], nchar(text))
-      )
-    }
-    text
-  }
 
   attribute_path <- function(tag, attribute){
     sub(
@@ -2509,6 +2564,7 @@ transform_to_selfcontained <- function(){
       paste0(name, '=\"', file_data_uri(file), '\"')
     }
   )
+  html <- compress_widget_data(html)
 
   temporary_file <- paste0(output_file, '.selfcontained')
   writeLines(html, temporary_file, useBytes = T)
