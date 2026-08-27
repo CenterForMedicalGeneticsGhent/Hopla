@@ -1,6 +1,6 @@
 <template>
     <v-checkbox
-    dense
+    density="compact"
     class="ma-0 pa-0"
     v-model="keepID"
     :label="label"
@@ -11,8 +11,9 @@
 <script>
 
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: Boolean,
+        modelValue: Boolean,
     },
     data: function(){
         return {
@@ -21,10 +22,10 @@ export default {
     computed:{
         keepID: {
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             }
         },
         label: function(){

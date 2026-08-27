@@ -14,12 +14,14 @@ describe('Hopla configuration conversion', () => {
     const configParameters = cloneDeep(templateParameters)
     const configAdvanced = cloneDeep(templateAdvanced)
     const wrapper = shallowMount(TabConfigFile, {
-      propsData: {
+      props: {
         configPedigree,
         configParameters,
         configAdvanced
       },
-      stubs: ['OutputDownloadConfig']
+      global: {
+        stubs: ['OutputDownloadConfig', 'v-container']
+      }
     })
 
     const generatedConfig = (wrapper.vm as any).configText
@@ -85,5 +87,14 @@ describe('Hopla configuration conversion', () => {
       { chr: 'chr17', chrStart: '43044294', chrEnd: '43125363' }
     ])
     expect(imported.configAdvanced.remainingFeatures.selfContained).toBe(true)
+  })
+
+  it('rejects incomplete and oversized configuration text', () => {
+    expect(() => config2Form('vcf.file=/tmp/example.vcf.gz')).toThrow(
+      'Missing required configuration field'
+    )
+    expect(() => config2Form('x'.repeat(1024 * 1024 + 1))).toThrow(
+      'Invalid Hopla configuration'
+    )
   })
 })

@@ -25,16 +25,16 @@
 
 
 <script>
-import Vue from 'vue';
 import InputRegions from "./InputRegions.vue";
 import InputDisease from "./InputDisease.vue";
 import InputInheritance from "./InputInheritance.vue";
 import InputSequencingNote from "./InputSequencingNote.vue";
 
-export default Vue.extend({
+export default {
     name: 'InputArgumentsSampleDisease',
+    emits: ['update:modelValue'],
     props:{
-        value: Object,
+        modelValue: Object,
     },
     components:{
       InputRegions,
@@ -49,10 +49,10 @@ export default Vue.extend({
     computed:{
       config: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         }
       },
     },
@@ -65,5 +65,5 @@ export default Vue.extend({
     watch:{
       //CODE
     },
-})
+}
 </script>

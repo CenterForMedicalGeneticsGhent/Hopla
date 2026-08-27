@@ -39,7 +39,6 @@
 </template>
 
 <script>
-  import Vue from 'vue'
   import InputArgumentsMandatory from "../Inputs/InputArgumentsMandatory.vue";
   import InputArgumentsOptional from "../Inputs/InputArgumentsOptional.vue";
   import InputArgumentsVariantInclusion from "../Inputs/InputArgumentsVariantInclusion.vue";
@@ -47,8 +46,9 @@
   import InputArgumentsMerlinProfiles from "../Inputs/InputArgumentsMerlinProfiles.vue";
 
 
-  export default Vue.extend({
+  export default {
     name: 'TabParameters',
+    emits: ['update:modelValue'],
     components:{
       InputArgumentsMandatory,
       InputArgumentsOptional,
@@ -57,7 +57,7 @@
       InputArgumentsMerlinProfiles,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
@@ -66,10 +66,10 @@
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         }
       },
     },
@@ -79,5 +79,5 @@
     watch:{
       //CODE
     },  
-    })
+    }
 </script>

@@ -25,14 +25,14 @@
 
 
 <script>
-import Vue from 'vue';
 import InputWindowSizeVoting from "./InputWindowSizeVoting.vue";
 import InputKeepChromosomesRegionsOnly from "./InputKeepChromosomesRegionsOnly.vue";
 
-export default Vue.extend({
+export default {
     name: 'InputArgumentsBAlleleProfiles',
+    emits: ['update:modelValue'],
     props:{
-        value: Object,
+        modelValue: Object,
     },
     components:{
       InputWindowSizeVoting,
@@ -45,10 +45,10 @@ export default Vue.extend({
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
     },
@@ -61,5 +61,5 @@ export default Vue.extend({
     watch:{
       //CODe
     },
-})
+}
 </script>

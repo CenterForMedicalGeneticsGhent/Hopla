@@ -1,60 +1,58 @@
 <template>
 <v-card
 >
+  <v-card-title>
+    HOPLA
+  </v-card-title>
+  <v-row>
+    <v-col />
+    <v-col>
+      <InputUploadConfig 
+      @updateConfig="updateConfig"
+      />
+    </v-col>
+    <v-col />
+  </v-row>
   <v-tabs 
-  right
-  height=55
+  align-tabs="end"
+  height="55"
   v-model="tab"
   >
-
-    <v-card-title>
-      HOPLA
-    </v-card-title>
-    <v-row>
-      <v-col />
-      <v-col>
-        <InputUploadConfig 
-        @updateConfig="updateConfig"
-        />
-      </v-col>
-      <v-col />
-    </v-row>
-    <v-tab>
+    <v-tab value="pedigree">
       Pedigree
     </v-tab>
-    <v-tab>
+    <v-tab value="parameters">
       Parameters
     </v-tab>
-    <v-tab>
+    <v-tab value="advanced">
       Advanced
     </v-tab>
-    <v-tab>
+    <v-tab value="config">
       Config
     </v-tab>
-    
-    <v-tab-item>
+  </v-tabs>
+  <v-window v-model="tab">
+    <v-window-item value="pedigree">
       <TabPedigree v-model="configPedigree"/>
-    </v-tab-item>
-    <v-tab-item>
+    </v-window-item>
+    <v-window-item value="parameters">
       <TabParameters v-model="configParameters" />
-    </v-tab-item>
-    <v-tab-item>
+    </v-window-item>
+    <v-window-item value="advanced">
       <TabAdvanced v-model="configAdvanced" />
-    </v-tab-item>
-    <v-tab-item>
+    </v-window-item>
+    <v-window-item value="config">
       <TabConfigFile 
       :configPedigree="configPedigree" 
       :configParameters="configParameters"
       :configAdvanced="configAdvanced"
       />
-    </v-tab-item>
-    
-  </v-tabs>
+    </v-window-item>
+  </v-window>
 </v-card>
 </template>
 
 <script>
-  import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
 
   // Components
@@ -71,7 +69,7 @@
     templateAdvanced,
   } from "../Templates";
 
-  export default Vue.extend({
+  export default {
     name: 'Form',
     components: {
       TabPedigree,
@@ -82,7 +80,7 @@
     },
     data: function() {
       return {
-        tab: "Pedigree",
+        tab: "pedigree",
         configPedigree: cloneDeep(templatePedigree),
         configParameters: cloneDeep(templateParameters),
         configAdvanced:cloneDeep(templateAdvanced),
@@ -125,5 +123,5 @@
         immediate:false,
       },
     },  
-  })
+  }
 </script>

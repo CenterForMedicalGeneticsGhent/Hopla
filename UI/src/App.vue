@@ -7,12 +7,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
 
-export default Vue.extend({
+export default {
   name: 'App',
   data: function(){
     return {}
   },
-});
+}
 </script>

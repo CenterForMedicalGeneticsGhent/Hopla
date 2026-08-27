@@ -37,7 +37,6 @@ v-else
 
 <script>
   // Imports
-  import Vue from 'vue'
   import cloneDeep from 'lodash/cloneDeep';
 
   // Components
@@ -49,13 +48,14 @@ v-else
   var configMaternalGrandmotherDefault = cloneDeep(templateMaternalGrandmother);
   configMaternalGrandmotherDefault.sampleID="maternalGrandmotherID";
 
-  export default Vue.extend({
+  export default {
     name: 'PatientCardMaternalGrandmother',
+    emits: ['update:modelValue'],
     components: {
       PatientCardGeneral,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
@@ -64,10 +64,10 @@ v-else
     computed: {
       config: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
       title: function(){
@@ -91,5 +91,5 @@ v-else
     watch:{
       //CODE
     },
-    })
+    }
 </script>

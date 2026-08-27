@@ -1,7 +1,7 @@
 <template>
 <v-text-field
 label="af.hard.limit"
-outlined
+variant="outlined"
 v-model="afHardLimit"
 :key="key"
 />
@@ -10,8 +10,9 @@ v-model="afHardLimit"
 
 <script>
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: Number,
+        modelValue: Number,
     },
     data: function(){
         return{
@@ -21,16 +22,16 @@ export default {
     computed:{
         afHardLimit: {
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
                 if (isNaN(+d) || +d<0 || +d>1){
-                    this.$emit('input',this.afHardLimit);
+                    this.$emit('update:modelValue',this.afHardLimit);
                     this.key++ //Update view and reset to previous valid value
                 }
                 else {
                     var afHardLimitNew = Number(d);    
-                    this.$emit('input',afHardLimitNew);
+                    this.$emit('update:modelValue',afHardLimitNew);
                 }
             },
         },

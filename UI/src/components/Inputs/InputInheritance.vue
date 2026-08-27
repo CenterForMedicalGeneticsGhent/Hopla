@@ -4,7 +4,7 @@
     v-model="inheritance"
     :items="options"
     label="Inheritance"
-    outlined
+    variant="outlined"
     />
 </v-container>
 </template>
@@ -12,8 +12,9 @@
 
 <script>
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: String,
+        modelValue: String,
     },
     data: function(){
         return{
@@ -28,10 +29,10 @@ export default {
     computed:{
         inheritance:{
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
     },

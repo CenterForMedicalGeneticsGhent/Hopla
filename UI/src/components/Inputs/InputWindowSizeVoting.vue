@@ -1,7 +1,7 @@
 <template>
 <v-text-field
 label="Window Size Voting"
-outlined
+variant="outlined"
 v-model="windowSizeVoting"
 type="number"
 :key="key"
@@ -11,8 +11,9 @@ type="number"
 
 <script>
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: Number,
+        modelValue: Number,
     },
     data: function(){
         return {
@@ -22,15 +23,15 @@ export default {
     computed:{
         windowSizeVoting:{
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
                 if (isNaN(d) || Number(d)<=0 ){
-                    this.$emit('input',this.windowSizeVoting);
+                    this.$emit('update:modelValue',this.windowSizeVoting);
                     this.key++ //Update view and reset to previous valid value
                 }
                 else {
-                    this.$emit('input',Number(d));
+                    this.$emit('update:modelValue',Number(d));
                 }
             }
         },

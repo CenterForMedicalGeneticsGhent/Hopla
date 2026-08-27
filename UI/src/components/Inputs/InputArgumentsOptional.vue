@@ -15,13 +15,13 @@
 
 
 <script>
-import Vue from 'vue';
 import InputFileCytoband from "./InputFileCytoband.vue";
 
-export default Vue.extend({
+export default {
     name: 'InputArgumentsOptional',
+    emits: ['update:modelValue'],
     props:{
-      value: String,
+      modelValue: String,
     },
     components:{
       InputFileCytoband,
@@ -33,10 +33,10 @@ export default Vue.extend({
     computed:{
       fileCytoband: {
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
     },
@@ -49,5 +49,5 @@ export default Vue.extend({
     watch:{
       //CODE
     },
-})
+}
 </script>

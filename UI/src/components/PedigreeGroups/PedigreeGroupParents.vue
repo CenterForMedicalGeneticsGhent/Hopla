@@ -25,20 +25,20 @@ v-model="config"
 </template>
 
 <script>
-  import Vue from 'vue'
   import PedigreeGroup from "./PedigreeGroup.vue";
   import PatientCardFather from "../PatientCards/PatientCardFather.vue";
   import PatientCardMother from "../PatientCards/PatientCardMother.vue";
 
-  export default Vue.extend({
+  export default {
     name: 'PedigreeGroupParents',
+    emits: ['update:modelValue'],
     components:{
       PedigreeGroup,
       PatientCardFather,
       PatientCardMother,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
@@ -47,10 +47,10 @@ v-model="config"
     computed:{
       config: {
         get:function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
     },
@@ -59,5 +59,5 @@ v-model="config"
     mounted: function(){
       //CODE
     }  
-    })
+    }
 </script>

@@ -2,7 +2,7 @@
     <v-radio-group
     class="ma-0 pa-0"
     v-model="diseaseStatus2RadioBtnNr"
-    dense
+    density="compact"
     >
       <v-radio
         label="Not Affected"
@@ -34,8 +34,9 @@ var diseaseStatusOptions = [
 ];
 
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: String,
+        modelValue: String,
     },
     data: function(){
         return {};
@@ -43,10 +44,10 @@ export default {
     computed:{
       diseaseStatus:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
       diseaseStatus2RadioBtnNr: {

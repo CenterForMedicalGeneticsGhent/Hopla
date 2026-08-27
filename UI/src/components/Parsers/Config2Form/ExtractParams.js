@@ -1,4 +1,8 @@
 export default function extractParams(configString){
+    if (typeof configString !== "string" || configString.length > 1024 * 1024) {
+        throw new Error("Invalid Hopla configuration");
+    }
+
     var paramsObject = readHeader(Object(),configString);
 
     // Read region
@@ -23,13 +27,12 @@ export default function extractParams(configString){
             ));
         })
         .filter(function(d){
-            // only keep lines with following pattern
-            // param[:=]value
-            return (d.match(/.*:|=.*/i));
+            return d.includes("=");
         })
         .map(function(d){
             //split lines in key and value
-            return d.split(/:|=/i);
+            var separator = d.indexOf("=");
+            return [d.slice(0, separator), d.slice(separator + 1)];
         })
         .map(function(d){
             //split values by ','
@@ -47,13 +50,13 @@ export default function extractParams(configString){
 }
 
 function findValue(configString,paramToFind){
-    //console.log(configString)
-    return configString.split("\n")
-        .filter(function(d){
-            return d.includes(paramToFind)
-        })[0]
-        .replace(paramToFind,"")
-        ;
+    var line = configString.split("\n")
+        .map(function(d){ return d.trim(); })
+        .find(function(d){ return d.startsWith(paramToFind); });
+    if (line === undefined) {
+        throw new Error("Missing required configuration field: " + paramToFind);
+    }
+    return line.slice(paramToFind.length);
 }
 
 function readHeader(configObject, configString){

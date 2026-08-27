@@ -5,14 +5,13 @@
 </template>
 
 <script lang="ts">
-  import Vue from 'vue'
   import Form from '../components/Forms/FormHopla.vue';
 
-  export default Vue.extend({
+  export default {
     name: 'Home',
 
     components: {
       Form,
     },
-  })
+  }
 </script>

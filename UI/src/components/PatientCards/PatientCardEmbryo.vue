@@ -10,16 +10,16 @@ cardType="embryo"
 
 <script>
   // Imports
-  import Vue from 'vue'
   import PatientCardGeneral from "./PatientCardGeneral.vue";
 
-  export default Vue.extend({
+  export default {
     name: 'PatientCardEmbryo',
+    emits: ['update:modelValue', 'removeCard'],
     components: {
       PatientCardGeneral,
     },
     props:{
-      value: Object,
+      modelValue: Object,
       i: Number,
     },
     data: function() {
@@ -29,10 +29,10 @@ cardType="embryo"
     computed: {
       config:{
         get:function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',d);
+          this.$emit('update:modelValue',d);
         },
       },
       title: function(){
@@ -49,5 +49,5 @@ cardType="embryo"
     },
     watch:{
     },
-    })
+    }
 </script>

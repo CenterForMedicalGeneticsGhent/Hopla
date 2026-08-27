@@ -1,6 +1,6 @@
 <template>
     <v-checkbox
-    dense
+    density="compact"
     class="ma-0 pa-0"
     v-model="keepBafIDs"
     label="BAF ID"
@@ -9,13 +9,13 @@
 
 
 <script>
-import Vue from 'vue';
 
 
-export default Vue.extend({
+export default {
     name:"InputBafIDs",
+    emits: ['update:modelValue'],
     props:{
-        value: Boolean,
+        modelValue: Boolean,
     },
     data: function() {
         return{};
@@ -23,10 +23,10 @@ export default Vue.extend({
     computed:{
         keepBafIDs: {
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
     },
@@ -35,5 +35,5 @@ export default Vue.extend({
     mounted: function(){
         //CODE
     }
-})
+}
 </script>

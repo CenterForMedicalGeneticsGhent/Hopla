@@ -2,8 +2,8 @@
 <v-container>
     <v-text-field
     label="Sequencing Note"  
-    dense
-    outlined
+    density="compact"
+    variant="outlined"
     v-model="sequencingNote"
     type="text"
     />
@@ -13,8 +13,9 @@
 
 <script>
 export default {
+    emits: ['update:modelValue'],
     props:{
-        value: String,
+        modelValue: String,
     },
     data: function(){
         return{
@@ -23,10 +24,10 @@ export default {
     computed:{
         sequencingNote:{
             get: function(){
-                return this.value;
+                return this.modelValue;
             },
             set: function(d){
-                this.$emit('input',d);
+                this.$emit('update:modelValue',d);
             },
         },
     },

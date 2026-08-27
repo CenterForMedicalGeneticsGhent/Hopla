@@ -54,7 +54,6 @@ v-model="config.embryoList"
 
 <script>
   //Imports
-  import Vue from 'vue';
   import cloneDeep from 'lodash/cloneDeep';
 
   // Components
@@ -69,15 +68,16 @@ v-model="config.embryoList"
 
   
 
-  export default Vue.extend({
+  export default {
     name: 'PedigreeGroupEmbryos',
+    emits: ['update:modelValue'],
     components:{
       PedigreeGroup,
       PatientCardEmbryo,
       InputHeteroIDs,
     },
     props:{
-      value: Object,
+      modelValue: Object,
     },
     data: function() {
       return {
@@ -87,10 +87,10 @@ v-model="config.embryoList"
     computed:{
       config:{
         get: function(){
-          return this.value;
+          return this.modelValue;
         },
         set: function(d){
-          this.$emit('input',this.config);
+          this.$emit('update:modelValue',this.config);
         },
       },
     },
@@ -115,5 +115,5 @@ v-model="config.embryoList"
     watch:{
       //CODE
     },  
-    })
+    }
 </script>
