@@ -14,7 +14,7 @@ if (file.exists(hopla_log_source)) {
     cat('ERROR: Could not load the Hopla logging helpers.\n', file = stderr())
     quit(status = 1)
   }
-  for (helper in c('hopla_log', 'hopla_fail', 'hopla_log_level', 'hopla_init_log_level')){
+  for (helper in c('hopla_log', 'hopla_fail', 'hopla_log_level', 'hopla_init_log_level', 'hopla_with_debug_warnings')){
     assign(helper, get(helper, envir = hopla_namespace))
   }
 }
@@ -383,7 +383,9 @@ load_samples <- function(args){
 
   for (sample in args$samples_no_u){
     hopla_log('debug', '  ... at ', sample)
-    ad <- data.table::tstrsplit(allele_depths[,sample], ',', fixed = T, type.convert = as.numeric, keep = 1:2)
+    ad <- hopla_with_debug_warnings(
+      data.table::tstrsplit(allele_depths[,sample], ',', fixed = T, type.convert = as.numeric, keep = 1:2)
+    )
     total_ad <- ad[[1]] + ad[[2]]
     vcf_b <- data.frame(
       GT = genotypes[,sample],

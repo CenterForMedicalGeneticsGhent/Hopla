@@ -13,7 +13,7 @@ hopla [-hV] [-L LEVEL] [--] transform FLOW1 FLOW2 MODE [OUTPUT]
 
 `-L` may also appear among `run` options, before the settings and VCF operands.
 
-- `LEVEL` is `error`, `warn`, `info`, or `debug` (default `info`). `warning` aliases `warn`; `quiet` aliases `error`. The `HOPLA_LOG_LEVEL` environment variable sets the same default. Error and warning records go to standard error; information and debug records go to standard output, each prefixed with a timestamp and the level name. Major analysis steps log at `info`; per-sample, per-chromosome, and per-plot progress logs at `debug`.
+- `LEVEL` is `error`, `warn`, `info`, or `debug` (default `info`). `warning` aliases `warn`; `quiet` aliases `error`. The `HOPLA_LOG_LEVEL` environment variable sets the same default. Error and warning records go to standard error; information and debug records go to standard output, each prefixed with a timestamp and the level name. Major analysis steps log at `info`; per-sample, per-chromosome, and per-plot progress logs at `debug`. Expected R coercion warnings while parsing missing AD values are muffled and logged at `debug`.
 
 - `run` validates one settings file against [`inst/schema/hopla.schema.json`](../inst/schema/hopla.schema.json) before loading the VCF or analysis packages, then writes the HTML report.
 - `VCF` and `OUT_DIR` are filesystem paths, not settings keys. Both must already exist. The engine does not create a missing output directory. `-o OUT_DIR` defaults to the current working directory (`$PWD`).

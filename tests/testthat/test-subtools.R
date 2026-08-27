@@ -299,6 +299,25 @@ test_that("log level filters stdout records", {
   expect_match(logged, "INFO keep-me")
 })
 
+test_that("type.convert coercion warnings are logged at debug", {
+  previous <- hopla_log_level()
+  on.exit(hopla_log_level(previous), add = TRUE)
+
+  coerce <- function() {
+    hopla:::hopla_with_debug_warnings(
+      lapply(list(".", "1,2"), type.convert, as.is = TRUE)
+    )
+  }
+
+  hopla_log_level("info")
+  expect_warning(capture.output(coerce()), NA)
+  expect_identical(capture.output(coerce()), character())
+
+  hopla_log_level("debug")
+  logged <- capture.output(coerce())
+  expect_match(paste(logged, collapse = "\n"), "NAs introduced by coercion")
+})
+
 test_that("mark_region draws region and flank traces", {
   skip_if_not_installed("plotly")
   engine <- engine_functions()

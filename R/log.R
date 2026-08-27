@@ -68,6 +68,16 @@ hopla_fail <- function(..., status = 1L) {
   quit(status = status)
 }
 
+hopla_with_debug_warnings <- function(expr) {
+  withCallingHandlers(
+    expr,
+    warning = function(w) {
+      hopla_log("debug", conditionMessage(w))
+      tryInvokeRestart("muffleWarning")
+    }
+  )
+}
+
 hopla_init_log_level <- function(level = NULL) {
   if (is.null(level) || !nzchar(level)) {
     level <- Sys.getenv("HOPLA_LOG_LEVEL", "info")
