@@ -3,16 +3,16 @@
 # --------
 
 ## For completeness, this settings file contains all possible parameters, even when left unset
-## For a detailed description of the parameters and the output file, please visit https://github.com/leraman/hopla
+## Unset (or unprovided) arguments are omitted from the converted YAML and use schema defaults
 
 ## Rules:
-##      - Arguments (one line each, with the exception of the `--info` argument) can be provided using 'argument=value'
-##      - Unset (or unprovided) arguments will be given their respective default value (see https://github.com/leraman/hopla)
-##      - Every parameter in this file is overridden by command line arguments when given
-##      - Everything following '#' will be ignored, serving as a comment
+##      - Arguments (one line each, with the exception of the info block) use 'argument=value'
+##      - Everything following '#' is ignored, serving as a comment
+##      - Convert with: hopla convert example/legacy-settings.txt
+##      - vcf.file and out.dir are omitted; pass those paths on the CLI instead
 
 # -------------------
-# MANDATORY ARGUMENTS
+# SAMPLE ARGUMENTS
 # -------------------
 
 vcf.file=directory to vcf.gz

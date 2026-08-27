@@ -1,0 +1,8 @@
+.git
+.pixi
+UI
+example/*.vcf
+example/*.vcf.gz
+example/*.bcf
+*.html
+*-output_files

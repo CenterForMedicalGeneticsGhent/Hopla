@@ -1,0 +1,13 @@
+^\.git$
+^\.github$
+^\.lintr$
+^\.pixi$
+^\.dockerignore$
+^Dockerfile$
+^docs$
+^UI$
+^pixi\.lock$
+^pixi\.toml$
+^tools$
+^hopla_.*\.tar\.gz$
+^hopla\.Rcheck$

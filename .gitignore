@@ -1,2 +1,4 @@
 .Rhistory
 *.lock
+!pixi.lock
+.pixi/
