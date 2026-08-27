@@ -147,3 +147,65 @@ test_that("settings schema uses snake_case keys", {
   expect_true(all(c("vcf_file", "sample_ids") %in% schema$required))
   expect_false(any(grepl("\\.", unlist(schema$required))))
 })
+
+legacy_fixture <- function(path, extra = character()) {
+  writeLines(c(
+    "vcf.file=/data/family.vcf.gz",
+    "sample.ids=child,dad,mom",
+    "father.ids=dad,NA,NA",
+    "mother.ids=mom,NA,NA",
+    "genders=F,M,F",
+    "run.merlin=T",
+    "af.hard.limit=.25",
+    "min.seg.var.X=15",
+    "X.cutoff=1.5",
+    "limit.pm.to.P=F",
+    "keep.hetero.ids=",
+    "start.info",
+    "Disease: example",
+    "end.info",
+    extra
+  ), path)
+}
+
+test_that("legacy settings convert to validated snake_case yaml", {
+  legacy <- tempfile(fileext = ".txt")
+  output <- tempfile(fileext = ".yaml")
+  legacy_fixture(legacy)
+
+  expect_identical(hopla_convert_settings(legacy, output, schema_path()), output)
+  converted <- yaml::read_yaml(output)
+
+  expect_identical(converted$vcf_file, "/data/family.vcf.gz")
+  expect_identical(converted$sample_ids, c("child", "dad", "mom"))
+  expect_identical(converted$father_ids, list("dad", NULL, NULL))
+  expect_identical(converted$genders, c("F", "M", "F"))
+  expect_true(converted$run_merlin)
+  expect_equal(converted$af_hard_limit, 0.25)
+  expect_equal(converted$min_seg_var_x, 15)
+  expect_equal(converted$x_cutoff, 1.5)
+  expect_false(converted$limit_pm_to_p)
+  expect_null(converted$keep_hetero_ids)
+  expect_identical(converted$info, "Disease: example")
+})
+
+test_that("legacy conversion rejects unknown keys and missing required fields", {
+  unknown <- tempfile(fileext = ".txt")
+  missing <- tempfile(fileext = ".txt")
+  writeLines(c("vcf.file=/data/family.vcf.gz", "sample.ids=child", "unknown.arg=1"), unknown)
+  writeLines("vcf.file=/data/family.vcf.gz", missing)
+
+  expect_error(hopla_convert_settings(unknown, tempfile(fileext = ".yaml"), schema_path()), "Unknown")
+  expect_error(hopla_convert_settings(missing, tempfile(fileext = ".yaml"), schema_path()), "validation")
+})
+
+test_that("cli convert writes yaml and reports usage errors", {
+  legacy <- tempfile(fileext = ".txt")
+  output <- tempfile(fileext = ".yaml")
+  legacy_fixture(legacy)
+
+  expect_equal(hopla_cli_status("convert"), 2L)
+  expect_equal(hopla_cli_status("convert", legacy, output), 0L)
+  expect_true(file.exists(output))
+  expect_match(paste(readLines(output), collapse = "\n"), "vcf_file:")
+})

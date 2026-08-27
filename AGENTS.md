@@ -35,8 +35,10 @@ scope unless a task explicitly names it.
   analysis packages. Reject unknown properties.
 - Keep the CLI small:
   - `hopla run SETTINGS`
+  - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
+- `convert` maps the legacy `key=value` settings format to schema-validated YAML.
 - Return zero for help, version, and successful commands; return status 2 for
   invalid usage and status 1 for runtime failures.
 - Global options are `-h` and `-V` (not `-v`). Use `--` to terminate option

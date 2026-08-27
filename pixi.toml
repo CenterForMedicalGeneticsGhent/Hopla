@@ -26,6 +26,7 @@ merlin = "1.1.2.*"
 
 [tasks]
 hopla = "Rscript exec/hopla"
+convert = "Rscript exec/hopla convert"
 concordance = "Rscript exec/hopla concordance"
 transform = "Rscript exec/hopla transform"
 

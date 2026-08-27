@@ -56,6 +56,15 @@ info:
 
 See [`example/settings.yaml`](example/settings.yaml) for a complete example and [`inst/schema/hopla.schema.json`](inst/schema/hopla.schema.json) for every option, type, default, and constraint.
 
+Legacy `key=value` settings files can be converted to validated YAML:
+
+```bash
+pixi run hopla convert example/legacy-settings.txt
+# writes example/legacy-settings.yaml unless OUTPUT is given
+```
+
+Dotted keys such as `vcf.file` and `min.seg.var.X` are mapped to snake_case schema properties. Empty assignments are omitted so schema defaults apply. `NA` in parent and gender lists becomes YAML `null`. The converted document is validated before it is written.
+
 # Dependencies (automatically installed with [easy install](#Easy-install))
 - R (v4.4 or newer)
 - R packages
@@ -90,6 +99,7 @@ hopla run path/to/settings.json
 Flow-table utilities are available as subtools:
 
 ```bash
+pixi run hopla convert path/to/legacy-settings.txt
 pixi run hopla concordance family-a-flow.txt family-b-flow.txt
 pixi run hopla transform family-a-flow.txt family-b-flow.txt 1
 ```

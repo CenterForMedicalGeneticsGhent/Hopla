@@ -129,3 +129,222 @@ hopla_transform <- function(flow1, flow2, mode, output = NULL) {
   data.table::fwrite(first, output, quote = FALSE, sep = "\t")
   invisible(output)
 }
+
+hopla_schema_file <- function() {
+  installed <- system.file("schema", "hopla.schema.json", package = "hopla")
+  if (nzchar(installed) && file.exists(installed)) {
+    return(normalizePath(installed))
+  }
+
+  candidates <- c(
+    file.path("inst", "schema", "hopla.schema.json"),
+    file.path("..", "inst", "schema", "hopla.schema.json"),
+    file.path("..", "..", "inst", "schema", "hopla.schema.json")
+  )
+  for (candidate in candidates) {
+    if (file.exists(candidate)) {
+      return(normalizePath(candidate))
+    }
+  }
+  stop("Could not locate hopla.schema.json.", call. = FALSE)
+}
+
+legacy_key_to_schema <- function(key) {
+  tolower(gsub(".", "_", key, fixed = TRUE))
+}
+
+parse_legacy_settings_file <- function(path) {
+  lines <- readLines(path, warn = FALSE)
+  raw <- list()
+  at_info <- FALSE
+
+  for (line in lines) {
+    if (!at_info) {
+      line <- gsub("'", "", gsub("\"", "", line), fixed = TRUE)
+    } else {
+      line <- gsub("\t", "    ", line, fixed = TRUE)
+    }
+
+    trimmed <- trimws(line)
+    if (identical(trimmed, "end.info")) {
+      if (!at_info) {
+        stop("Legacy settings file has end.info without start.info.", call. = FALSE)
+      }
+      at_info <- FALSE
+      next
+    }
+    if (at_info) {
+      raw$info <- c(raw$info, line)
+      next
+    }
+    if (identical(trimmed, "start.info")) {
+      at_info <- TRUE
+      next
+    }
+    if (!nzchar(trimmed) || startsWith(trimmed, "#")) {
+      next
+    }
+
+    line <- trimws(strsplit(trimmed, "#", fixed = TRUE)[[1]][1])
+    if (!grepl("=", line, fixed = TRUE)) {
+      stop("Legacy settings line is not key=value: ", line, call. = FALSE)
+    }
+    if (endsWith(line, "=")) {
+      next
+    }
+
+    parts <- strsplit(line, "=", fixed = TRUE)[[1]]
+    key <- trimws(parts[[1]])
+    value <- trimws(paste(parts[-1], collapse = "="))
+    raw[[legacy_key_to_schema(key)]] <- value
+  }
+
+  if (at_info) {
+    stop("Legacy settings file is missing end.info.", call. = FALSE)
+  }
+  raw
+}
+
+split_legacy_tokens <- function(value) {
+  trimws(strsplit(value, ",", fixed = TRUE)[[1]])
+}
+
+is_legacy_null_token <- function(token) {
+  !nzchar(token) || identical(token, "NA")
+}
+
+coerce_legacy_value <- function(key, value, spec) {
+  types <- spec$type
+  if (is.null(types)) {
+    types <- character()
+  }
+
+  if ("array" %in% types) {
+    tokens <- split_legacy_tokens(value)
+    item_types <- spec$items$type
+    item_enum <- spec$items$enum
+    allows_null <- FALSE
+    if (!is.null(item_types) && "null" %in% unlist(item_types, use.names = FALSE)) {
+      allows_null <- TRUE
+    }
+    if (!is.null(item_enum) && any(vapply(item_enum, is.null, logical(1)))) {
+      allows_null <- TRUE
+    }
+
+    return(lapply(tokens, function(token) {
+      if (is_legacy_null_token(token)) {
+        if (!allows_null) {
+          stop("NA is not allowed in ", key, ".", call. = FALSE)
+        }
+        return(NULL)
+      }
+      token
+    }))
+  }
+
+  if ("boolean" %in% types) {
+    parsed <- as.logical(value)
+    if (length(parsed) != 1L || is.na(parsed)) {
+      stop("Could not parse boolean setting ", key, ": ", value, call. = FALSE)
+    }
+    return(parsed)
+  }
+
+  if ("number" %in% types) {
+    parsed <- suppressWarnings(as.numeric(value))
+    if (length(parsed) != 1L || is.na(parsed)) {
+      stop("Could not parse numeric setting ", key, ": ", value, call. = FALSE)
+    }
+    return(parsed)
+  }
+
+  value
+}
+
+validate_settings_object <- function(settings, schema_file) {
+  json <- jsonlite::toJSON(settings, auto_unbox = TRUE, null = "null", na = "null")
+  valid <- jsonvalidate::json_validate(json, schema_file, verbose = TRUE)
+  if (!isTRUE(valid)) {
+    errors <- attr(valid, "errors")
+    detail <- paste(utils::capture.output(print(errors)), collapse = "\n")
+    stop("Converted settings failed schema validation:\n", detail, call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+yaml_handlers <- function() {
+  list(
+    logical = function(x) {
+      structure(if (isTRUE(x)) "true" else "false", class = "verbatim")
+    },
+    `NULL` = function(x) {
+      structure("null", class = "verbatim")
+    }
+  )
+}
+
+#' Convert a legacy Hopla settings file to validated YAML
+#'
+#' Reads the historical `key=value` settings format, maps dotted keys to the
+#' current snake_case schema, omits unset values, and writes YAML after JSON
+#' Schema validation.
+#'
+#' @param legacy Path to a legacy settings file.
+#' @param output Optional YAML output path. Defaults to the input path with a
+#'   `.yaml` extension.
+#' @param schema Optional path to `hopla.schema.json`. Located automatically
+#'   when omitted.
+#' @return The output path, invisibly.
+#' @export
+hopla_convert_settings <- function(legacy, output = NULL, schema = NULL) {
+  stopifnot(is.character(legacy), length(legacy) == 1L)
+  if (!file.exists(legacy)) {
+    stop("Legacy settings file does not exist: ", legacy, call. = FALSE)
+  }
+  if (is.null(schema)) {
+    schema <- hopla_schema_file()
+  }
+  if (!file.exists(schema)) {
+    stop("Settings schema does not exist: ", schema, call. = FALSE)
+  }
+  if (is.null(output)) {
+    output <- paste0(tools::file_path_sans_ext(legacy), ".yaml")
+  }
+  stopifnot(is.character(output), length(output) == 1L)
+
+  schema_doc <- jsonlite::fromJSON(schema, simplifyVector = FALSE)
+  properties <- schema_doc$properties
+  raw <- parse_legacy_settings_file(legacy)
+
+  unknown <- setdiff(names(raw), names(properties))
+  if (length(unknown)) {
+    stop("Unknown legacy setting(s): ", paste(unknown, collapse = ", "), call. = FALSE)
+  }
+
+  settings <- list()
+  for (key in names(raw)) {
+    if (identical(key, "info")) {
+      settings$info <- as.list(raw$info)
+      next
+    }
+    settings[[key]] <- coerce_legacy_value(key, raw[[key]], properties[[key]])
+  }
+
+  validate_settings_object(settings, schema)
+
+  ordered <- list()
+  for (key in names(properties)) {
+    if (key %in% names(settings)) {
+      ordered[[key]] <- settings[[key]]
+    }
+  }
+
+  text <- yaml::as.yaml(
+    ordered,
+    indent = 2,
+    indent.mapping.sequence = TRUE,
+    handlers = yaml_handlers()
+  )
+  writeLines(text, output, sep = "")
+  invisible(output)
+}

@@ -17,6 +17,7 @@ usage <- function() {
   cat(
     "Usage:\n",
     "  hopla [-hV] [--] run SETTINGS.{yaml,yml,json}\n",
+    "  hopla [-hV] [--] convert LEGACY [OUTPUT]\n",
     "  hopla [-hV] [--] concordance [-r] FLOW1 FLOW2\n",
     "  hopla [-hV] [--] transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
     "MODE is 1 for matching strands or 2 for crossed strands.\n",
@@ -128,6 +129,26 @@ parse_transform_options <- function(args) {
   list(operands = remaining_operands(args, index))
 }
 
+parse_convert_options <- function(args) {
+  index <- 1L
+  while (index <= length(args)) {
+    token <- args[[index]]
+    if (token == "--") {
+      return(list(operands = after_option_terminator(args, index)))
+    }
+    if (token == "--help") show_help()
+    if (token == "--version") show_version()
+    if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-") && token != "-") {
+      parse_short_options(token)
+      index <- index + 1L
+      next
+    }
+    break
+  }
+  list(operands = remaining_operands(args, index))
+}
+
 parse_run_options <- function(args) {
   index <- 1L
   while (index <= length(args)) {
@@ -200,6 +221,24 @@ status <- tryCatch({
         paste0(first, "-2 vs ", second, "-2")
       )
       cat(paste0(labels, ": ", values, "%\n"), sep = "")
+      0L
+    },
+    convert = {
+      parsed_convert <- parse_convert_options(operands)
+      convert_operands <- parsed_convert$operands
+      if (!(length(convert_operands) %in% 1:2)) {
+        usage_error("convert expects a legacy settings file and optional OUTPUT.")
+      }
+      schema_candidates <- c(
+        file.path(package_root, "inst", "schema", "hopla.schema.json"),
+        file.path(package_root, "schema", "hopla.schema.json")
+      )
+      schema_file <- schema_candidates[file.exists(schema_candidates)][1]
+      if (!length(schema_file) || is.na(schema_file)) {
+        schema_file <- NULL
+      }
+      output <- if (length(convert_operands) == 2L) convert_operands[[2]] else NULL
+      hopla_convert_settings(convert_operands[[1]], output, schema_file)
       0L
     },
     transform = {
