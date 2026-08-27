@@ -21,7 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 export = ["pyarrow", "pybigwig"]
-dev = ["mypy", "pytest", "ruff"]
+dev = ["mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
 
 [project.scripts]
 hopla = "hopla.cli:main"
@@ -39,6 +39,11 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ANN", "D"]
 ignore = ["D203", "D213"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/hopla/convert.py" = ["ANN401"]
+"src/hopla/report.py" = ["ANN401", "E501"]
+"src/hopla/vcf.py" = ["ANN401"]
 
 [tool.mypy]
 python_version = "3.12"

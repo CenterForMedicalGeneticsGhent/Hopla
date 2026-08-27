@@ -101,7 +101,9 @@ class Settings(BaseModel):
     @property
     def real_samples(self) -> tuple[str, ...]:
         """Return samples backed by VCF columns rather than pedigree ghosts."""
-        return tuple(sample for sample in self.sample_ids if re.fullmatch(r"U[0-9]+", sample, re.I) is None)
+        return tuple(
+            sample for sample in self.sample_ids if re.fullmatch(r"U[0-9]+", sample, re.I) is None
+        )
 
     def derive_filter_ids(self) -> Settings:
         """Fill filter sample lists using the original pedigree-derived defaults."""
@@ -113,7 +115,11 @@ class Settings(BaseModel):
         self.dp_hard_limit_ids = self.dp_hard_limit_ids or sorted(parents)
         self.af_hard_limit_ids = self.af_hard_limit_ids or sorted(parents)
         self.dp_soft_limit_ids = self.dp_soft_limit_ids or terminal
-        if len(self.real_samples) == 1 or shutil.which("merlin") is None or shutil.which("minx") is None:
+        if (
+            len(self.real_samples) == 1
+            or shutil.which("merlin") is None
+            or shutil.which("minx") is None
+        ):
             self.run_merlin = False
         return self
 
@@ -140,5 +146,7 @@ def load_settings(path: Path) -> Settings:
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
     errors = sorted(Draft7Validator(schema).iter_errors(raw), key=lambda error: list(error.path))
     if errors:
-        raise ValueError("Settings validation failed:\n" + "\n".join(error.message for error in errors))
+        raise ValueError(
+            "Settings validation failed:\n" + "\n".join(error.message for error in errors)
+        )
     return Settings.model_validate(raw).derive_filter_ids()

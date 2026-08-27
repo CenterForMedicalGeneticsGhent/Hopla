@@ -18,7 +18,11 @@ def _parse_legacy(path: Path) -> dict[str, str | list[str]]:
     info: list[str] = []
     in_info = False
     for original in path.read_text(encoding="utf-8").splitlines():
-        line = original.replace("\t", "    ") if in_info else original.replace("'", "").replace('"', "")
+        line = (
+            original.replace("\t", "    ")
+            if in_info
+            else original.replace("'", "").replace('"', "")
+        )
         stripped = line.strip()
         if stripped == "start.info":
             if in_info:
@@ -56,8 +60,10 @@ def _coerce(value: str | list[str], specification: dict[str, Any]) -> Any:
     kinds = [kinds] if isinstance(kinds, str) else kinds
     if "array" in kinds:
         allows_null = "null" in specification.get("items", {}).get("type", [])
-        return [None if token.strip() in {"", "NA"} and allows_null else token.strip()
-                for token in value.split(",")]
+        return [
+            None if token.strip() in {"", "NA"} and allows_null else token.strip()
+            for token in value.split(",")
+        ]
     if "boolean" in kinds:
         normalized = value.upper()
         if normalized not in {"TRUE", "FALSE", "T", "F"}:
@@ -81,7 +87,9 @@ def convert_settings(legacy: Path, output: Path | None = None) -> Path:
     converted = {key: _coerce(raw[key], properties[key]) for key in properties if key in raw}
     errors = list(Draft7Validator(schema).iter_errors(converted))
     if errors:
-        raise ValueError("Converted settings failed validation:\n" + "\n".join(e.message for e in errors))
+        raise ValueError(
+            "Converted settings failed validation:\n" + "\n".join(e.message for e in errors)
+        )
     target = output or legacy.with_suffix(".yaml")
     target.write_text(yaml.safe_dump(converted, sort_keys=False), encoding="utf-8")
     return target

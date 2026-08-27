@@ -52,6 +52,8 @@ merlin = "1.1.2.*"
 mypy = "*"
 pytest = "*"
 ruff = "*"
+types-pyyaml = "*"
+types-jsonschema = "*"
 
 [feature.hopla-py.tasks]
 install = { cmd = "python -m pip install --no-deps -e hopla-py" }

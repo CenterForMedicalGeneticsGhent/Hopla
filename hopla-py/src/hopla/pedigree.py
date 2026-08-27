@@ -7,16 +7,18 @@ from html import escape
 import numpy as np
 
 from hopla.models import CHROMOSOME_CODES, GenotypeMatrix, SiteTable
-from hopla.settings import Settings
+from hopla.settings import Gender, Settings
 
 
-def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> list[str]:
+def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> list[Gender]:
     """Fill unknown genders from pedigree roles and chromosome depth ratios."""
     result = list(settings.genders)
     autosomal = sites.chrom <= 22
     x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
-    y_mask = (sites.chrom == CHROMOSOME_CODES["chrY"]) & (sites.pos > 11_700_001) & (
-        sites.pos < 21_800_000
+    y_mask = (
+        (sites.chrom == CHROMOSOME_CODES["chrY"])
+        & (sites.pos > 11_700_001)
+        & (sites.pos < 21_800_000)
     )
     autosomal_mean = np.mean(matrix.dp[:, autosomal], axis=1)
     x_copies = np.divide(
@@ -26,7 +28,9 @@ def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix
         where=autosomal_mean > 0,
     )
     y_copies = np.divide(
-        np.mean(matrix.dp[:, y_mask], axis=1) * 2 if np.any(y_mask) else np.zeros(len(matrix.samples)),
+        np.mean(matrix.dp[:, y_mask], axis=1) * 2
+        if np.any(y_mask)
+        else np.zeros(len(matrix.samples)),
         autosomal_mean,
         out=np.full(len(matrix.samples), np.nan),
         where=autosomal_mean > 0,
@@ -41,16 +45,18 @@ def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix
             result[index] = "M"
         else:
             matrix_index = matrix.sample_index[sample]
-            x_gender = "M" if x_copies[matrix_index] < settings.x_cutoff else "F"
-            y_gender = "F" if y_copies[matrix_index] < settings.y_cutoff else "M"
+            x_gender: Gender = "M" if x_copies[matrix_index] < settings.x_cutoff else "F"
+            y_gender: Gender = "F" if y_copies[matrix_index] < settings.y_cutoff else "M"
             result[index] = x_gender if x_gender == y_gender else x_gender
-    return [gender or "F" for gender in result]
+    return result
 
 
 def add_ghosts(settings: Settings) -> Settings:
     """Add missing single parents as sequential U identifiers."""
     existing = [
-        int(sample[1:]) for sample in settings.sample_ids if sample[:1].upper() == "U" and sample[1:].isdigit()
+        int(sample[1:])
+        for sample in settings.sample_ids
+        if sample[:1].upper() == "U" and sample[1:].isdigit()
     ]
     counter = max(existing, default=0)
     original_count = len(settings.sample_ids)
@@ -63,7 +69,7 @@ def add_ghosts(settings: Settings) -> Settings:
         ghost = f"U{counter}"
         if missing_father:
             settings.father_ids[index] = ghost
-            gender = "M"
+            gender: Gender = "M"
         else:
             settings.mother_ids[index] = ghost
             gender = "F"
@@ -79,8 +85,10 @@ def pedigree_svg(settings: Settings) -> str:
     width = max(520, len(settings.sample_ids) * 110)
     nodes: list[str] = []
     links: list[str] = []
-    locations = {sample: (60 + index * 105, 80 + (index % 2) * 90)
-                 for index, sample in enumerate(settings.sample_ids)}
+    locations = {
+        sample: (60 + index * 105, 80 + (index % 2) * 90)
+        for index, sample in enumerate(settings.sample_ids)
+    }
     for sample, (x, y) in locations.items():
         index = settings.sample_ids.index(sample)
         for parent in (settings.father_ids[index], settings.mother_ids[index]):
@@ -97,5 +105,8 @@ def pedigree_svg(settings: Settings) -> str:
         f'<svg viewBox="0 0 {width} 300" role="img" aria-label="Family tree">'
         '<g stroke="#334155" fill="#e2e8f0" stroke-width="2">'
         + "".join(links + nodes)
-        + '</g><style>text{stroke:none;fill:#0f172a;text-anchor:middle;font:13px system-ui}</style></svg>'
+        + (
+            "</g><style>text{stroke:none;fill:#0f172a;text-anchor:middle;"
+            "font:13px system-ui}</style></svg>"
+        )
     )

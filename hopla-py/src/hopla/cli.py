@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import logging
-import os
-import sys
 import tempfile
 from enum import StrEnum
 from pathlib import Path
@@ -32,6 +30,7 @@ app = typer.Typer(
     pretty_exceptions_enable=False,
     help="Genomic family analysis and interactive reporting.",
 )
+DEFAULT_OUTPUT_DIRECTORY = Path.cwd()
 
 
 class LogLevel(StrEnum):
@@ -91,12 +90,14 @@ def run_command(
     out_dir: Annotated[
         Path,
         typer.Option("-o", exists=True, file_okay=False, writable=True, help="Output directory."),
-    ] = Path.cwd(),
+    ] = DEFAULT_OUTPUT_DIRECTORY,
     cytoband_path: Annotated[
         Path | None,
         typer.Option("-c", exists=True, dir_okay=False, readable=True, help="UCSC cytobands."),
     ] = None,
-    log_level: Annotated[str | None, typer.Option("-L", "--log-level", help="Log verbosity.")] = None,
+    log_level: Annotated[
+        str | None, typer.Option("-L", "--log-level", help="Log verbosity.")
+    ] = None,
 ) -> None:
     """Run the complete family analysis and write its report."""
     if log_level is not None:
@@ -156,7 +157,10 @@ def concordance_command(
             f"{first}-2 vs {second}-1",
             f"{first}-2 vs {second}-2",
         )
-        typer.echo("".join(f"{label}: {value}%\n" for label, value in zip(labels, values, strict=True)), nl=False)
+        typer.echo(
+            "".join(f"{label}: {value}%\n" for label, value in zip(labels, values, strict=True)),
+            nl=False,
+        )
     except (OSError, ValueError, pl.exceptions.PolarsError) as error:
         _runtime_error(error)
 

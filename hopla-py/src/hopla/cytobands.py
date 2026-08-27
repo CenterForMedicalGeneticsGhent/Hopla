@@ -10,9 +10,7 @@ import polars as pl
 
 from hopla.models import CHROMOSOMES, Cytoband
 
-DEFAULT_CYTOBAND_URL = (
-    "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz"
-)
+DEFAULT_CYTOBAND_URL = "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz"
 
 
 def fetch_hg38(destination: Path) -> Path:

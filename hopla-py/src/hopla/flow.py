@@ -18,7 +18,9 @@ def _read_flow(path: Path) -> pl.DataFrame:
     return frame
 
 
-def concordance(first_path: Path, second_path: Path, *, relative: bool = False) -> tuple[float, ...]:
+def concordance(
+    first_path: Path, second_path: Path, *, relative: bool = False
+) -> tuple[float, ...]:
     """Calculate four pairwise strand concordance percentages."""
     first = _read_flow(first_path).with_row_index("_order")
     second = _read_flow(second_path)
@@ -36,7 +38,10 @@ def concordance(first_path: Path, second_path: Path, *, relative: bool = False) 
         if relative:
             left_values = left_values == left_values[0]
             right_values = right_values == right_values[0]
-        return round(float((left_values == right_values).mean()) * 100, 2)
+        mean = (left_values == right_values).mean()
+        if not isinstance(mean, (int, float)):
+            raise ValueError("Could not calculate flow concordance.")
+        return round(float(mean) * 100, 2)
 
     return (
         compare("flowA.hexcol", "flowA.hexcol_second"),

@@ -38,7 +38,9 @@ def _table_payload(frame: pl.DataFrame) -> dict[str, object]:
     """Encode a DataFrame column-wise and cap only initial table preview rows."""
     return {
         "columns": frame.columns,
-        "data": {name: [_json_value(value) for value in frame[name].to_list()] for name in frame.columns},
+        "data": {
+            name: [_json_value(value) for value in frame[name].to_list()] for name in frame.columns
+        },
         "rows": frame.height,
     }
 
@@ -51,7 +53,9 @@ def render_report(
     """Write one self-contained report with a gzip-compressed columnar payload."""
     payload = {name: _table_payload(frame) for name, frame in iter_nonempty(tables)}
     encoded = base64.b64encode(
-        gzip.compress(json.dumps(payload, separators=(",", ":"), allow_nan=False).encode(), compresslevel=9)
+        gzip.compress(
+            json.dumps(payload, separators=(",", ":"), allow_nan=False).encode(), compresslevel=9
+        )
     ).decode("ascii")
     information = "".join(f"<p>{escape(line)}</p>" for line in settings.info)
     sections = "".join(

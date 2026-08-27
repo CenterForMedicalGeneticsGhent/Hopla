@@ -54,8 +54,10 @@ def variant_statistics(
             for region in settings.regions:
                 chrom, interval = region.split(":")
                 start, end = (int(value) for value in interval.split("-"))
-                region_mask = (selected_chrom == chrom) & (selected_positions >= start) & (
-                    selected_positions <= end
+                region_mask = (
+                    (selected_chrom == chrom)
+                    & (selected_positions >= start)
+                    & (selected_positions <= end)
                 )
                 rows.append(
                     {
@@ -83,20 +85,32 @@ def ado_adi(matrix: GenotypeMatrix, settings: Settings) -> pl.DataFrame:
         mother_gt = matrix.gt[matrix.sample_index[mother]]
         ado_sites = ((father_gt == 0) & (mother_gt == 2)) | ((father_gt == 2) & (mother_gt == 0))
         ado_denominator = np.count_nonzero(ado_sites & (child_gt >= 0))
-        ado = 100 * np.count_nonzero(ado_sites & np.isin(child_gt, (0, 2))) / ado_denominator if ado_denominator else np.nan
+        ado = (
+            100 * np.count_nonzero(ado_sites & np.isin(child_gt, (0, 2))) / ado_denominator
+            if ado_denominator
+            else np.nan
+        )
         adi_sites = (father_gt == 2) & (mother_gt == 2)
         adi_denominator = np.count_nonzero(adi_sites & (child_gt >= 0))
-        adi = 100 * np.count_nonzero(adi_sites & (child_gt == 1)) / adi_denominator if adi_denominator else np.nan
+        adi = (
+            100 * np.count_nonzero(adi_sites & (child_gt == 1)) / adi_denominator
+            if adi_denominator
+            else np.nan
+        )
         rows.extend(
             [
                 {"sample": child, "metric": "ADO", "value": round(float(ado), 2)},
                 {"sample": child, "metric": "ADI", "value": round(float(adi), 2)},
             ]
         )
-    return pl.DataFrame(rows, schema={"sample": pl.String, "metric": pl.String, "value": pl.Float64})
+    return pl.DataFrame(
+        rows, schema={"sample": pl.String, "metric": pl.String, "value": pl.Float64}
+    )
 
 
-def baf_table(sites: SiteTable, matrix: GenotypeMatrix, filtered: FilteredGenotypes) -> pl.DataFrame:
+def baf_table(
+    sites: SiteTable, matrix: GenotypeMatrix, filtered: FilteredGenotypes
+) -> pl.DataFrame:
     """Build full-resolution B-allele-frequency rows for every sample."""
     selected = np.flatnonzero(filtered.site_mask)
     chrom = _chrom_names(sites.chrom[selected])
@@ -171,19 +185,23 @@ def mendelian_table(
             )
         if not np.any((fat == 2) | (mot == 2) | (trio == 2)):
             continue
-        frame = pl.DataFrame(
-            {
-                "_key": keys,
-                "chrom": _chrom_names(sites.chrom[source]),
-                "start": starts,
-                "sample": [child] * source.size,
-                "trio": trio == 2,
-                "father": fat == 2,
-                "mother": mot == 2,
-            }
-        ).group_by("_key", "chrom", "start", "sample").agg(
-            pl.col("trio").sum(), pl.col("father").sum(), pl.col("mother").sum()
-        ).with_columns((pl.col("start") + settings.window_size - 1).alias("end")).drop("_key")
+        frame = (
+            pl.DataFrame(
+                {
+                    "_key": keys,
+                    "chrom": _chrom_names(sites.chrom[source]),
+                    "start": starts,
+                    "sample": [child] * source.size,
+                    "trio": trio == 2,
+                    "father": fat == 2,
+                    "mother": mot == 2,
+                }
+            )
+            .group_by("_key", "chrom", "start", "sample")
+            .agg(pl.col("trio").sum(), pl.col("father").sum(), pl.col("mother").sum())
+            .with_columns((pl.col("start") + settings.window_size - 1).alias("end"))
+            .drop("_key")
+        )
         frames.append(frame)
     return pl.concat(frames) if frames else pl.DataFrame()
 
@@ -226,11 +244,47 @@ def parent_mapping_table(
                             "pos": sites.pos[source][valid],
                             "child": [child] * int(np.count_nonzero(valid)),
                             "origin": [origin] * int(np.count_nonzero(valid)),
-                            "zygosity": np.where(child_gt[valid] == 1, "heterozygous", "homozygous"),
+                            "zygosity": np.where(
+                                child_gt[valid] == 1, "heterozygous", "homozygous"
+                            ),
                         }
                     )
                 )
     return pl.concat(rows) if rows else pl.DataFrame()
+
+
+def _cbs_boundaries(values: np.ndarray, threshold: float = 3.0) -> list[tuple[int, int]]:
+    """Recursively split a chromosome using a standardized CBS change statistic."""
+    segments: list[tuple[int, int]] = []
+
+    def split(left: int, right: int) -> None:
+        """Split one interval at its strongest significant mean shift."""
+        length = right - left
+        if length < 6:
+            segments.append((left, right))
+            return
+        local = values[left:right].astype(np.float64)
+        cumulative = np.cumsum(local)
+        points = np.arange(2, length - 1)
+        left_mean = cumulative[points - 1] / points
+        right_mean = (cumulative[-1] - cumulative[points - 1]) / (length - points)
+        scale = float(np.std(local, ddof=1))
+        if not np.isfinite(scale) or scale == 0:
+            segments.append((left, right))
+            return
+        statistic = np.abs(left_mean - right_mean) / (
+            scale * np.sqrt(1 / points + 1 / (length - points))
+        )
+        best = int(np.argmax(statistic))
+        if statistic[best] < threshold:
+            segments.append((left, right))
+            return
+        boundary = left + int(points[best])
+        split(left, boundary)
+        split(boundary, right)
+
+    split(0, values.size)
+    return sorted(segments)
 
 
 def copy_number_table(
@@ -242,13 +296,19 @@ def copy_number_table(
     segments: list[pl.DataFrame] = []
     chrom_names = _chrom_names(sites.chrom)
     for index, sample in enumerate(matrix.samples):
-        frame = pl.DataFrame(
-            {"_key": keys, "chrom": chrom_names, "start": starts, "depth": matrix.dp[index]}
-        ).group_by("_key", "chrom", "start").agg(
-            pl.col("depth").mean().alias("mean_depth"),
-            pl.len().alias("weight"),
-        ).sort("_key")
-        median = float(frame["mean_depth"].median() or 1)
+        frame = (
+            pl.DataFrame(
+                {"_key": keys, "chrom": chrom_names, "start": starts, "depth": matrix.dp[index]}
+            )
+            .group_by("_key", "chrom", "start")
+            .agg(
+                pl.col("depth").mean().alias("mean_depth"),
+                pl.len().alias("weight"),
+            )
+            .sort("_key")
+        )
+        median_value = frame["mean_depth"].median()
+        median = float(median_value) if isinstance(median_value, (int, float)) else 1.0
         frame = frame.with_columns(
             (pl.col("mean_depth") / median).log(base=2).cast(pl.Float32).alias("log2_ratio"),
             (pl.col("start") + settings.window_size - 1).alias("end"),
@@ -256,21 +316,22 @@ def copy_number_table(
             pl.lit(True).alias("mask"),
         ).drop("_key")
         windows.append(frame)
-        # A bounded, deterministic segmentation approximation; CBS can replace this backend.
-        values = frame["log2_ratio"].to_numpy()
-        bins = np.round(values / 0.25).astype(np.int16)
-        boundaries = np.r_[0, np.flatnonzero(np.diff(bins)) + 1, len(bins)]
         segment_rows = []
-        for left, right in zip(boundaries[:-1], boundaries[1:], strict=True):
-            segment_rows.append(
-                {
-                    "chrom": frame["chrom"][left],
-                    "start": int(frame["start"][left]),
-                    "end": int(frame["end"][right - 1]),
-                    "sample": sample,
-                    "seg_mean": float(np.mean(values[left:right])),
-                }
-            )
+        for chrom in CHROMOSOMES:
+            chromosome_frame = frame.filter(pl.col("chrom") == chrom)
+            values = chromosome_frame["log2_ratio"].to_numpy()
+            if values.size == 0:
+                continue
+            for left_index, right_index in _cbs_boundaries(values):
+                segment_rows.append(
+                    {
+                        "chrom": chrom,
+                        "start": int(chromosome_frame["start"][left_index]),
+                        "end": int(chromosome_frame["end"][right_index - 1]),
+                        "sample": sample,
+                        "seg_mean": float(np.mean(values[left_index:right_index])),
+                    }
+                )
         segments.append(pl.DataFrame(segment_rows))
     return pl.concat(windows), pl.concat(segments)
 
