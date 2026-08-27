@@ -18,7 +18,7 @@ from hopla.settings import Settings
 SECTION_TITLES = {
     "variant_stats": "Filter 0/1/2: variant statistics",
     "genotype_counts": "Filter 0/1/2: genotype-count tables",
-    "variant_depth": "Filter 0/1: variant depth",
+    "variant_depth": "Filter 0/1/2: variant depth",
     "variant_density": "Filter 0/1/2: number-of-variants profiles",
     "ado_adi": "Allelic drop-out (ADO) and drop-in (ADI)",
     "baf": "B-allele frequency (BAF)",
