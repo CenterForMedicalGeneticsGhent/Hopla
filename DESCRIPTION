@@ -1,9 +1,16 @@
 Package: hopla
 Title: Genomic Family Analysis and Interactive Reporting
 Version: 2.0.0
-Authors@R:
+Authors@R: c(
     person("Lennart", "Raman", email = "leraman@users.noreply.github.com",
-           role = c("aut", "cre"))
+           role = c("aut", "cre")),
+    person("Matthias", "De Smet",
+           email = "matthdsm@users.noreply.github.com",
+           role = c("ctb", "cre")),
+    person("Center for Medical Genetics Ghent",
+           email = "ict.cmgg@uzgent.be",
+           role = "cre")
+    )
 Description: Analyses single- and multi-sample variant call format files for
     family relationships, variant quality, copy number, Mendelian errors, and
     pedigree haplotypes. Produces a self-contained interactive HTML report and
