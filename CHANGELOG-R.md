@@ -54,6 +54,9 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Renamed the remaining engine helpers that shadowed package functions
   (`trim` and a local `parse`) to `trim_whitespace` and
   `parse_chromosome_tables`.
+- Chromosome and sample labels are drawn under their own panel again. A title
+  standoff on axes with hidden tick labels left every label stacked at the top
+  of the figure.
 - User and input errors now return a non-zero process status.
 - Help and version output no longer load the analysis package stack.
 - DNAcopy output suppression no longer leaves an open sink after an error.
