@@ -2,7 +2,7 @@ name: R package CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 2.0.0]
     paths:
       - "hopla-r/**"
       - "pixi.toml"

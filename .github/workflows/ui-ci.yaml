@@ -2,7 +2,7 @@ name: UI package CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 2.0.0]
     paths:
       - "hopla-ui/**"
       - "pixi.toml"
