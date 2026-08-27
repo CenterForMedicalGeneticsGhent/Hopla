@@ -7,7 +7,7 @@ from html import escape
 from pathlib import Path
 
 import polars as pl
-import pyBigWig  # type: ignore[import-untyped]
+import pyBigWig  # type: ignore[import-not-found]
 
 
 def _safe_name(value: str) -> str:
@@ -132,9 +132,7 @@ def _write_bed_tracks(directory: Path, tables: dict[str, pl.DataFrame]) -> list[
 
 def _write_session(directory: Path, tracks: list[Path], genome: str) -> Path:
     """Write an IGV desktop session referencing sibling tracks relatively."""
-    resources = "".join(
-        f'<Resource path="{escape(track.name)}"/>' for track in tracks
-    )
+    resources = "".join(f'<Resource path="{escape(track.name)}"/>' for track in tracks)
     session = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         f'<Session genome="{escape(genome)}" version="8"><Resources>{resources}'

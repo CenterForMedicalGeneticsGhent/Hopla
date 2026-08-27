@@ -142,9 +142,7 @@ def run_command(
                 export_parquet(out_dir / f"{settings.fam_id}-export", settings.fam_id, tables)
             if export_bigwig:
                 logging.info("Writing IGV tracks")
-                export_igv_tracks(
-                    out_dir / f"{settings.fam_id}-export", tables, sizes
-                )
+                export_igv_tracks(out_dir / f"{settings.fam_id}-export", tables, sizes)
             report = out_dir / f"{settings.fam_id}-output.html"
             render_report(report, settings, tables)
         typer.echo(report)
