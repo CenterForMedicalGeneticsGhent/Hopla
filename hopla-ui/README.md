@@ -5,6 +5,8 @@ Hopla configuration files in the browser. It is optional: Hopla itself only
 needs a YAML or JSON settings file, which can be written and edited by hand.
 The app is meant to run locally as a short-lived helper, not as a standing
 service. It does not upload genomic or configuration data to a server.
+The Config tab downloads schema-compatible YAML for `hopla run`; legacy
+`.txt` configuration files remain supported as imports.
 
 See the [UI documentation](docs/README.md) for architecture, development, and
 container details.

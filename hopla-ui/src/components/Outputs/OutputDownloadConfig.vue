@@ -31,14 +31,14 @@ export default {
         downloadFile: function(){
             // Params
             var text = this.textToDownload || "";
-            var fileName = (this.fileNameDefault || "hopla-config.txt")
+            var fileName = (this.fileNameDefault || "hopla-config.yaml")
                 .replace(/[^A-Za-z0-9._-]/g, "_")
                 .replace(/^\.+/, "");
             if (fileName.length === 0) {
-                fileName = "hopla-config.txt";
+                fileName = "hopla-config.yaml";
             }
             // make blob from text
-            var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            var blob = new Blob([text], { type: "application/yaml;charset=utf-8" });
             // create object url
             var url = URL.createObjectURL(blob);
             

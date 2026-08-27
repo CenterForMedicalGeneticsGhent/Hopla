@@ -24,6 +24,12 @@ pixi run -e hopla-ui build
 The `install` dependency of these tasks runs Yarn 1.22.22 through Corepack with
 the committed lockfile.
 
+The Config tab previews and downloads a `.yaml` file using the current
+snake_case settings schema. VCF, output-directory, and optional cytoband paths
+remain command-line arguments and are intentionally not written to the file.
+The upload control continues to accept historical `.txt` configurations so
+existing files can be migrated through the UI.
+
 ## Direct Yarn development
 
 From `hopla-ui/`:

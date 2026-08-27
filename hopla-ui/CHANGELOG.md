@@ -25,6 +25,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   tags.
 - Documented that the UI is an optional local helper for writing the settings
   file; Hopla can run from a hand-edited YAML or JSON config.
+- Configuration previews and downloads now use the schema-compatible YAML
+  format accepted by `hopla run` instead of the legacy `key=value` format.
 
 ### Fixed
 

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { shallowMount } from '@vue/test-utils'
 import cloneDeep from 'lodash/cloneDeep'
+import { parse } from 'yaml'
 import TabConfigFile from '@/components/Tabs/TabConfigFile.vue'
 import { config2Form } from '@/components/Parsers/Config2Form'
 import {
@@ -21,22 +22,29 @@ function exportConfigText(config: any): string {
 }
 
 describe('Hopla configuration conversion', () => {
-  it('round-trips the default form through the generated settings text', () => {
+  it('exports schema-compatible YAML instead of legacy settings text', () => {
     const configPedigree = cloneDeep(templatePedigree)
     const configParameters = cloneDeep(templateParameters)
     const configAdvanced = cloneDeep(templateAdvanced)
+    configPedigree.configParents.father.sampleID = 'FATHER'
     const generatedConfig = exportConfigText({
       configPedigree,
       configParameters,
       configAdvanced
     })
-    const importedConfig = config2Form(generatedConfig)
+    const settings = parse(generatedConfig)
 
-    expect(generatedConfig).toContain('vcf.file=/path/to/file.vcf')
-    expect(generatedConfig).toContain('fam.id=famID')
-    expect(importedConfig.configPedigree).toEqual(configPedigree)
-    expect(importedConfig.configParameters).toEqual(configParameters)
-    expect(importedConfig.configAdvanced).toEqual(configAdvanced)
+    expect(generatedConfig).toContain('sample_ids:')
+    expect(generatedConfig).not.toContain('sample.ids=')
+    expect(settings.sample_ids).toEqual(['FATHER'])
+    expect(settings.father_ids).toEqual([null])
+    expect(settings.genders).toEqual(['M'])
+    expect(settings.af_hard_limit).toBe(0.25)
+    expect(settings.keep_chromosomes_only).toBe(true)
+    expect(settings.limit_pm_to_p).toBe(true)
+    expect(settings.fam_id).toBe('famID')
+    expect(settings).not.toHaveProperty('vcf_file')
+    expect(settings).not.toHaveProperty('cytoband_file')
   })
 
   it('imports representative pedigree and analysis settings', () => {
@@ -132,7 +140,7 @@ describe('Hopla configuration conversion', () => {
     expect(pedigree.famID).toBe(templatePedigree.famID)
   })
 
-  it('keeps a header-less import stable when exported and imported again', () => {
+  it('exports a header-less legacy import as schema-shaped YAML', () => {
     const configText = [
       'vcf.file=/data/trio.vcf.gz',
       'sample.ids=FATHER,MOTHER,EMBRYO',
@@ -148,7 +156,12 @@ describe('Hopla configuration conversion', () => {
     expect(imported.configPedigree.configEmbryos.embryoList.map((d: any) => d.sampleID))
       .toEqual(['EMBRYO'])
 
-    expect(config2Form(exportConfigText(imported))).toEqual(imported)
+    const settings = parse(exportConfigText(imported))
+    expect(settings.sample_ids).toEqual(['FATHER', 'MOTHER', 'EMBRYO'])
+    expect(settings.father_ids).toEqual([null, null, 'FATHER'])
+    expect(settings.mother_ids).toEqual([null, null, 'MOTHER'])
+    expect(settings.dp_soft_limit_ids).toEqual(['EMBRYO'])
+    expect(settings.affected_ids).toEqual(['MOTHER'])
   })
 
   it('rejects configuration text it cannot turn into a pedigree', () => {
