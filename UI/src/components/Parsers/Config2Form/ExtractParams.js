@@ -1,15 +1,65 @@
+import derivePedigreeMapping from "./derivePedigreeMapping";
+
+var headerFields = {
+    paternalGrandfather: "# paternalGrandfather=",
+    paternalGrandmother: "# paternalGrandmother=",
+    maternalGrandfather: "# maternalGrandfather=",
+    maternalGrandmother: "# maternalGrandmother=",
+    father: "# father=",
+    mother: "# mother=",
+    siblings: "# siblings=",
+    embryos: "# embryos=",
+};
+
+// Values that may contain ':' or ',' cannot go through the comma-splitting
+// argument reader and are taken from their raw line instead.
+var lineFields = {
+    "regions": "regions=",
+    "Disease": "Disease:",
+    "Inheritance": "Inheritance:",
+    "Sequencing note": "Sequencing note:",
+};
+
+// Sample lists are looked up positionally, so an omitted argument has to read
+// like an empty one instead of being absent.
+var listFields = [
+    "sample.ids",
+    "father.ids",
+    "mother.ids",
+    "genders",
+    "dp.hard.limit.ids",
+    "af.hard.limit.ids",
+    "dp.soft.limit.ids",
+    "keep.informative.ids",
+    "keep.hetero.ids",
+    "carrier.ids",
+    "affected.ids",
+    "nonaffected.ids",
+    "baf.ids",
+];
+
 export default function extractParams(configString){
     if (typeof configString !== "string" || configString.length > 1024 * 1024) {
         throw new Error("Invalid Hopla configuration");
     }
 
-    var paramsObject = readHeader(Object(),configString);
+    var paramsObject = readArguments(configString);
+    Object.keys(lineFields).forEach(function(key){
+        paramsObject[key] = readLineValue(configString, lineFields[key]);
+    });
+    listFields.forEach(function(key){
+        if (!Array.isArray(paramsObject[key])){
+            paramsObject[key] = [""];
+        }
+    });
+    paramsObject.pedigreeMapping = readPedigreeMapping(configString, paramsObject);
 
-    // Read region
-    paramsObject = readRegion(paramsObject,configString);
-    paramsObject = readDisease(paramsObject,configString);
-    
-    var configArrayNested = configString.split('\n')
+    return paramsObject;
+}
+
+function readArguments(configString){
+    var paramsObject = Object();
+    configString.split("\n")
         .map(function(d){
             //remove leading and trailing spaces
             return d.trim();
@@ -20,68 +70,55 @@ export default function extractParams(configString){
         })
         .filter(function(d){
             // remove comments
-            return (!(
-                d.startsWith("#") ||
-                d.startsWith("regions=") ||
-                d.startsWith("Disease:")
-            ));
+            return (!d.startsWith("#"))
         })
         .filter(function(d){
-            return d.includes("=") || d.includes(":");
+            // only keep lines with following pattern
+            // param[:=]value
+            return (d.includes("=") || d.includes(":"))
         })
-        .map(function(d){
-            //split lines in key and value
+        .forEach(function(d){
+            //split lines in key and value, then split values by ','
             var separator = d.indexOf("=");
-            if (separator === -1) {
+            if (separator === -1){
                 separator = d.indexOf(":");
             }
-            return [d.slice(0, separator), d.slice(separator + 1)];
-        })
-        .map(function(d){
-            //split values by ','
-            return [d[0],d[1].split(',')];
-        })
-        ; 
-    
-    for (let i=0;i<configArrayNested.length;i++){
-        let key=configArrayNested[i][0];
-        let value=configArrayNested[i][1];
-        paramsObject[key]=value;
-    }
-
+            paramsObject[d.slice(0, separator).trim()] = d.slice(separator + 1).split(',');
+        });
     return paramsObject;
 }
 
-function findValue(configString,paramToFind){
+function readLineValue(configString, paramToFind){
     var line = configString.split("\n")
         .map(function(d){ return d.trim(); })
         .find(function(d){ return d.startsWith(paramToFind); });
     if (line === undefined) {
-        throw new Error("Missing required configuration field: " + paramToFind);
+        return undefined;
     }
-    return line.slice(paramToFind.length);
+    return line.slice(paramToFind.length).trim();
 }
 
-function readHeader(configObject, configString){
-    configObject.pedigreeMapping = Object();
-    configObject.pedigreeMapping.paternalGrandfather = findValue(configString,"# paternalGrandfather=");
-    configObject.pedigreeMapping.paternalGrandmother = findValue(configString,"# paternalGrandmother=");
-    configObject.pedigreeMapping.maternalGrandfather = findValue(configString,"# maternalGrandfather=");
-    configObject.pedigreeMapping.maternalGrandmother = findValue(configString,"# maternalGrandmother=");
-    configObject.pedigreeMapping.father = findValue(configString,"# father=");
-    configObject.pedigreeMapping.mother = findValue(configString,"# mother=");
-    configObject.pedigreeMapping.siblings = findValue(configString,"# siblings=").split(',');
-    configObject.pedigreeMapping.embryos = findValue(configString,"# embryos=").split(',');    
-    return configObject;
+function readPedigreeMapping(configString, paramsObject){
+    var mapping = readHeaderMapping(configString);
+    if (mapping !== null){
+        return mapping;
+    }
+    return derivePedigreeMapping(paramsObject);
 }
 
-function readRegion(configObject, configString){
-    configObject.regions=findValue(configString,"regions=");
-    return configObject;
+// Configurations exported by the form describe the pedigree explicitly. The
+// block is only usable when complete; otherwise the pedigree is derived.
+function readHeaderMapping(configString){
+    var mapping = Object();
+    var relations = Object.keys(headerFields);
+    for (let i=0; i<relations.length; i++){
+        var value = readLineValue(configString, headerFields[relations[i]]);
+        if (value === undefined){
+            return null;
+        }
+        mapping[relations[i]] = value;
+    }
+    mapping.siblings = mapping.siblings.split(',');
+    mapping.embryos = mapping.embryos.split(',');
+    return mapping;
 }
-
-function readDisease(configObject, configString){
-    configObject.Disease=findValue(configString,"Disease:");
-    return configObject;
-}
-

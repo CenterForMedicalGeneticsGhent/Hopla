@@ -1,9 +1,13 @@
+import paramValue from "./paramValue";
+
 export default function extractFamID(paramsObject, config){
     // Retrieve Params
-    var famID=paramsObject["fam.id"][0];
+    var famID=paramValue(paramsObject,"fam.id");
     
     // Assign Params
-    config.configPedigree.famID=famID;
+    if (famID!==undefined){
+        config.configPedigree.famID=famID;
+    }
 
     return config;
 }

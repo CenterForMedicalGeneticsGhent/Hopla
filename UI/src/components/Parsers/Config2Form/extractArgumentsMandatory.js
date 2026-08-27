@@ -1,9 +1,13 @@
+import paramValue from "./paramValue";
+
 export default function extractArgumentsMandatory(paramsObject, config){
     // Retrieve Params
-    var fileVCF=paramsObject["vcf.file"][0];
+    var fileVCF=paramValue(paramsObject,"vcf.file");
     
     // Assign Params
-    config.configParameters.fileVCF = fileVCF;
+    if (fileVCF!==undefined){
+        config.configParameters.fileVCF = fileVCF;
+    }
 
     return config;
 }

@@ -9,10 +9,24 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- Support for uploading settings files that have no generated `# HEADER`
+  block: the pedigree is reconstructed from the `sample.ids`, `father.ids`,
+  and `mother.ids` arguments.
 - Automated configuration import/export regression tests.
 - Pull-request CI for linting, unit tests, and production builds.
 - Content Security Policy and browser security headers for the nginx image.
 - Validation and user-facing errors for imported configuration files.
+
+### Fixed
+
+- Uploading a hand-written settings file no longer fails as incompatible.
+- Arguments omitted from a settings file now keep their form default instead
+  of aborting the import.
+- Relatives outside the analysis keep their placeholder identifier and gender
+  instead of being imported as undefined.
+- `self.contained` and `limit.baf.to.P` are read from the settings file rather
+  than reset on every import.
+- Upload errors now report why the file was rejected.
 
 ### Changed
 

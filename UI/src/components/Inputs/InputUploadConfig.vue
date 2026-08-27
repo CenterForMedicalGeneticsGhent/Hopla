@@ -59,8 +59,8 @@ export default {
                         let newConfig = config2Form(configText);
                         emit(newConfig);
                     }
-                    catch {
-                        setError("The file is not a valid Hopla configuration.");
+                    catch (error) {
+                        setError(`This is not a valid Hopla configuration: ${error.message}`);
                     }
                 }
                 fileReader.readAsText(file);

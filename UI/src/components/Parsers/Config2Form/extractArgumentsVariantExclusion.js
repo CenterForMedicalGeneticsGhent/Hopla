@@ -1,9 +1,13 @@
+import paramValue from "./paramValue";
+
 export default function extractArgumentsVariantExclusion(paramsObject, config){
     // Retrieve Params
-    var afHardLimit=Number(paramsObject["af.hard.limit"][0]);
+    var afHardLimit=paramValue(paramsObject,"af.hard.limit");
     
     // Assign Params
-    config.configParameters.afHardLimit = afHardLimit;
+    if (afHardLimit!==undefined){
+        config.configParameters.afHardLimit = Number(afHardLimit);
+    }
 
     return config;
 }

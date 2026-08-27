@@ -7,7 +7,9 @@ import determineKeepBafIDs from "./determineKeepBafIDs";
 export default function extractInfoEmbryos(paramsObject, config){
     
     // Retrieve Params
-    var sampleIDs = paramsObject.pedigreeMapping.embryos.filter(id => id !== "");
+    var sampleIDs = paramsObject.pedigreeMapping.embryos.filter(function(id){
+        return id !== "" && determinePositionSampleID(id,paramsObject["sample.ids"]) !== -1;
+    });
     var indicesOfID=sampleIDs.map(function(d){
         return determinePositionSampleID(d,paramsObject["sample.ids"]);
     }); 

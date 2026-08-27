@@ -8,6 +8,10 @@ export default function extractInfoMother(paramsObject, config){
     // Retrieve Params
     var sampleID=paramsObject.pedigreeMapping.mother;
     var indexOfID=determinePositionSampleID(sampleID,paramsObject["sample.ids"]);
+    if (indexOfID===-1){
+        // Not part of the analysis; keep the placeholder from the form template.
+        return config;
+    }
     var gender=paramsObject["genders"][indexOfID];
     var keepLimitIDHardDP = determinekeepLimitIDHardDP(sampleID,paramsObject["dp.hard.limit.ids"]);
     var keepLimitIDHardAF = determinekeepLimitIDHardAF(sampleID,paramsObject["af.hard.limit.ids"]);

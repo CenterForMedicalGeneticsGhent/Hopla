@@ -1,27 +1,21 @@
+import paramValue from "./paramValue";
+
 export default function extractArgumentsMerlinProfiles(paramsObject, config){
     // Retrieve Params
-    var windowSizeVoting = Number(paramsObject["window.size.voting"][0])
-    var keepChromosomesOnly = function() {
-        if (paramsObject["keep.chromosomes.only"][0]=="T"){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }();
-    var keepRegionsOnly = function() {
-        if (paramsObject["keep.regions.only"][0]=="T"){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }();
+    var windowSizeVoting = paramValue(paramsObject,"window.size.voting");
+    var keepChromosomesOnly = paramValue(paramsObject,"keep.chromosomes.only");
+    var keepRegionsOnly = paramValue(paramsObject,"keep.regions.only");
 
     // Assign Params
-    config.configParameters.merlinProfiles.windowSizeVoting = windowSizeVoting;
-    config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepChromosomesOnly=keepChromosomesOnly;
-    config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepRegionsOnly=keepRegionsOnly;
+    if (windowSizeVoting!==undefined){
+        config.configParameters.merlinProfiles.windowSizeVoting = Number(windowSizeVoting);
+    }
+    if (keepChromosomesOnly!==undefined){
+        config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepChromosomesOnly=(keepChromosomesOnly=="T");
+    }
+    if (keepRegionsOnly!==undefined){
+        config.configParameters.merlinProfiles.keepChromosomesRegionsOnly.keepRegionsOnly=(keepRegionsOnly=="T");
+    }
 
     return config;
 }

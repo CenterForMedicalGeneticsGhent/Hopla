@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { shallowMount } from '@vue/test-utils'
 import cloneDeep from 'lodash/cloneDeep'
 import TabConfigFile from '@/components/Tabs/TabConfigFile.vue'
@@ -8,42 +10,33 @@ import {
   templatePedigree
 } from '@/components/Templates'
 
+function exportConfigText(config: any): string {
+  const wrapper = shallowMount(TabConfigFile, {
+    props: config,
+    global: {
+      stubs: ['OutputDownloadConfig', 'v-container']
+    }
+  })
+  return (wrapper.vm as any).configText
+}
+
 describe('Hopla configuration conversion', () => {
   it('round-trips the default form through the generated settings text', () => {
     const configPedigree = cloneDeep(templatePedigree)
     const configParameters = cloneDeep(templateParameters)
     const configAdvanced = cloneDeep(templateAdvanced)
-    const wrapper = shallowMount(TabConfigFile, {
-      props: {
-        configPedigree,
-        configParameters,
-        configAdvanced
-      },
-      global: {
-        stubs: ['OutputDownloadConfig', 'v-container']
-      }
+    const generatedConfig = exportConfigText({
+      configPedigree,
+      configParameters,
+      configAdvanced
     })
-
-    const generatedConfig = (wrapper.vm as any).configText
     const importedConfig = config2Form(generatedConfig)
 
     expect(generatedConfig).toContain('vcf.file=/path/to/file.vcf')
     expect(generatedConfig).toContain('fam.id=famID')
-    expect(importedConfig.configPedigree.famID).toBe(configPedigree.famID)
-    expect(importedConfig.configPedigree.configParents.father.sampleID).toBe(
-      configPedigree.configParents.father.sampleID
-    )
+    expect(importedConfig.configPedigree).toEqual(configPedigree)
     expect(importedConfig.configParameters).toEqual(configParameters)
     expect(importedConfig.configAdvanced).toEqual(configAdvanced)
-
-    const canonicalWrapper = shallowMount(TabConfigFile, {
-      props: importedConfig,
-      global: {
-        stubs: ['OutputDownloadConfig', 'v-container']
-      }
-    })
-    const canonicalConfig = (canonicalWrapper.vm as any).configText
-    expect(config2Form(canonicalConfig)).toEqual(importedConfig)
   })
 
   it('imports representative pedigree and analysis settings', () => {
@@ -101,10 +94,70 @@ describe('Hopla configuration conversion', () => {
     expect(imported.configAdvanced.remainingFeatures.selfContained).toBe(true)
   })
 
-  it('rejects incomplete and oversized configuration text', () => {
-    expect(() => config2Form('vcf.file=/tmp/example.vcf.gz')).toThrow(
-      'Missing required configuration field'
+  it('reconstructs the pedigree of a settings file written without a header', () => {
+    const configText = readFileSync(
+      resolve(process.cwd(), '../example/Example setting.txt'),
+      'utf8'
     )
+
+    const imported = config2Form(configText)
+    const pedigree = imported.configPedigree
+
+    // Derived from the sample.ids/father.ids/mother.ids columns: the embryos
+    // DNA052963 and DNA052966 are the children of DNA052960 x DNA052959, and
+    // DNA052959 is in turn the child of U1 x DNA052961.
+    expect(pedigree.configParents.father.sampleID).toBe('DNA052960')
+    expect(pedigree.configParents.mother.sampleID).toBe('DNA052959')
+    expect(pedigree.configGrandParentsMaternal.maternalGrandfather.sampleID).toBe('U1')
+    expect(pedigree.configGrandParentsMaternal.maternalGrandmother.sampleID).toBe('DNA052961')
+    expect(pedigree.configEmbryos.embryoList.map((d: any) => d.sampleID)).toEqual([
+      'DNA052963',
+      'DNA052966'
+    ])
+    expect(pedigree.configSiblings).toEqual([])
+
+    // Relatives outside the analysis keep their form placeholders.
+    expect(pedigree.configGrandParentsPaternal.paternalGrandfather.sampleID).toBe('U3')
+    expect(pedigree.configGrandParentsPaternal.paternalGrandfather.gender).toBe('M')
+    expect(pedigree.configGrandParentsPaternal.paternalGrandmother.gender).toBe('F')
+
+    expect(pedigree.configParents.mother.diseaseStatus).toBe('affected')
+    expect(pedigree.configParents.father.diseaseStatus).toBe('nonaffected')
+    expect(imported.configParameters.sampleDisease.inheritance).toBe('AD')
+    expect(imported.configParameters.sampleDisease.regions).toEqual([
+      { chr: 'chr17', chrStart: 43044294, chrEnd: 43125363 }
+    ])
+
+    // fam.id is not set in the file, so the form default survives the import.
+    expect(pedigree.famID).toBe(templatePedigree.famID)
+  })
+
+  it('keeps a header-less import stable when exported and imported again', () => {
+    const configText = [
+      'vcf.file=/data/trio.vcf.gz',
+      'sample.ids=FATHER,MOTHER,EMBRYO',
+      'father.ids=NA,NA,FATHER',
+      'mother.ids=NA,NA,MOTHER',
+      'genders=M,F,NA',
+      'dp.soft.limit.ids=EMBRYO',
+      'affected.ids=MOTHER'
+    ].join('\n')
+
+    const imported = config2Form(configText)
+    expect(imported.configPedigree.configParents.father.sampleID).toBe('FATHER')
+    expect(imported.configPedigree.configEmbryos.embryoList.map((d: any) => d.sampleID))
+      .toEqual(['EMBRYO'])
+
+    expect(config2Form(exportConfigText(imported))).toEqual(imported)
+  })
+
+  it('rejects configuration text it cannot turn into a pedigree', () => {
+    expect(() => config2Form('vcf.file=/tmp/example.vcf.gz')).toThrow(
+      'Missing required configuration field: sample.ids='
+    )
+    expect(() =>
+      config2Form(['sample.ids=A,B', 'father.ids=NA,NA', 'mother.ids=NA,NA'].join('\n'))
+    ).toThrow('Cannot reconstruct the pedigree')
     expect(() => config2Form('x'.repeat(1024 * 1024 + 1))).toThrow(
       'Invalid Hopla configuration'
     )
