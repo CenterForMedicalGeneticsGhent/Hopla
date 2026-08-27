@@ -1516,7 +1516,20 @@ get_var_dis_fig <- function(vcf_list){
 get_var_depth_hist <- function(vcf_list){
   varhists <- list()
   for (s in args$samples_no_u){
-    hist <- plot_ly(x = ~vcf_list[[s]]$DP[!is.na(vcf_list[[s]]$DP) & vcf_list[[s]]$DP !=0], type = "histogram", hoverinfo = 'x+y',
+    depths <- vcf_list[[s]]$DP
+    depths <- depths[is.finite(depths) & depths != 0]
+    if (length(depths)){
+      number_of_bins <- min(100L, max(1L, nclass.Sturges(depths)))
+      binned <- graphics::hist(depths, breaks = number_of_bins, plot = F)
+      depth_counts <- data.frame(
+        depth = binned$mids,
+        count = binned$counts,
+        width = diff(binned$breaks)
+      )
+    } else {
+      depth_counts <- data.frame(depth = numeric(), count = integer(), width = numeric())
+    }
+    hist <- plot_ly(depth_counts, x = ~depth, y = ~count, width = ~width, type = "bar", hoverinfo = 'x+y',
                     marker = list(color = colors[1]), height = 200 * ceiling(length(args$samples_no_u) / 4))
     hist <- hist %>% layout(xaxis = list(title = list(text= args$samples_out[args$sample_ids == s] , standoff = 1),
                                          zeroline = F, showgrid = F),
