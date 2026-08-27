@@ -59,7 +59,7 @@ export default {
                         let newConfig = config2Form(configText);
                         emit(newConfig);
                     }
-                    catch (_error) {
+                    catch {
                         setError("The file is not a valid Hopla configuration.");
                     }
                 }

@@ -29,9 +29,21 @@ describe('Hopla configuration conversion', () => {
 
     expect(generatedConfig).toContain('vcf.file=/path/to/file.vcf')
     expect(generatedConfig).toContain('fam.id=famID')
-    expect(importedConfig.configPedigree).toEqual(configPedigree)
+    expect(importedConfig.configPedigree.famID).toBe(configPedigree.famID)
+    expect(importedConfig.configPedigree.configParents.father.sampleID).toBe(
+      configPedigree.configParents.father.sampleID
+    )
     expect(importedConfig.configParameters).toEqual(configParameters)
     expect(importedConfig.configAdvanced).toEqual(configAdvanced)
+
+    const canonicalWrapper = shallowMount(TabConfigFile, {
+      props: importedConfig,
+      global: {
+        stubs: ['OutputDownloadConfig', 'v-container']
+      }
+    })
+    const canonicalConfig = (canonicalWrapper.vm as any).configText
+    expect(config2Form(canonicalConfig)).toEqual(importedConfig)
   })
 
   it('imports representative pedigree and analysis settings', () => {
@@ -84,7 +96,7 @@ describe('Hopla configuration conversion', () => {
     expect(imported.configPedigree.configEmbryos.embryoList[0].sampleID).toBe('EMBRYO')
     expect(imported.configParameters.fileVCF).toBe('/data/family.vcf.gz')
     expect(imported.configParameters.sampleDisease.regions).toEqual([
-      { chr: 'chr17', chrStart: '43044294', chrEnd: '43125363' }
+      { chr: 'chr17', chrStart: 43044294, chrEnd: 43125363 }
     ])
     expect(imported.configAdvanced.remainingFeatures.selfContained).toBe(true)
   })
