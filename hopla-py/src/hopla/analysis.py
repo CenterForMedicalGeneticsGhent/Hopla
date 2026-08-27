@@ -96,21 +96,40 @@ def genotype_counts(
     return pl.DataFrame(rows)
 
 
-def variant_depth_table(matrix: GenotypeMatrix, filtered1: FilteredGenotypes) -> pl.DataFrame:
-    """Build compact depth histograms for raw and filter-one calls."""
+def variant_depth_table(
+    matrix: GenotypeMatrix,
+    filtered1: FilteredGenotypes,
+    filtered2: FilteredGenotypes,
+) -> pl.DataFrame:
+    """Build shared-bin depth histograms for all three filter stages."""
     rows: list[dict[str, object]] = []
-    for level, depths in ((0, matrix.dp.astype(np.float32)), (1, filtered1.dp)):
+    for level, depths in (
+        (0, matrix.dp.astype(np.float32)),
+        (1, filtered1.dp),
+        (2, filtered2.dp),
+    ):
+        all_depths = depths[np.isfinite(depths) & (depths != 0)]
+        if all_depths.size == 0:
+            continue
+        bin_count = min(100, max(1, int(np.ceil(np.log2(all_depths.size))) + 1))
+        edges = np.linspace(float(np.min(all_depths)), float(np.max(all_depths)), bin_count + 1)
+        if edges[0] == edges[-1]:
+            edges = np.linspace(edges[0] - 0.5, edges[0] + 0.5, bin_count + 1)
         for sample_index, sample in enumerate(matrix.samples):
-            valid = depths[sample_index][np.isfinite(depths[sample_index])]
-            values, counts = np.unique(valid.astype(np.uint32), return_counts=True)
+            valid = depths[sample_index][
+                np.isfinite(depths[sample_index]) & (depths[sample_index] != 0)
+            ]
+            counts, _ = np.histogram(valid, bins=edges)
             rows.extend(
                 {
                     "filter_level": level,
                     "sample": sample,
-                    "depth": int(value),
+                    "depth": float((left + right) / 2),
+                    "bin_start": float(left),
+                    "bin_end": float(right),
                     "count": int(count),
                 }
-                for value, count in zip(values, counts, strict=True)
+                for left, right, count in zip(edges[:-1], edges[1:], counts, strict=True)
             )
     return pl.DataFrame(rows)
 
@@ -156,40 +175,61 @@ def variant_density_table(
     return pl.concat(rows)
 
 
-def ado_adi(matrix: GenotypeMatrix, settings: Settings) -> pl.DataFrame:
-    """Calculate allelic drop-out and drop-in percentages for complete trios."""
+def ado_adi(
+    matrix: GenotypeMatrix, filtered1: FilteredGenotypes, settings: Settings
+) -> pl.DataFrame:
+    """Calculate filter-zero and filter-one ADO/ADI percentages for complete trios."""
     rows: list[dict[str, object]] = []
-    for child in matrix.samples:
-        pedigree_index = settings.sample_ids.index(child)
-        father = settings.father_ids[pedigree_index]
-        mother = settings.mother_ids[pedigree_index]
-        if father not in matrix.sample_index or mother not in matrix.sample_index:
-            continue
-        child_gt = matrix.gt[matrix.sample_index[child]]
-        father_gt = matrix.gt[matrix.sample_index[father]]
-        mother_gt = matrix.gt[matrix.sample_index[mother]]
-        ado_sites = ((father_gt == 0) & (mother_gt == 2)) | ((father_gt == 2) & (mother_gt == 0))
-        ado_denominator = np.count_nonzero(ado_sites & (child_gt >= 0))
-        ado = (
-            100 * np.count_nonzero(ado_sites & np.isin(child_gt, (0, 2))) / ado_denominator
-            if ado_denominator
-            else np.nan
-        )
-        adi_sites = (father_gt == 2) & (mother_gt == 2)
-        adi_denominator = np.count_nonzero(adi_sites & (child_gt >= 0))
-        adi = (
-            100 * np.count_nonzero(adi_sites & (child_gt == 1)) / adi_denominator
-            if adi_denominator
-            else np.nan
-        )
-        rows.extend(
-            [
-                {"sample": child, "metric": "ADO", "value": round(float(ado), 2)},
-                {"sample": child, "metric": "ADI", "value": round(float(adi), 2)},
-            ]
-        )
+    for level, calls in ((0, matrix.gt), (1, filtered1.gt)):
+        for child in matrix.samples:
+            pedigree_index = settings.sample_ids.index(child)
+            father = settings.father_ids[pedigree_index]
+            mother = settings.mother_ids[pedigree_index]
+            if father not in matrix.sample_index or mother not in matrix.sample_index:
+                continue
+            child_gt = calls[matrix.sample_index[child]]
+            father_gt = calls[matrix.sample_index[father]]
+            mother_gt = calls[matrix.sample_index[mother]]
+            ado_sites = ((father_gt == 0) & (mother_gt == 2)) | (
+                (father_gt == 2) & (mother_gt == 0)
+            )
+            ado_denominator = np.count_nonzero(ado_sites & (child_gt >= 0))
+            ado = (
+                100 * np.count_nonzero(ado_sites & np.isin(child_gt, (0, 2))) / ado_denominator
+                if ado_denominator
+                else np.nan
+            )
+            adi_sites = (father_gt == 2) & (mother_gt == 2)
+            adi_denominator = np.count_nonzero(adi_sites & (child_gt >= 0))
+            adi = (
+                100 * np.count_nonzero(adi_sites & (child_gt == 1)) / adi_denominator
+                if adi_denominator
+                else np.nan
+            )
+            rows.extend(
+                [
+                    {
+                        "filter_level": level,
+                        "sample": child,
+                        "metric": "ADO",
+                        "value": round(float(ado), 2),
+                    },
+                    {
+                        "filter_level": level,
+                        "sample": child,
+                        "metric": "ADI",
+                        "value": round(float(adi), 2),
+                    },
+                ]
+            )
     return pl.DataFrame(
-        rows, schema={"sample": pl.String, "metric": pl.String, "value": pl.Float64}
+        rows,
+        schema={
+            "filter_level": pl.Int8,
+            "sample": pl.String,
+            "metric": pl.String,
+            "value": pl.Float64,
+        },
     )
 
 
@@ -433,11 +473,11 @@ def build_analysis_tables(
     return {
         "variant_stats": variant_statistics(sites, matrix, filtered1, filtered2, settings),
         "genotype_counts": genotype_counts(sites, matrix, filtered1, filtered2),
-        "variant_depth": variant_depth_table(matrix, filtered1),
+        "variant_depth": variant_depth_table(matrix, filtered1, filtered2),
         "variant_density": variant_density_table(
             sites, matrix, filtered1, filtered2, settings.window_size
         ),
-        "ado_adi": ado_adi(matrix, settings),
+        "ado_adi": ado_adi(matrix, filtered1, settings),
         "baf": baf_table(sites, matrix, filtered1),
         "copy_number": copy_number,
         "cn_segments": segments,
