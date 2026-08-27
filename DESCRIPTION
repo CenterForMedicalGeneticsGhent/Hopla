@@ -3,13 +3,13 @@ Title: Genomic Family Analysis and Interactive Reporting
 Version: 2.0.0
 Authors@R: c(
     person("Lennart", "Raman", email = "leraman@users.noreply.github.com",
-           role = c("aut", "cre")),
+           role = "aut"),
     person("Matthias", "De Smet",
            email = "matthdsm@users.noreply.github.com",
-           role = c("ctb", "cre")),
+           role = c("aut", "cre")),
     person("Center for Medical Genetics Ghent",
            email = "ict.cmgg@uzgent.be",
-           role = "cre")
+           role = c("cph", "fnd"))
     )
 Description: Analyses single- and multi-sample variant call format files for
     family relationships, variant quality, copy number, Mendelian errors, and

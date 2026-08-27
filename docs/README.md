@@ -37,3 +37,13 @@ pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
 A partial toy HTML report is `example/hopla.html`. A complete settings example is `example/settings.yaml`.
+
+## Maintainers and contact
+
+- Matthias De Smet — package maintainer, <matthdsm@users.noreply.github.com>
+- Center for Medical Genetics Ghent — institutional maintainer and copyright holder, <ict.cmgg@uzgent.be>
+- Lennart Raman — original author, <leraman@users.noreply.github.com>
+
+R records exactly one `cre` (maintainer) entry in `DESCRIPTION`; that slot holds the package maintainer above, while the institutional contact is listed here and as copyright holder and funder.
+
+Bug reports: <https://github.com/CenterForMedicalGeneticsGhent/Hopla/issues>.

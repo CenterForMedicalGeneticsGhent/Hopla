@@ -14,8 +14,9 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Added a standard CRAN source-package layout and testthat coverage.
 - Added `run`, `convert`, `concordance`, and `transform` subtools to the `hopla` command.
 - Added conversion from the legacy `key=value` settings format to schema-validated YAML.
-- Added Matthias De Smet as collaborator and maintainer, and Center for Medical
-  Genetics Ghent as maintainer.
+- Added Matthias De Smet as author and package maintainer (`cre`), and Center
+  for Medical Genetics Ghent as copyright holder and funder. R allows only one
+  `cre` entry, so the institutional contact is documented in `docs/`.
 - Added snake_case linting through lintr, available as the pixi `lint` task and
   enforced in CI.
 - When `cytoband_file` is omitted, download and decompress the UCSC hg38
