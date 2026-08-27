@@ -17,6 +17,9 @@ from hopla.settings import Settings
 
 SECTION_TITLES = {
     "variant_stats": "Filter 0/1/2: variant statistics",
+    "genotype_counts": "Filter 0/1/2: genotype-count tables",
+    "variant_depth": "Filter 0/1: variant depth",
+    "variant_density": "Filter 0/1/2: number-of-variants profiles",
     "ado_adi": "Allelic drop-out (ADO) and drop-in (ADI)",
     "baf": "B-allele frequency (BAF)",
     "copy_number": "VCF-based copy number",
@@ -24,6 +27,7 @@ SECTION_TITLES = {
     "mendelian": "Mendelian errors",
     "parent_mapping": "Parent mapping",
     "haplotypes": "Haplotyping by Merlin",
+    "haplotype_concordance": "Haplotyping by Merlin: strand concordance",
 }
 
 
@@ -81,7 +85,7 @@ function table(el,t){{const n=Math.min(t.rows,500),wrap=document.createElement("
 const out=document.createElement("table"),head=out.createTHead().insertRow();t.columns.forEach(c=>head.insertCell().textContent=c);
 const body=out.createTBody();for(let r=0;r<n;r++){{const row=body.insertRow();t.columns.forEach(c=>row.insertCell().textContent=t.data[c][r]??"");}}
 wrap.append(out);el.append(wrap);const meta=document.createElement("p");meta.className="meta";meta.textContent=`${{t.rows.toLocaleString()}} rows${{t.rows>n?" (first 500 shown)":""}}`;el.append(meta);}}
-function plot(el,t){{const x=t.data.pos||t.data.start,y=t.data.af||t.data.log2_ratio;if(!x||!y)return;const c=document.createElement("canvas"),d=devicePixelRatio||1;
+function plot(el,t){{const x=t.data.pos||t.data.start||t.data.depth,y=t.data.af||t.data.log2_ratio||(x&&t.data.count);if(!x||!y)return;const c=document.createElement("canvas"),d=devicePixelRatio||1;
 c.width=1200*d;c.height=260*d;const g=c.getContext("2d");g.scale(d,d);g.fillStyle="#fff";g.fillRect(0,0,1200,260);
 const valid=y.map((v,i)=>v===null?null:[x[i],v]).filter(Boolean),step=Math.max(1,Math.ceil(valid.length/20000));
 if(!valid.length)return;const xmin=Math.min(...valid.map(v=>v[0])),xmax=Math.max(...valid.map(v=>v[0])),ymin=Math.min(...valid.map(v=>v[1])),ymax=Math.max(...valid.map(v=>v[1]));

@@ -85,4 +85,7 @@ def test_run_writes_report(tmp_path: Path, family_vcf: Path, settings_file: Path
     assert report.exists()
     html = report.read_text(encoding="utf-8")
     assert "B-allele frequency" in html
+    assert "variant depth" in html
+    assert "number-of-variants profiles" in html
+    assert "genotype-count tables" in html
     assert "application/gzip+json" in html
