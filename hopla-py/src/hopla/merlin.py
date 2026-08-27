@@ -138,21 +138,41 @@ def _run_one(directory: Path, executable: str, suffix: str, model: str) -> None:
     errors = Path(f"{prefix}.err")
     rejected = set()
     if errors.exists() and errors.stat().st_size:
-        try:
-            error_frame = pl.read_csv(errors, separator=" ", infer_schema_length=0)
-            rejected = set(error_frame[error_frame.columns[2]].to_list())
-        except pl.exceptions.PolarsError:
-            rejected = set()
+        error_lines = errors.read_text(encoding="utf-8").splitlines()[1:]
+        rejected = {columns[2] for line in error_lines if len(columns := line.split()) >= 3}
     if rejected:
-        # Merlin IDs are stable, but rebuilding filtered PED matrices is intentionally deferred:
-        # the second pass still receives --error exclusions through Merlin's generated data.
-        pass
+        _remove_rejected_markers(prefix, {str(value) for value in rejected})
     with (directory / f"merlin{suffix}.o").open("a", encoding="utf-8") as output:
         subprocess.run(
             [executable, *common, f"--{model}", "--prefix", str(prefix)],
             check=True,
             stdout=output,
         )
+
+
+def _remove_rejected_markers(prefix: Path, rejected: set[str]) -> None:
+    """Remove error-marked marker columns consistently from DAT, MAP, and PED files."""
+    dat_path = Path(f"{prefix}.dat")
+    map_path = Path(f"{prefix}.map")
+    ped_path = Path(f"{prefix}.ped")
+    dat_lines = dat_path.read_text(encoding="utf-8").splitlines()
+    marker_ids = [line.split()[1] for line in dat_lines]
+    keep = [marker not in rejected for marker in marker_ids]
+    dat_path.write_text(
+        "\n".join(line for line, retain in zip(dat_lines, keep, strict=True) if retain) + "\n",
+        encoding="utf-8",
+    )
+    map_lines = map_path.read_text(encoding="utf-8").splitlines()
+    map_path.write_text(
+        "\n".join(line for line in map_lines if line.split()[1] not in rejected) + "\n",
+        encoding="utf-8",
+    )
+    pedigree_lines = []
+    for line in ped_path.read_text(encoding="utf-8").splitlines():
+        columns = line.split()
+        calls = [call for call, retain in zip(columns[5:], keep, strict=True) if retain]
+        pedigree_lines.append("\t".join([*columns[:5], *calls]))
+    ped_path.write_text("\n".join(pedigree_lines) + "\n", encoding="utf-8")
 
 
 def _parse_blocks(path: Path, samples: tuple[str, ...]) -> dict[str, np.ndarray]:
@@ -230,4 +250,59 @@ def run_merlin(
                             "is_corrected": bool(changed[marker, strand]),
                         }
                     )
-    return pl.DataFrame(rows)
+    result = pl.DataFrame(rows)
+    _write_flow_tables(output_directory, result, matrix.samples)
+    return result
+
+
+def _write_flow_tables(
+    output_directory: Path, haplotypes: pl.DataFrame, samples: tuple[str, ...]
+) -> None:
+    """Write one compatibility flow TSV per real sample."""
+    palette = (
+        "#A6CEE3",
+        "#1F78B4",
+        "#B2DF8A",
+        "#33A02C",
+        "#FB9A99",
+        "#E31A1C",
+        "#FDBF6F",
+        "#FF7F00",
+        "#CAB2D6",
+        "#6A3D9A",
+        "#FFFF99",
+        "#B15928",
+    )
+    letters = sorted(set(haplotypes["letter"].to_list())) if not haplotypes.is_empty() else []
+    colors = {letter: palette[index % len(palette)] for index, letter in enumerate(letters)}
+    colors["X"] = "white"
+    for sample in samples:
+        frame = haplotypes.filter(pl.col("sample") == sample)
+        first = frame.filter(pl.col("strand") == 1).rename(
+            {"letter": "flowA", "is_corrected": "flowA.iscorrected"}
+        )
+        second = frame.filter(pl.col("strand") == 2).rename(
+            {"letter": "flowB", "is_corrected": "flowB.iscorrected"}
+        )
+        joined = (
+            first.join(
+                second.select("chrom", "pos", "flowB", "flowB.iscorrected"),
+                on=["chrom", "pos"],
+                how="inner",
+            )
+            .with_columns(
+                pl.col("flowA").replace_strict(colors).alias("flowA.hexcol"),
+                pl.col("flowB").replace_strict(colors).alias("flowB.hexcol"),
+            )
+            .select(
+                pl.col("chrom").alias("chr"),
+                "pos",
+                "flowA",
+                "flowA.hexcol",
+                "flowA.iscorrected",
+                "flowB",
+                "flowB.hexcol",
+                "flowB.iscorrected",
+            )
+        )
+        joined.write_csv(output_directory / f"{sample}-flow.txt", separator="\t")
