@@ -4,7 +4,7 @@ Hopla requires R 4.4 or newer.
 
 ## Pixi (Linux)
 
-The repository includes a locked [pixi](https://pixi.sh) environment for
+The monorepo root includes a locked [pixi](https://pixi.sh) environment for
 `linux-64`, `linux-aarch64`, and `osx-arm64`. Merlin 1.1.2 is included on each
 of those platforms.
 
@@ -15,16 +15,15 @@ pixi run hopla --help
 
 Use `pixi install --locked` so the committed `pixi.lock` is respected.
 
-The default environment holds analysis dependencies. The `dev` environment adds testthat and lintr.
+The default and `hopla-r` environments hold analysis dependencies. The `dev`
+and `hopla-r-dev` environments add testthat and lintr.
 
 Pixi tasks:
 
-- `hopla` — `Rscript exec/hopla`
-- `convert` — `Rscript exec/hopla convert`
-- `concordance` — `Rscript exec/hopla concordance`
-- `transform` — `Rscript exec/hopla transform`
-- `dev` environment `check` — `R CMD build` and `R CMD check --no-manual`
-- `dev` environment `lint` — `Rscript tools/lint.R`
+- `hopla` — `Rscript hopla-r/exec/hopla`
+- `convert`, `concordance`, and `transform` — R subtools
+- `hopla-r-dev` environment `check` — `R CMD build` and `R CMD check --no-manual`
+- `hopla-r-dev` environment `lint` — `Rscript hopla-r/tools/lint.R`
 
 ## Conda / Bioconda
 
@@ -38,12 +37,17 @@ Bioconda recipe: <http://bioconda.github.io/recipes/hopla/README.html>.
 
 ## Docker (R pipeline)
 
-The root Dockerfile builds a minimal Linux image from `pixi.lock`. It is separate from the UI image. Do not copy `UI/` into the R image. The runtime stage does not ship the pixi binary or the unused Pandoc executable.
+`hopla-r/Dockerfile` builds a minimal Linux image from the root `pixi.lock`.
+It does not copy `hopla-ui/`. The runtime stage does not ship the pixi binary
+or the unused Pandoc executable.
 
 ```bash
-docker build -t hopla .
+docker build -f hopla-r/Dockerfile -t hopla .
 docker run --rm hopla hopla -V
 ```
+
+CI publishes the R image as `quay.io/cmgg/hopla` with unprefixed tags such as
+`latest`, `stable`, and the R package version.
 
 ## Dependencies
 
@@ -70,6 +74,8 @@ Plotly’s version is ideally no lower than given. For the remaining packages, o
 
 Hopla must not invoke Pandoc. Self-contained HTML is produced by the internal asset inliner. Conda may still resolve Pandoc transitively through plotly’s htmlwidgets/rmarkdown dependency chain; the runtime Docker image removes the unused executable.
 
-Do not install CRAN packages outside pixi when developing from this repository. Add R dependencies to both `pixi.toml` and `DESCRIPTION`, then regenerate `pixi.lock` with pixi.
+Do not install CRAN packages outside pixi when developing from this repository.
+Add R dependencies to both the root `pixi.toml` and `hopla-r/DESCRIPTION`, then
+regenerate the root `pixi.lock` with pixi.
 
 See [CHANGELOG-R.md](../CHANGELOG-R.md) for changes to the R pipeline.

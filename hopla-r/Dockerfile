@@ -2,12 +2,12 @@ FROM ghcr.io/prefix-dev/pixi:0.77.1 AS build
 
 WORKDIR /app
 COPY pixi.toml pixi.lock ./
-COPY DESCRIPTION NAMESPACE LICENSE ./
-COPY R ./R
-COPY exec ./exec
-COPY inst ./inst
+COPY hopla-r/DESCRIPTION hopla-r/NAMESPACE hopla-r/LICENSE ./hopla-r/
+COPY hopla-r/R ./hopla-r/R
+COPY hopla-r/exec ./hopla-r/exec
+COPY hopla-r/inst ./hopla-r/inst
 RUN pixi install --locked \
-    && pixi run R CMD INSTALL . \
+    && pixi run R CMD INSTALL hopla-r \
     && pixi shell-hook -s bash > /app/entrypoint.sh \
     && printf '\nexec "$@"\n' >> /app/entrypoint.sh \
     && rm -f /app/.pixi/envs/default/bin/pandoc \

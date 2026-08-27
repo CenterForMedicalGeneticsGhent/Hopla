@@ -1,6 +1,8 @@
 # HTML output
 
-The analysis writes an interactive HTML file. Hovering, dragging, and related Plotly controls manipulate the figures, and raw data can often be inspected. A partial toy example is [`example/hopla.html`](../example/hopla.html).
+The analysis writes an interactive HTML file. Hovering, dragging, and related
+Plotly controls manipulate the figures, and raw data can often be inspected.
+Example output archives are available in [`example/`](../example/).
 
 When `self_contained` is `true`, Hopla compresses Plotly data inside the HTML and the browser expands it before drawing the report. The file remains a single offline document and requires JavaScript and a current browser with `DecompressionStream` support. Report size still grows with the number of samples and plotted variants. Restrict `baf_ids`, enable `limit_baf_to_p` or `limit_pm_to_p`, and use the haplotyping region controls when further reduction is needed.
 

@@ -1,8 +1,9 @@
 # Package and engine structure
 
-Hopla is a standard R source package. Public functions live in `R/`, generated
-help lives in `man/`, installed data and schemas live in `inst/`, package tests
-live in `tests/`, and executable scripts live in `exec/`.
+`hopla-r/` is a standard R source package within the Hopla monorepo. Public
+functions live in `R/`, generated help lives in `man/`, installed data and
+schemas live in `inst/`, package tests live in `tests/`, and executable scripts
+live in `exec/`.
 
 ```text
 DESCRIPTION                 package metadata and dependencies

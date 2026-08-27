@@ -2,4 +2,3 @@ linters: list(
     object_name_linter(styles = "snake_case"),
     trailing_whitespace_linter()
   )
-exclusions: list("UI")

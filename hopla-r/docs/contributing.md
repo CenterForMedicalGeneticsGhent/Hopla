@@ -1,16 +1,22 @@
 # Contributing
 
-These instructions apply to the repository root. Work under `UI/` is out of scope unless a task explicitly names it. Never merge a pull request unless the user explicitly requests it.
+These instructions apply to the R package under `hopla-r/`. Work under
+`hopla-ui/` is out of scope unless a task explicitly names it. Never merge a
+pull request unless the user explicitly requests it.
 
-Agents should also read the autodiscovered [AGENTS.md](../AGENTS.md) at the repository root. That file is the parallel copy of these rules; keep them in sync.
+Agents should also read the autodiscovered [AGENTS.md](../../AGENTS.md) at the
+repository root. That file is the parallel copy of these rules; keep them in
+sync.
 
 ## Runtime and dependencies
 
-- Use the root pixi environment and committed `pixi.lock`.
+- Use the root `hopla-r` / `hopla-r-dev` pixi environments and committed
+  `pixi.lock`.
 - Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
   available on each of those platforms.
 - Require R 4.4 or newer.
-- Add R dependencies to both `pixi.toml` and `DESCRIPTION`; regenerate `pixi.lock` with pixi.
+- Add R dependencies to both the root `pixi.toml` and `hopla-r/DESCRIPTION`;
+  regenerate the root `pixi.lock` with pixi.
 - Do not install CRAN packages outside pixi.
 - Hopla must not invoke Pandoc. Self-contained HTML is produced by the internal asset inliner.
 
@@ -53,23 +59,26 @@ Details: [install.md](install.md).
 
 ## Containers
 
-- Build the root Docker image from `pixi.lock` using a multi-stage Dockerfile.
-- Do not copy `UI/` into the R image.
+- Build `hopla-r/Dockerfile` from the repository-root context and `pixi.lock`.
+- Do not copy `hopla-ui/` into the R image.
 - Do not ship the pixi binary or the unused Pandoc executable in the runtime stage.
 
 ## Verification
 
 - Run `pixi install --locked`.
-- Run `pixi run -e dev lint`; CI lint failures must be fixed, not suppressed globally.
+- Run `pixi run -e hopla-r-dev lint`; CI lint failures must be fixed, not
+  suppressed globally.
 - Run package tests and `R CMD check --no-manual`.
 - Test YAML and JSON validation, including rejection of unknown or mistyped settings.
 - Test all CLI subtools and their failure exit statuses.
-- Confirm no task-scoped changes appear under `UI/` unless the task named that tree.
-- Build the root Docker image when Docker is available.
+- Confirm no task-scoped changes appear under `hopla-ui/` unless the task named
+  that tree.
+- Build the R Docker image when Docker is available.
 
 ## Continuous integration and releases
 
-- Build and check the R package and build the root Docker image for every pull request targeting `main`.
+- Build and check the R package and build its Docker image in the R-only
+  workflow for every relevant pull request targeting `main`.
 - On pushes to `main` or `master`, tag the image with the full commit SHA and `latest`.
 - On a published release, tag the image with the full commit SHA, package version, and `stable`.
 - Attach the R source package and compressed Docker image to the GitHub release.

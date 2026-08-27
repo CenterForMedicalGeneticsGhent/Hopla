@@ -2,7 +2,9 @@
 
 Hopla performs classic genomic single, duo, trio, and larger-family analysis from one (multisample) VCF, and writes interactive HTML visualizations. When the pedigree allows it, it also runs offline haplotyping with [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Besides post-natal work, the report is meant to support embryo selection during preimplantation genetic testing, with the aim of healthy births in affected families. The name is both a ‘haplo’ anagram and a children’s television show.
 
-This manual compiles the former root README, settings reference, contributor instructions, R changelog pointer, and UI notes. Rewording is for consistency with the current YAML/JSON CLI; the facts are the same.
+This manual documents the CRAN-compatible `hopla` R package in `hopla-r/`.
+Repository-wide and UI documentation are available from the
+[monorepo README](../../README.md).
 
 ## Contents
 
@@ -11,7 +13,6 @@ This manual compiles the former root README, settings reference, contributor ins
 - [Settings](settings.md)
 - [HTML output](output.md)
 - [Package and engine structure](architecture.md)
-- [Web UI](ui.md)
 - [Contributing](contributing.md)
 - [R pipeline changelog](../CHANGELOG-R.md)
 
@@ -32,12 +33,13 @@ Install badges for the published Bioconda package:
 
 ```bash
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
-cd hopla
-pixi install
-pixi run hopla run example/settings.yaml path/to/family.vcf.gz
+cd Hopla
+pixi install --locked
+pixi run hopla run hopla-r/example/settings.yaml path/to/family.vcf.gz
 ```
 
-A partial toy HTML report is `example/hopla.html`. A complete settings example is `example/settings.yaml`.
+Example report archives and a complete settings example are in
+[`hopla-r/example/`](../example/).
 
 ## Maintainers and contact
 

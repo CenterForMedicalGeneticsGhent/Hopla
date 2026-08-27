@@ -17,6 +17,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Content Security Policy and browser security headers for the nginx image.
 - Validation and user-facing errors for imported configuration files.
 
+### Changed
+
+- Moved the application into `hopla-ui/` in the Hopla monorepo, with root pixi
+  tasks and an independent CI workflow.
+- Published UI containers now use `quay.io/cmgg/hopla` with `ui-`-prefixed
+  tags.
+
 ### Fixed
 
 - Uploading a hand-written settings file no longer fails as incompatible.

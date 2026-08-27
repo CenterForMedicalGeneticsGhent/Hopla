@@ -1,10 +1,20 @@
-name: Build and publish Hopla
+name: R package CI
 
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "hopla-r/**"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/r-ci.yaml"
   push:
     branches: [main, master]
+    paths:
+      - "hopla-r/**"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/r-ci.yaml"
   release:
     types: [published]
 
@@ -12,39 +22,8 @@ permissions:
   contents: write
 
 jobs:
-  ui-image:
-    name: Build and push UI image
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - name: Build Image
-        id: build-image
-        uses: redhat-actions/buildah-build@9dc2ade9b5db229966b5025ae266311e12f349c4 # v2
-        with:
-          image: hopla
-          tags: latest ${{ github.event.release.tag_name }}
-          context: ./UI
-          containerfiles: |
-            ./UI/Dockerfile
-      - name: Push To quay.io
-        id: push-to-quay
-        if: github.event_name != 'pull_request'
-        uses: redhat-actions/push-to-registry@5860fc963bf8f2b3221773a023141612f010c469 # v2
-        with:
-          image: ${{ steps.build-image.outputs.image }}
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: quay.io/cmgg
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
-
-      - name: Print image url
-        if: github.event_name != 'pull_request'
-        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
-
-  r-package:
-    name: Build and check R package
+  package:
+    name: Lint, build, and check R package
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -54,19 +33,19 @@ jobs:
           pixi-version: v0.77.1
           cache: true
           locked: true
-          environments: dev
+          environments: hopla-r-dev
 
       - name: Lint R code
-        run: pixi run -e dev lint
+        run: pixi run -e hopla-r-dev lint
 
       - name: Build source package
         run: |
-          pixi run -e dev R CMD build .
+          pixi run -e hopla-r-dev R CMD build hopla-r
           mkdir -p dist
           mv hopla_*.tar.gz dist/
 
       - name: Check source package
-        run: pixi run -e dev R CMD check --no-manual dist/hopla_*.tar.gz
+        run: pixi run -e hopla-r-dev R CMD check --no-manual dist/hopla_*.tar.gz
 
       - name: Upload R package artifact
         uses: actions/upload-artifact@v4
@@ -80,8 +59,8 @@ jobs:
         with:
           files: dist/hopla_*.tar.gz
 
-  docker-image:
-    name: Build R pipeline image
+  image:
+    name: Build and publish R image
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -92,13 +71,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: "."
+          file: hopla-r/Dockerfile
           load: true
           tags: hopla:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Test Docker image
-        run: docker run --rm hopla:${{ github.sha }} hopla -V
+        run: docker run --rm hopla:${GITHUB_SHA} hopla -V
 
       - name: Save Docker image artifact
         run: |
@@ -126,7 +106,7 @@ jobs:
         run: |
           tags=("$IMAGE:${GITHUB_SHA}")
           if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
-            package_version="$(awk '/^Version:/{print $2}' DESCRIPTION)"
+            package_version="$(awk '/^Version:/{print $2}' hopla-r/DESCRIPTION)"
             tags+=("$IMAGE:${package_version}" "$IMAGE:stable")
           else
             tags+=("$IMAGE:latest")

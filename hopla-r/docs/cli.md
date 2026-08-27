@@ -68,6 +68,6 @@ The former standalone helper scripts are exported package functions (`hopla_run`
 
 ```bash
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
-cd hopla
-pixi run hopla run example/settings.yaml path/to/family.vcf.gz
+cd Hopla
+pixi run hopla run hopla-r/example/settings.yaml path/to/family.vcf.gz
 ```

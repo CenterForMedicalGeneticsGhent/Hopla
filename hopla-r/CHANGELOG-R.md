@@ -1,6 +1,7 @@
 # R pipeline changelog
 
-This changelog covers the Hopla R package and command-line subtools. Changes to the Vue application under `UI/` are tracked separately.
+This changelog covers the Hopla R package and command-line subtools. Changes to
+the Vue application under `hopla-ui/` are tracked separately.
 
 ## [2.0.0] - 2026-08-27
 
@@ -25,10 +26,12 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Added timestamped `error` / `warn` / `info` / `debug` logging, selected with
   `-L` / `--log-level` or `HOPLA_LOG_LEVEL`.
 - Compiled the former scattered markdown into the [docs/](docs/README.md)
-  manual (install, CLI, settings, output, UI, contributing).
+  manual (install, CLI, settings, output, contributing).
 
 ### Changed
 
+- Moved the CRAN-compatible package into `hopla-r/` as part of a monorepo with
+  the separate `hopla-ui/` package and shared root pixi workspace.
 - Split the analysis engine into ordered private modules under `inst/engine/`;
   `hopla-run.R` now contains only module loading and pipeline orchestration.
 - Switched the report text, plots, and tables to a modern sans-serif system

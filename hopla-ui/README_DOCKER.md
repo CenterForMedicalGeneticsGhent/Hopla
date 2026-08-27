@@ -1,10 +1,14 @@
 # Docker setup
 
+From the repository root:
+
 ```bash
-docker build -t cmgg/hopla-ui .
+docker build -f hopla-ui/Dockerfile -t hopla:ui-local hopla-ui
 docker run --read-only --cap-drop=ALL --tmpfs /tmp \
-  --security-opt=no-new-privileges --publish 8080:8080 cmgg/hopla-ui
+  --security-opt=no-new-privileges --publish 8080:8080 hopla:ui-local
 ```
+
+Published UI images use `quay.io/cmgg/hopla:ui-<tag>`.
 
 Open <http://localhost:8080>.
 

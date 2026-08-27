@@ -96,7 +96,7 @@ describe('Hopla configuration conversion', () => {
 
   it('reconstructs the pedigree of a settings file written without a header', () => {
     const configText = readFileSync(
-      resolve(process.cwd(), '../example/Example setting.txt'),
+      resolve(process.cwd(), 'tests/fixtures/legacy-settings.txt'),
       'utf8'
     )
 

@@ -1,24 +1,54 @@
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/hopla/README.html)
-[![Anaconda-Server Badge](https://anaconda.org/bioconda/hopla/badges/downloads.svg)](https://anaconda.org/bioconda/hopla)
-[![Anaconda-Server Badge](https://anaconda.org/bioconda/hopla/badges/latest_release_date.svg)](https://anaconda.org/bioconda/hopla)
-[![Anaconda-Server Badge](https://anaconda.org/bioconda/hopla/badges/version.svg)](https://anaconda.org/bioconda/hopla)
-
 # Hopla
 
-Hopla enables classic genomic single, duo, trio, and larger-family analysis from one (multisample) VCF, producing interactive visualizations. When possible it runs offline pedigree haplotyping with [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). The report also supports embryo selection during preimplantation genetic testing. The name is both a ‘haplo’ anagram and a children’s television show.
+Hopla is a monorepo for genomic family analysis and its browser-based
+configuration editor.
 
-**Full manual:** [docs/README.md](docs/README.md)
+## Packages
+
+| Package | Description | Documentation |
+|---------|-------------|---------------|
+| [`hopla-r/`](hopla-r/) | CRAN-compatible R package, CLI, analysis engine, and interactive report generator. Its installed R package name remains `hopla`. | [R package manual](hopla-r/docs/README.md) |
+| [`hopla-ui/`](hopla-ui/) | Vue 3 application for creating Hopla configuration files locally in the browser. | [UI README](hopla-ui/README.md) and [UI docs](hopla-ui/docs/README.md) |
+
+The repository root owns the shared `pixi.toml`, `pixi.lock`, CI workflows, and
+contributor guidance. Each package keeps its source, tests, Dockerfile,
+changelog, and detailed documentation in its own directory.
+
+## Development with Pixi
+
+Install the locked environments from the repository root:
 
 ```bash
-pixi install
-pixi run hopla run example/settings.yaml path/to/family.vcf.gz
+pixi install --locked
 ```
 
-```bash
-conda install -c conda-forge -c bioconda hopla
-```
+Run the R CLI and checks:
 
 ```bash
-docker build -t hopla .
-docker run --rm hopla hopla -V
+pixi run hopla run hopla-r/example/settings.yaml path/to/family.vcf.gz
+pixi run -e hopla-r-dev lint
+pixi run -e hopla-r-dev check
+```
+
+Run the UI:
+
+```bash
+pixi run -e hopla-ui serve
+pixi run -e hopla-ui lint
+pixi run -e hopla-ui test
+pixi run -e hopla-ui build
+```
+
+## Container images
+
+Both packages use `quay.io/cmgg/hopla`; tags identify the package:
+
+- R package: `latest`, `stable`, a package version such as `2.0.0`, or a commit SHA.
+- UI package: `ui-latest`, `ui-stable`, a UI version such as `ui-0.2.0`, or `ui-<commit-sha>`.
+
+Build either image locally from the repository root:
+
+```bash
+docker build -f hopla-r/Dockerfile -t hopla .
+docker build -f hopla-ui/Dockerfile -t hopla:ui-local hopla-ui
 ```
