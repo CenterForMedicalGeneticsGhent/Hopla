@@ -300,21 +300,28 @@ test_that("log level filters stdout records", {
 })
 
 test_that("type.convert coercion warnings are logged at debug", {
+  skip_if_not_installed("data.table")
   previous <- hopla_log_level()
   on.exit(hopla_log_level(previous), add = TRUE)
 
   coerce <- function() {
     hopla:::hopla_with_debug_warnings(
-      lapply(list(".", "1,2"), type.convert, as.is = TRUE)
+      data.table::tstrsplit(
+        c("1,2", ".", NA, "3,4"),
+        ",",
+        fixed = TRUE,
+        type.convert = as.numeric,
+        keep = 1:2
+      )
     )
   }
 
   hopla_log_level("info")
-  expect_warning(capture.output(coerce()), NA)
-  expect_identical(capture.output(coerce()), character())
+  expect_warning(invisible(coerce()), NA)
+  expect_identical(capture.output(invisible(coerce())), character())
 
   hopla_log_level("debug")
-  logged <- capture.output(coerce())
+  logged <- capture.output(invisible(coerce()))
   expect_match(paste(logged, collapse = "\n"), "NAs introduced by coercion")
 })
 
