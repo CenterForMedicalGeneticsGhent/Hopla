@@ -10,6 +10,9 @@ import polars as pl
 
 FILE_NAMES = {
     "variant_stats": "variant_stats.parquet",
+    "genotype_counts": "genotype_counts.parquet",
+    "variant_depth": "variant_depth.parquet",
+    "variant_density": "variant_density.parquet",
     "ado_adi": "ado_adi.parquet",
     "baf": "baf.parquet",
     "copy_number": "copy_number.parquet",
@@ -17,6 +20,7 @@ FILE_NAMES = {
     "mendelian": "mendelian.parquet",
     "parent_mapping": "parent_mapping.parquet",
     "haplotypes": "haplotypes.parquet",
+    "haplotype_concordance": "haplotype_concordance.parquet",
 }
 
 COLUMN_DESCRIPTIONS = {
