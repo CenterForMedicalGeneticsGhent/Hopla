@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
-version <- 'v1.0.6'
+version <- 'v1.1.0'
+minimum.r.version <- '4.4.0'
 
 # Structure:
 ## - Functions for ...
@@ -27,21 +28,37 @@ version <- 'v1.0.6'
 # Parameter parsing
 # -----
 
+#' Trim leading and trailing whitespace.
+#' @param x A character vector.
+#' @return A character vector.
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
+#' Split phased genotype strings into two strands.
+#' @param x A character vector containing `|`.
+#' @return A two-element list of character vectors.
+split.strands <- function(x){
+  stopifnot(is.character(x))
+  data.table::tstrsplit(x, '|', fixed = T, keep = 1:2)
+}
+
+numeric.args <- c('dp.hard.limit', 'af.hard.limit', 'dp.soft.limit',
+                  'min.seg.var', 'min.seg.var.X', 'window.size.voting',
+                  'window.size.voting.X', 'X.cutoff', 'Y.cutoff', 'window.size',
+                  'regions.flanking.size', 'value.of.P', 'dot.factor')
+boolean.args <- c('run.merlin', 'keep.chromosomes.only', 'keep.regions.only',
+                  'concordance.table', 'limit.baf.to.P', 'limit.pm.to.P',
+                  'self.contained', 'cairo')
+
+#' Coerce one command-line value to its declared type.
+#' @param arg A single argument name.
+#' @param value A character value, optionally comma-separated.
+#' @return A character, numeric, or logical vector.
 format.value <- function(arg, value){
+  stopifnot(is.character(arg), length(arg) == 1, is.character(value))
   if (!(arg %in% names(args))){
     cat(paste0('ERROR: Argument --', arg, ' does not exist.\n'))
-    quit(status=0)
+    quit(status=1)
   }
-  
-  numeric.args <- c('dp.hard.limit', 'af.hard.limit', 'dp.soft.limit',
-                    'min.seg.var', 'min.seg.var.X', 'window.size.voting',
-                    'window.size.voting.X', 'X.cutoff', 'Y.cutoff', 'window.size',
-                    'regions.flanking.size', 'value.of.P', 'dot.factor')
-  boolean.args <- c('run.merlin', 'keep.chromosomes.only', 'keep.regions.only',
-                    'concordance.table', 'limit.baf.to.P', 'limit.pm.to.P',
-                    'self.contained', 'cairo')
   
   value = sapply(strsplit(value, ',')[[1]], function(x) trim(x))
   
@@ -54,19 +71,72 @@ format.value <- function(arg, value){
   return(value)
 }
 
+#' Overlay command-line options onto the global argument defaults.
+#' @param cmd.args A character vector from `commandArgs()`.
+#' @return A named list of resolved arguments.
 get.cmd.args <- function(cmd.args){
-  for (i in which(grepl('^--', cmd.args))){
-    arg <- gsub('--', '', cmd.args[i])
-    value <- format.value(arg, cmd.args[i+1])
+  stopifnot(is.character(cmd.args))
+  i <- 1L
+  while (i <= length(cmd.args)){
+    token <- cmd.args[i]
+    if (!grepl('^--', token)){
+      cat(paste0('ERROR: Unexpected positional argument: ', token, '\n'), file = stderr())
+      quit(status = 1)
+    }
+
+    if (grepl('=', token, fixed = T)){
+      arg <- sub('^--([^=]+)=.*$', '\\1', token)
+      value <- sub('^--[^=]+=', '', token)
+      i <- i + 1L
+    } else {
+      arg <- sub('^--', '', token)
+      has.value <- i < length(cmd.args) && !grepl('^--', cmd.args[i + 1L])
+      if (arg %in% boolean.args && !has.value){
+        value <- 'TRUE'
+        i <- i + 1L
+      } else {
+        if (!has.value){
+          cat(paste0('ERROR: Missing value for --', arg, '.\n'), file = stderr())
+          quit(status = 1)
+        }
+        value <- cmd.args[i + 1L]
+        i <- i + 2L
+      }
+    }
+    value <- format.value(arg, value)
     args[[arg]] <- value
   }
   return(args)
 }
 
+#' Print generated command-line help.
+#' @param defaults A named list of option defaults.
+#' @return Invisible `NULL`.
+print.help <- function(defaults){
+  stopifnot(is.list(defaults), !is.null(names(defaults)))
+  cat('Usage: hopla --vcf.file FILE --sample.ids ID[,ID...] [options]\n\n')
+  cat('Options may be written as --name value or --name=value.\n')
+  cat('A bare boolean option sets it to TRUE. Settings files remain supported with --settings FILE.\n\n')
+  cat('General:\n')
+  cat('  -h, --help                 Show this help and exit\n')
+  cat('  -v, --version              Show the version and exit\n')
+  cat('      --settings FILE        Load arguments from a settings file\n\n')
+  cat('Analysis options:\n')
+  for (arg in names(defaults)){
+    type <- if (arg %in% boolean.args) 'boolean' else if (arg %in% numeric.args) 'numeric' else 'string/list'
+    default <- if (length(defaults[[arg]])) paste(defaults[[arg]], collapse = ',') else 'none'
+    cat(sprintf('      --%-25s %-11s default: %s\n', arg, type, default))
+  }
+  invisible(NULL)
+}
+
+#' Read a Hopla settings file.
+#' @param settings.file Path to a settings file.
+#' @return A named argument list.
 get.file.args <- function(settings.file){
   if (!file.exists(settings.file)){
     cat('ERROR: File given by --settings does not exist. Please Correct.\n')
-    quit(status=0)
+    quit(status=1)
   }
   at.info = F
   for (line in suppressWarnings(readLines(settings.file))){
@@ -92,7 +162,11 @@ get.file.args <- function(settings.file){
   return(args)
 }
 
+#' Validate and derive dependent arguments.
+#' @param args A named argument list.
+#' @return A validated argument list.
 post.process.args <- function(args){
+  stopifnot(is.list(args))
   no.u.mask <- !sapply(args$sample.ids, function(x) toupper(substr(x,1,1)) == 'U' &
                          !is.na(suppressWarnings(as.numeric(substr(x,2,999)))))
   
@@ -122,7 +196,7 @@ post.process.args <- function(args){
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man.args){
       cat(paste0('ERROR: Argument --', arg, ' is mandatory. Please provide.\n'))
-      quit(status=0)
+      quit(status=1)
     }
   }
   
@@ -138,7 +212,7 @@ post.process.args <- function(args){
     if (length(not.in(args[[arg]], args$sample.ids))){
       cat(paste0('ERROR: Fetched from argument --', arg,', \'', not.in(args[[arg]], args$sample.ids),
                  '\' could not be found in the provided --sample.ids. Please correct.\n'))
-      quit(status=0)
+      quit(status=1)
     }
   }
   
@@ -149,7 +223,7 @@ post.process.args <- function(args){
     
     if (any(is.na(args[[arg]])) & !(arg %in% c('father.ids', 'mother.ids', 'genders'))){
       cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,'. Please correct.\n'))
-      quit(status=0)
+      quit(status=1)
     }
     
     if (arg == 'sample.ids'){
@@ -157,7 +231,7 @@ post.process.args <- function(args){
         if (!length(which(!is.na(args$mother.ids))) & !length(which(!is.na(args$father.ids)))){
           cat('ERROR: More than one sample is given in --sample.ids. Please provide their relation using argument(s)', 
               '--father.ids and/or --mother.ids. Otherwise, run separately.\n')
-          quit(status=0)
+          quit(status=1)
         }
       }
     }
@@ -165,7 +239,7 @@ post.process.args <- function(args){
     if (arg == 'genders'){
       if (!all(args$genders %in% c('M', 'F', NA))){
         cat('ERROR: Argument --genders should be coded as \'M\', \'F\' or \'NA\'. Please correct.\n')
-        quit(status=0)
+        quit(status=1)
       }
     }
     
@@ -173,7 +247,7 @@ post.process.args <- function(args){
       if (arg == same.length.arg){
         if (!(length(args$sample.ids) == length(args[[same.length.arg]]))){
           cat(paste0('ERROR: Arguments --sample.ids and --', same.length.arg,' should be of the same length. Please correct.\n'))
-          quit(status=0)
+          quit(status=1)
         }
       }
     }
@@ -189,7 +263,7 @@ post.process.args <- function(args){
                    'keep.informative.ids', 'keep.hetero.ids', 'baf.ids')){
       if (length(intersect(args[[arg]], args$samples.u))){
         cat(paste0('ERROR: \'U\' IDs not allowed in --', arg, '. Please correct.\n'))
-        quit(status=0)
+        quit(status=1)
       }
     }
     
@@ -207,39 +281,39 @@ post.process.args <- function(args){
     if (arg == 'keep.informative.ids'){
       if (!(length(args[[arg]]) %in% c(0,2))){
         cat(paste0('ERROR: No or two samples should be given at --keep.informative.ids. Please correct.\n'))
-        quit(status=0)
+        quit(status=1)
       }
     }
     
     if (arg == 'merlin.model'){
       if (!(args$merlin.model %in% c('sample', 'best'))){
         cat('ERROR: Argument --merlin.model should be coded as \'sample\' or \'best\'. Please correct.\n')
-        quit(status=0)
+        quit(status=1)
       }
     }
     
     if (arg == 'vcf.file'){
       if (!file.exists(args$vcf.file)){
         cat('ERROR: the file given by --vcf.file does not exist. Please correct.\n')
-        quit(status=0)
+        quit(status=1)
       }
     }
     if (arg == 'cytoband.file'){
       if (length(args$cytoband.file) & !file.exists(args$cytoband.file)){
         cat('ERROR: the file given by --vcf.file does not exist. Please correct.\n')
-        quit(status=0)
+        quit(status=1)
       }
     }
     if (arg == 'value.of.P'){
       if (args$value.of.P <= 0 | args$value.of.P > 1){
         cat('ERROR: --value.of.P should be within ]0, 1]. Please correct.\n')
-        quit(status=0)
+        quit(status=1)
       }
     }
     if (arg == 'af.hard.limit'){
       if (args$af.hard.limit < 0 | args$af.hard.limit >= 1){
         cat('ERROR: --af.hard.limit should be within [0, 1[. Please correct.\n')
-        quit(status=0)
+        quit(status=1)
       }
     }
   }
@@ -268,6 +342,9 @@ post.process.args <- function(args){
 # Cytobands
 # -----
 
+#' Load chromosome cytobands.
+#' @param file Path to a tab-separated cytoband file.
+#' @return A named list of cytoband records.
 get.cytobands <- function(file){
   cytobands <- list()
   chrs.to.index <- sapply(chrs, function(x) which(chrs == x))
@@ -291,6 +368,9 @@ get.cytobands <- function(file){
 # Load
 # -----
 
+#' Load selected samples from a VCF.
+#' @param args A validated argument list.
+#' @return A named list of sample data frames.
 load.samples <- function(args){
   cat('Loading vcf.gz ...\n')
   vcf <- read.vcfR(args$vcf.file, verbose = F)
@@ -305,43 +385,45 @@ load.samples <- function(args){
   for (x in c('CHROM', 'ID', 'REF', 'ALT')) vcf.A[[x]] <- as.character(vcf.A[[x]])
   
   snp.mask <- nchar(vcf.A$REF) == 1 & nchar(vcf.A$ALT) == 1 & vcf.A$CHROM %in% c(chrs, 'chrY')
-  
-  ## vcf.B (data)
-  vcf.B.tmp <- as.data.frame(vcf@gt)
-  cnames <- strsplit(as.character(vcf.B.tmp$FORMAT[1]), ':')[[1]]
+  available.samples <- colnames(vcf@gt)[-1]
+  cat('  ... available samples in --vcf.file: ', paste0(available.samples, collapse = ','), '\n')
+  missing.samples <- args$samples.no.u[!(args$samples.no.u %in% available.samples)]
+  if (length(missing.samples)){
+    cat(paste0('ERROR: Sample(s) not found in --vcf.file: ', paste(missing.samples, collapse = ', '), '.\n'))
+    quit(status=1)
+  }
+
+  vcf.A <- vcf.A[snp.mask,]
+  genotypes <- extract.gt(vcf, element = 'GT', convertNA = F)[snp.mask, args$samples.no.u, drop = F]
+  allele.depths <- extract.gt(vcf, element = 'AD', convertNA = F)[snp.mask, args$samples.no.u, drop = F]
+  depths <- extract.gt(vcf, element = 'DP', as.numeric = T)[snp.mask, args$samples.no.u, drop = F]
+  rm(vcf)
+  invisible(gc())
+
   vcfs <- list()
-  once = T
-  cat('  ... available samples in --vcf.file: ', paste0(colnames(vcf.B.tmp)[-1], collapse = ','), '\n')
+  pos.out <- scales::comma(vcf.A$POS, accuracy = 1)
   cat('Parsing variants, working ...\n')
 
   for (sample in args$samples.no.u){
-    if (!(sample %in% colnames(vcf.B.tmp))){
-      cat(paste0('ERROR: Fetched from argument --sample.ids, \'',  sample,
-                 '\' could not be found in the provided --vcf.file. Please correct.\n'))
-      quit(status=0)
-    }
     cat(paste0('  ... at ', sample, '\n'))
-    vcf.B <- suppressWarnings(as.data.frame(do.call(rbind, strsplit(as.character(vcf.B.tmp[[sample]]), ':')))[,1:length(cnames)])
-    colnames(vcf.B) <- cnames
-    
-    vcf.B <- vcf.B[,c('GT', 'AD', 'DP')]
-    vcf.B$DP <- suppressWarnings(as.numeric(as.character(vcf.B$DP)))
-    for (x in c('GT', 'AD')) vcf.B[[x]] <- as.character(vcf.B[[x]])
+    ad <- data.table::tstrsplit(allele.depths[,sample], ',', fixed = T, type.convert = as.numeric, keep = 1:2)
+    total.ad <- ad[[1]] + ad[[2]]
+    vcf.B <- data.frame(
+      GT = genotypes[,sample],
+      AD = total.ad,
+      DP = depths[,sample],
+      stringsAsFactors = F
+    )
     
     vcf.B$GT[vcf.B$GT == '0' & vcf.A$CHROM == 'chrX'] <- '0/0'
     vcf.B$GT[vcf.B$GT == '1' & vcf.A$CHROM == 'chrX'] <- '1/1'
     vcf.B$GT <- gsub('|', '/', vcf.B$GT, fixed = T)
     vcf.B$DP[is.na(vcf.B$DP)] <- 0
-    vcf.B$AF <- suppressWarnings(round(as.numeric(sapply(strsplit(vcf.B$AD, ','), function(x) x[2])) / 
-                                         sapply(strsplit(vcf.B$AD, ','), function(x) sum(as.numeric(x))), 3))
-    vcf.B$AD <- suppressWarnings(sapply(strsplit(vcf.B$AD, ','), function(x) sum(as.numeric(x))))
+    vcf.B$AF <- suppressWarnings(round(ad[[2]] / total.ad, 3))
     
-    vcf <- cbind(vcf.A[which(snp.mask),], vcf.B[which(snp.mask),])
-    if (once){
-      pos.out <- scales::comma(vcf$POS, accuracy = 1)
-      once = F
-    }
-    vcf$POS.out <- pos.out ; vcfs[[sample]] <- vcf
+    sample.vcf <- cbind(vcf.A, vcf.B)
+    sample.vcf$POS.out <- pos.out
+    vcfs[[sample]] <- sample.vcf
   }
   return(vcfs)
 }
@@ -350,6 +432,9 @@ load.samples <- function(args){
 # Gender prediction
 # -----
 
+#' Predict missing sample genders from chromosome depth.
+#' @param genders A character vector containing M, F, or NA.
+#' @return A completed character vector.
 predict.genders <- function(genders){
   cat('Predicting genders ...\n')
   
@@ -379,7 +464,7 @@ predict.genders <- function(genders){
     }
     if (s %in% args$samples.u){
       cat(paste0('ERROR: gender of ', s, ' cannot be derived (no data), please provide manually using --genders.\n'))
-      quit(status=0)
+      quit(status=1)
     }
     X.gender = X.model[args$samples.no.u == s]
     Y.gender = Y.model[args$samples.no.u == s]
@@ -405,7 +490,7 @@ predict.genders <- function(genders){
     }
     if (is.na(Y.gender) & is.na(X.gender)){
       cat(paste0('ERROR: gender of ', s, ' cannot be derived (not enough data at sex chromosomes), please provide manually using --genders.\n'))
-      quit(status=0)
+      quit(status=1)
     }
   }
   cat(paste0('  ... values of X model (~ X copies):\n'))
@@ -419,6 +504,9 @@ predict.genders <- function(genders){
 # Add ghost parents (if necessary), requires non-NA genders
 # -----
 
+#' Add identifiers for missing pedigree parents.
+#' @param args A validated argument list.
+#' @return An updated argument list.
 add.ghosts <- function(args){
   u = 0
   if (length(args$samples.u)) u = max(as.numeric(substr(args$samples.u, 2, 999)))
@@ -447,6 +535,9 @@ add.ghosts <- function(args){
 # Filtering
 # -----
 
+#' Apply depth and allele-fraction filters.
+#' @param vcf.list A named list of sample data frames.
+#' @return A filtered list of sample data frames.
 apply.filter1 <- function(vcf.list){
   cat('Applying filter 1 ...\n')
   
@@ -469,7 +560,7 @@ apply.filter1 <- function(vcf.list){
   hard.mask <- keep.these.1 & keep.these.2
   if (!any(hard.mask)){
     cat('ERROR: No variants remain after applying filter 1.\n')
-    quit(status=0)
+    quit(status=1)
   }
   
   for (sample in args$samples.no.u){
@@ -493,7 +584,7 @@ apply.filter1 <- function(vcf.list){
     
     if (all(x$GENO == 'N/N')){
       cat(paste0('ERROR: No variants remain for sample ', sample ,' after applying filter 1.\n'))
-      quit(status=0)
+      quit(status=1)
     }
     
     vcf.list[[sample]] <- x
@@ -501,6 +592,9 @@ apply.filter1 <- function(vcf.list){
   return(vcf.list)
 }
 
+#' Apply informative and heterozygous variant filters.
+#' @param vcf.list A named list of sample data frames.
+#' @return A filtered list of sample data frames.
 apply.filter2 <- function(vcf.list){
   cat('Applying filter 2 ...\n')
   
@@ -528,7 +622,7 @@ apply.filter2 <- function(vcf.list){
   
   if (!all(chrs %in% unique(vcf.list[[1]]$CHROM[new.mask]))){
     cat('ERROR: No variants remain in at least one of the chromosomes after applying filter 2.\n')
-    quit(status=0)
+    quit(status=1)
   }
   
   for (sample in args$samples.no.u){
@@ -566,6 +660,10 @@ apply.filter2 <- function(vcf.list){
 #                                               Functions: running Merlin & correcting Merlin haplotypes
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
+#' Run Merlin error detection and haplotyping.
+#' @param args A validated argument list.
+#' @param vcfs.filtered2 A named list of filtered sample data frames.
+#' @return A chromosome-indexed list of marker maps.
 run.merlin <- function(args, vcfs.filtered2){
   ## prepare run 1
   
@@ -677,6 +775,9 @@ run.merlin <- function(args, vcfs.filtered2){
 # Parse Merlin output
 # -----
 
+#' Parse Merlin genotype and flow output.
+#' @param args A validated argument list.
+#' @return A list containing genotype, flow, and marker-map lists.
 parse.merlin <- function(args){
   
   cat('Loading & parsing Merlin output ...\n')
@@ -777,6 +878,9 @@ parse.merlin <- function(args){
 # Don't make N/N inferences, keep actual data
 # -----
 
+#' Restore filtered raw genotypes in parsed Merlin output.
+#' @param parsed.geno A chromosome-indexed list of genotype matrices.
+#' @return An updated genotype list.
 update.geno <- function(parsed.geno){
   for (chr in chrs){
     js <- match(map.list[[chr]]$id, vcfs.filtered2[[1]]$ID)
@@ -797,6 +901,10 @@ update.geno <- function(parsed.geno){
 # Correct by window voting
 # -----
 
+#' Correct short or locally inconsistent haplotype segments.
+#' @param args A validated argument list.
+#' @param parsed.flow A chromosome-indexed list of flow matrices.
+#' @return A list with corrected flow matrices and correction masks.
 correct.profiles <- function(args, parsed.flow){
   is.corrected <- list()
   for (chr in chrs){
@@ -808,16 +916,22 @@ correct.profiles <- function(args, parsed.flow){
   }
   
   correct.vector.1 <- function(v, pos, max.distance){
-    letters = unique(v)
-    neighbours.i <- lapply(pos, function(p) c(which(abs(pos - p) <= max.distance)))
-    neighbours.letters <- lapply(1:length(v), function(i) v[neighbours.i[[i]]])
-    neighbours.pos <- lapply(1:length(v), function(i) abs(pos - pos[i])[neighbours.i[[i]]])
-    neighbours.weights <- lapply(neighbours.pos, function(x) (max.distance * 2) / (x + max.distance) - 1)
-    if (max.distance == 0) neighbours.weights <- lapply(1:length(v), function(x) 1)
-    c.v <- sapply(1:length(v), function(i)
-      letters[which.max(c(sum(neighbours.weights[[i]][neighbours.letters[[i]] == letters[1]]),
-                          sum(neighbours.weights[[i]][neighbours.letters[[i]] == letters[2]], na.rm = T)))])
-    return(c.v)
+    letters <- unique(v)
+    if (length(letters) < 2 || max.distance == 0) return(v)
+
+    left <- 1L
+    right <- 0L
+    corrected <- character(length(v))
+    for (i in seq_along(v)){
+      while (left < i && pos[i] - pos[left] > max.distance) left <- left + 1L
+      while (right < length(pos) && pos[right + 1L] - pos[i] <= max.distance) right <- right + 1L
+
+      neighbours <- left:right
+      weights <- (max.distance * 2) / (abs(pos[neighbours] - pos[i]) + max.distance) - 1
+      votes <- vapply(letters, function(letter) sum(weights[v[neighbours] == letter], na.rm = T), numeric(1))
+      corrected[i] <- letters[which.max(votes)]
+    }
+    corrected
   }
   
   correct.vector.2 <- function(flow, geno, min.seg.var){
@@ -842,15 +956,15 @@ correct.profiles <- function(args, parsed.flow){
       pos = map.list[[chr]][,2]
       for (i in 1:length(args$samples.no.u)){
         v = parsed.flow[[chr]][,i]
-        a <- sapply(strsplit(v, '|', fixed = T), function(x) x[1])
-        b <- sapply(strsplit(v, '|', fixed = T), function(x) x[2])
+        strands <- split.strands(v)
+        a <- strands[[1]]
+        b <- strands[[2]]
         c.a = a
         c.b = b
         if (args$min.seg.var != 0){
-          c.a <- correct.vector.2(c.a, sapply(strsplit(parsed.geno[[chr]][,i], '|', fixed = T), function(x) x[1]),
-                                  args$min.seg.var)
-          c.b <- correct.vector.2(c.b, sapply(strsplit(parsed.geno[[chr]][,i], '|', fixed = T), function(x) x[2]),
-                                  args$min.seg.var)
+          geno.strands <- split.strands(parsed.geno[[chr]][,i])
+          c.a <- correct.vector.2(c.a, geno.strands[[1]], args$min.seg.var)
+          c.b <- correct.vector.2(c.b, geno.strands[[2]], args$min.seg.var)
         }
         if (args$window.size.voting != 0){
           c.a <- correct.vector.1(c.a, pos, args$window.size.voting / 2)
@@ -870,15 +984,15 @@ correct.profiles <- function(args, parsed.flow){
     pos = map.list[[chr]][,2]
     for (i in 1:length(args$samples.no.u)){
       v = parsed.flow[[chr]][,i]
-      a <- sapply(strsplit(v, '|', fixed = T), function(x) x[1])
-      b <- sapply(strsplit(v, '|', fixed = T), function(x) x[2])
+      strands <- split.strands(v)
+      a <- strands[[1]]
+      b <- strands[[2]]
       c.a = a
       c.b = b
       if (args$min.seg.var.X != 0){
-        c.a <- correct.vector.2(c.a, sapply(strsplit(parsed.geno[[chr]][,i], '|', fixed = T), function(x) x[1]),
-                                args$min.seg.var.X)
-        c.b <- correct.vector.2(c.b, sapply(strsplit(parsed.geno[[chr]][,i], '|', fixed = T), function(x) x[2]),
-                                args$min.seg.var.X)
+        geno.strands <- split.strands(parsed.geno[[chr]][,i])
+        c.a <- correct.vector.2(c.a, geno.strands[[1]], args$min.seg.var.X)
+        c.b <- correct.vector.2(c.b, geno.strands[[2]], args$min.seg.var.X)
       }
       if (args$window.size.voting.X != 0){
         c.a <- correct.vector.1(c.a, pos, args$window.size.voting.X / 2)
@@ -912,6 +1026,12 @@ correct.profiles <- function(args, parsed.flow){
 # Overall
 # -----
 
+#' Mark a genomic region on a Plotly figure.
+#' @param fig A Plotly htmlwidget.
+#' @param chr.cs,ylim,chr.lengths Numeric plotting coordinates.
+#' @param region A `chr:start-end` string.
+#' @param plot.flanks A logical indicating whether to draw flanks.
+#' @return A Plotly htmlwidget.
 mark.region <- function(fig, chr.cs, ylim, region, chr.lengths, plot.flanks = T){
   c <- strsplit(region, ':')[[1]][1]
   s <- as.numeric(strsplit(strsplit(region, ':')[[1]][2], '-')[[1]][1]) ; s <- max(s, 1)
@@ -942,6 +1062,11 @@ mark.region <- function(fig, chr.cs, ylim, region, chr.lengths, plot.flanks = T)
   return(fig)
 }
 
+#' Add cytobands to a Plotly figure.
+#' @param fig A Plotly htmlwidget.
+#' @param chr A chromosome name.
+#' @param y,line.width Numeric plot coordinates.
+#' @return A Plotly htmlwidget.
 add.cytoband <- function(fig, chr, y, line.width = 4){
   s <- c()
   names <- c()
@@ -967,6 +1092,11 @@ add.cytoband <- function(fig, chr, y, line.width = 4){
   return(fig)
 }
 
+#' Add a chromosome locus bar to a Plotly figure.
+#' @param fig A Plotly htmlwidget.
+#' @param chr A chromosome name.
+#' @param end,y,line.width Numeric plot coordinates.
+#' @return A Plotly htmlwidget.
 add.locus.bar <- function(fig, chr, end, y, line.width = 4){
   s <- c(seq(1, end, 10000000), end)
   names <- c(scales::comma(s, accuracy = 1))
@@ -986,6 +1116,10 @@ add.locus.bar <- function(fig, chr, end, y, line.width = 4){
   return(fig)
 }
 
+#' Add chromosome boundary lines to a Plotly figure.
+#' @param fig A Plotly htmlwidget.
+#' @param chr.cs,ylim Numeric plotting coordinates.
+#' @return A Plotly htmlwidget.
 add.chr.lines <- function(fig, chr.cs, ylim){
   for (c in names(chr.cs)){
     fig <- fig %>%
@@ -999,6 +1133,10 @@ add.chr.lines <- function(fig, chr.cs, ylim){
   return(fig)
 }
 
+#' Fill every cell of a matrix.
+#' @param matrix A matrix.
+#' @param fill A scalar fill value.
+#' @return A matrix.
 fill.matrix <- function(matrix, fill = 'white'){
   for (i in 1:ncol(matrix)){
     matrix[,i] <- rep(fill, nrow(matrix))
@@ -1006,10 +1144,33 @@ fill.matrix <- function(matrix, fill = 'white'){
   return(matrix)
 }
 
+#' Encode a local file as a data URI.
+#' @param file Path to a local file.
+#' @return A scalar character data URI.
+file.data.uri <- function(file){
+  mime <- switch(
+    tolower(tools::file_ext(file)),
+    css = 'text/css',
+    js = 'application/javascript',
+    png = 'image/png',
+    jpg = 'image/jpeg',
+    jpeg = 'image/jpeg',
+    gif = 'image/gif',
+    svg = 'image/svg+xml',
+    woff = 'font/woff',
+    woff2 = 'font/woff2',
+    ttf = 'font/ttf',
+    'application/octet-stream'
+  )
+  base64enc::dataURI(file = file, mime = mime)
+}
+
 # -----
 # Merlin
 # -----
 
+#' Build chromosome haplotype profiles.
+#' @return A named list of Plotly htmlwidgets.
 get.haplo.profiles <- function(){
   get.breaks <- function(f, pos){
     changes <- cumsum(rle(f)$lengths)
@@ -1057,15 +1218,17 @@ get.haplo.profiles <- function(){
   
   haplo.profiles <- list()
   for (c in chrs){
-    haplo.frame <- matrix(nrow = 0, ncol = 9)
+    haplo.frames <- list()
     annot.list <- list()
     breaks <- list()
     for (s in args$samples.no.u){
       x <- map.list[[c]]$pos
-      f1 <- sapply(strsplit(parsed.flow[[c]][,which(args$samples.no.u == s)], '|', fixed = T), function(x) x[1])
-      f2 <- sapply(strsplit(parsed.flow[[c]][,which(args$samples.no.u == s)], '|', fixed = T), function(x) x[2])
-      g1 <- sapply(strsplit(parsed.geno[[c]][,which(args$samples.no.u == s)], '|', fixed = T), function(x) x[1])
-      g2 <- sapply(strsplit(parsed.geno[[c]][,which(args$samples.no.u == s)], '|', fixed = T), function(x) x[2])
+      flow.strands <- split.strands(parsed.flow[[c]][,which(args$samples.no.u == s)])
+      geno.strands <- split.strands(parsed.geno[[c]][,which(args$samples.no.u == s)])
+      f1 <- flow.strands[[1]]
+      f2 <- flow.strands[[2]]
+      g1 <- geno.strands[[1]]
+      g2 <- geno.strands[[2]]
       c1 <- is.corrected[[c]][,which(args$samples.no.u == s) * 2 - 1]
       c2 <- is.corrected[[c]][,which(args$samples.no.u == s) * 2]
       breaks[[s]]$f1 <- c(x[1], get.breaks(f1, x)$breakpoints, x[length(x)])
@@ -1086,8 +1249,9 @@ get.haplo.profiles <- function(){
       annot.list[[which(args$samples.no.u == s)]] <- list(x = 1, y = y1 + 1,
                                                           text = args$samples.out[args$sample.ids == s], showarrow = F)
       if (all(c(g1, g2) == 'NA')) next
-      haplo.frame <- rbind(haplo.frame, haplo.frame.sub)
+      haplo.frames[[length(haplo.frames) + 1L]] <- haplo.frame.sub
     }
+    haplo.frame <- data.table::rbindlist(haplo.frames)
     
     ## raw data points
     
@@ -1142,7 +1306,18 @@ get.haplo.profiles <- function(){
   return(haplo.profiles)
 }
 
+#' Build the pairwise haplotype concordance table.
+#' @return A Plotly table htmlwidget.
 get.haplo.tables <- function(){
+  flow.strands <- lapply(chrs, function(chr){
+    per.sample <- lapply(seq_along(args$samples.no.u), function(i){
+      split.strands(parsed.flow[[chr]][,i])
+    })
+    names(per.sample) <- args$samples.no.u
+    per.sample
+  })
+  names(flow.strands) <- chrs
+
   rows <- list()
   for (s1 in args$samples.no.u){
     for (i1 in c(1,2)){
@@ -1156,8 +1331,8 @@ get.haplo.tables <- function(){
             obs <- c()
             exp <- c()
             for (chr in chrs){
-              strand1 <- sapply(parsed.flow[[chr]][,args$samples.no.u == s1], function(x) strsplit(x, '|', fixed = T)[[1]][i1])
-              strand2 <- sapply(parsed.flow[[chr]][,args$samples.no.u == s2], function(x) strsplit(x, '|', fixed = T)[[1]][i2])
+              strand1 <- flow.strands[[chr]][[s1]][[i1]]
+              strand2 <- flow.strands[[chr]][[s2]][[i2]]
               if (all(strand1 == 'X') | all(strand2 == 'X')) next
               obs <- c(obs, length(which(strand1 == strand2)))
               exp <- c(exp, length(strand1))
@@ -1216,6 +1391,9 @@ get.haplo.tables <- function(){
 # Tables
 # -----
 
+#' Build a genotype count table.
+#' @param vcf.list A named list of sample data frames.
+#' @return A Plotly table htmlwidget.
 get.plotly.table <- function(vcf.list){
   states <- c('0/0', '0/1', '1/1')
   rows <- list()
@@ -1286,6 +1464,9 @@ get.plotly.table <- function(vcf.list){
 # Pedigree
 # -----
 
+#' Render the current pedigree to PNG.
+#' @param file Output PNG path.
+#' @return Invisible `NULL`.
 write.pedigree <- function(file){
   status <- matrix(ncol = 2, nrow = length(args$sample.ids))
   if (length(args$nonaffected)) status[which(args$sample.ids %in% args$nonaffected),] <- 0
@@ -1308,6 +1489,9 @@ write.pedigree <- function(file){
 # Variant distribution
 # -----
 
+#' Build the genome-wide variant distribution figure.
+#' @param vcf.list A named list of sample data frames.
+#' @return A Plotly htmlwidget.
 get.var.dis.fig <- function(vcf.list){
   chr.lengths <- sapply(chrs, function(x) max(vcf.list[[1]]$POS[vcf.list[[1]]$CHROM == x]))
   chr.cs <- c(1, cumsum(chr.lengths)) ; names(chr.cs) <- c(chrs, 'end')
@@ -1352,6 +1536,9 @@ get.var.dis.fig <- function(vcf.list){
 # Variant depth
 # -----
 
+#' Build per-sample depth histograms.
+#' @param vcf.list A named list of sample data frames.
+#' @return A named list of Plotly htmlwidgets.
 get.var.depth.hist <- function(vcf.list){
   varhists <- list()
   for (s in args$samples.no.u){
@@ -1366,12 +1553,15 @@ get.var.depth.hist <- function(vcf.list){
   return(varhists)
 }
 
+#' Build copy-number segmentation figures.
+#' @return A named list of Plotly htmlwidgets.
 get.cn.fig <- function(){
   
   cluster.max.len.between.CpG = 200
-  clusters <- matrix(nrow = 0, ncol = 4)
+  clusters <- vector('list', length(chrs))
   
-  for (chr in chrs){
+  for (chr.i in seq_along(chrs)){
+    chr <- chrs[chr.i]
     pos <- vcfs[[1]]$POS[vcfs[[1]]$CHROM == chr]
     
     starts <- c(pos[1], pos[which(pos[-1] - pos[-length(pos)] > cluster.max.len.between.CpG) + 1])
@@ -1384,10 +1574,10 @@ get.cn.fig <- function(){
     chr.cluster[,3] <- ends + 1
     chr.cluster[,4] <- amount
     
-    clusters <- rbind(clusters, chr.cluster)
+    clusters[[chr.i]] <- chr.cluster
   }
   
-  clusters <- data.frame(clusters, stringsAsFactors = F)
+  clusters <- data.frame(do.call(rbind, clusters), stringsAsFactors = F)
   colnames(clusters) <- c('seqnames', 'start', 'end', 'amount')
   for (i in 2:4) clusters[,i] <- as.numeric(clusters[,i])
   clusters.gr <- GRanges(clusters)
@@ -1436,11 +1626,10 @@ get.cn.fig <- function(){
     cd.object <- CNA(dat.cn$ratio[dat.cn$mask],
                      dat.cn$seqnames[dat.cn$mask],
                      dat.cn$start[dat.cn$mask], data.type = "logratio", sampleid = "X")
-    f = file()
-    sink(file=f) ## silence output
-    segmented.cd.object <- invisible(segment(cd.object, verbose=1, weights = dat.cn$weight[dat.cn$mask]))
-    sink() ## undo silencing
-    close(f)
+    capture.output(
+      segmented.cd.object <- segment(cd.object, verbose=1, weights = dat.cn$weight[dat.cn$mask]),
+      file = nullfile()
+    )
     
     dat.seg <- segmented.cd.object$output
     dat.seg$loc.end <- dat.seg$loc.end + args$window.size - 1
@@ -1493,6 +1682,11 @@ get.cn.fig <- function(){
 # Man errors
 # -----
 
+#' Build a Mendelian-error figure for one child.
+#' @param child A sample identifier.
+#' @param father,mother Optional parent identifiers.
+#' @param n.rel Number of plotted relationships.
+#' @return A Plotly htmlwidget.
 get.men.err.fig <- function(child, father, mother, n.rel){
   
   get.trio.error <- function(gt.child, gt.parent1, gt.parent2){
@@ -1628,6 +1822,8 @@ get.men.err.fig <- function(child, father, mother, n.rel){
 # BAF
 # -----
 
+#' Build region-specific B-allele-frequency figures.
+#' @return A nested list of Plotly htmlwidgets.
 get.region.baf <- function(){
   chr.lengths <- sapply(chrs, function(x) max(vcfs.filtered[[1]]$POS[vcfs.filtered[[1]]$CHROM == x]))
   bafs <- list()
@@ -1670,6 +1866,9 @@ get.region.baf <- function(){
   return(bafs)
 }
 
+#' Build genome-wide B-allele-frequency figures.
+#' @param s A sample identifier.
+#' @return A chromosome-indexed list of Plotly htmlwidgets.
 get.genome.baf <- function(s){
   chr.lengths <- sapply(chrs, function(x) max(vcfs.filtered[[1]]$POS[vcfs.filtered[[1]]$CHROM == x]))
   bafs <- list()
@@ -1725,6 +1924,10 @@ get.genome.baf <- function(s){
 # Parent mapping
 # -----
 
+#' Build parent-mapping figures.
+#' @param child A sample identifier.
+#' @param father,mother Optional parent identifiers.
+#' @return A chromosome-indexed list of Plotly htmlwidgets.
 get.pm <- function(child, father, mother){
   vcf.child <- vcfs.filtered[[child]]
   
@@ -1863,6 +2066,8 @@ get.pm <- function(child, father, mother){
 #                                                       Functions: writing to HTML output
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
+#' Assemble the complete interactive report.
+#' @return An htmltools tag list containing Plotly htmlwidgets.
 get.html.list <- function(){
   cat('Generating visualizations, working ...\n')
   
@@ -1947,7 +2152,7 @@ get.html.list <- function(){
     html.list <- add.main.header(html.list, "Family tree")
     
     write.pedigree(paste0(args$out.bs, 'ped.tree.png'))
-    x <- htmltools::img(src = image_uri(paste0(args$out.bs, 'ped.tree.png')),
+    x <- htmltools::img(src = file.data.uri(paste0(args$out.bs, 'ped.tree.png')),
                         style = paste0('height:',5*100,'px;width:',log(length(args$sample.ids)) * 4 * 100,'px'))
     invisible(file.remove(paste0(args$out.bs, 'ped.tree.png')))
     html.list <- append.list(html.list, x)
@@ -2240,28 +2445,91 @@ get.html.list <- function(){
   return(html.list)
 }
 
+#' Inline local report dependencies without Pandoc.
+#' @return Invisible `NULL`.
 transform.to.selfcontained <- function(){
   cat('Converting to self-contained HTML ...\n')
-  if (!htmlwidgets:::pandoc_available()) {
-    cat(paste0("WARNING: Saving a widget with --self.contained T requires pandoc. For details see: https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md\n",
-               "Self-contained HTML will not be created.\n"))
-  }
-  else {
-    htmlwidgets:::find_pandoc()
-    system(paste0('touch ', args$out.bs, 'nocss.css'))
-    system(paste0('cd "', normalizePath(args$out.dir),
-                  '" && ', htmlwidgets:::pandoc(), 
-                  ' ', args$out.bs, 'output.html --output ', args$out.bs, 'output.sc.html --from markdown --self-contained --metadata pagetitle=', args$fam.id,' --css ',
-                  args$out.bs, 'nocss.css'), ignore.stderr = T)
-    unlink(paste0(args$out.bs, 'nocss.css'), recursive = T)
-    if (file.exists(paste0(args$out.bs, 'output.sc.html'))){
-      unlink(paste0(args$out.bs, 'output_files'), recursive = T)
-      unlink(paste0(args$out.bs, 'output.html'), recursive = T)
-      tmp = file.rename(paste0(args$out.bs, 'output.sc.html'), paste0(args$out.bs, 'output.html'))
-    } else {
-      cat('WARNING: pandoc error encountered, self-contained HTML could not be created.\n')
+
+  replace.matches <- function(text, pattern, replacement){
+    match <- gregexpr(pattern, text, perl = T)[[1]]
+    if (match[1] == -1) return(text)
+    lengths <- attr(match, 'match.length')
+    for (i in rev(seq_along(match))){
+      value <- substr(text, match[i], match[i] + lengths[i] - 1)
+      text <- paste0(
+        substr(text, 1, match[i] - 1),
+        replacement(value),
+        substr(text, match[i] + lengths[i], nchar(text))
+      )
     }
+    text
   }
+
+  attribute.path <- function(tag, attribute){
+    sub(
+      paste0('.*\\b', attribute, '=[\"\']([^\"\']+)[\"\'].*'),
+      '\\1',
+      tag,
+      perl = T
+    )
+  }
+
+  output.file <- paste0(args$out.bs, 'output.html')
+  output.dir <- dirname(output.file)
+  html <- paste(readLines(output.file, warn = F), collapse = '\n')
+
+  html <- replace.matches(
+    html,
+    '<script[^>]+src=[\"\'][^\"\']+[\"\'][^>]*>\\s*</script>',
+    function(tag){
+      file <- file.path(output.dir, attribute.path(tag, 'src'))
+      if (!file.exists(file)) return(tag)
+      javascript <- paste(readLines(file, warn = F), collapse = '\n')
+      javascript <- gsub('</script', '<\\\\/script', javascript, fixed = T)
+      paste0('<script>', javascript, '</script>')
+    }
+  )
+
+  html <- replace.matches(
+    html,
+    '<link[^>]+href=[\"\'][^\"\']+[\"\'][^>]*>',
+    function(tag){
+      file <- file.path(output.dir, attribute.path(tag, 'href'))
+      if (!file.exists(file)) return(tag)
+      css <- paste(readLines(file, warn = F), collapse = '\n')
+      css <- replace.matches(
+        css,
+        'url\\([\"\']?[^)\"\']+[\"\']?\\)',
+        function(url){
+          relative <- sub('^url\\([\"\']?([^\"\')]+)[\"\']?\\)$', '\\1', url, perl = T)
+          asset <- file.path(dirname(file), relative)
+          if (!file.exists(asset) || grepl('^(data:|https?:)', relative)) return(url)
+          paste0('url(\"', file.data.uri(asset), '\")')
+        }
+      )
+      paste0('<style>', css, '</style>')
+    }
+  )
+
+  html <- replace.matches(
+    html,
+    '(src|href)=[\"\'][^\"\'#]+[\"\']',
+    function(attribute){
+      name <- sub('=.*$', '', attribute)
+      relative <- sub('^[^=]+=[\"\']([^\"\']+)[\"\']$', '\\1', attribute, perl = T)
+      file <- file.path(output.dir, relative)
+      if (!file.exists(file) || grepl('^(data:|https?:)', relative)) return(attribute)
+      paste0(name, '=\"', file.data.uri(file), '\"')
+    }
+  )
+
+  temporary.file <- paste0(output.file, '.selfcontained')
+  writeLines(html, temporary.file, useBytes = T)
+  if (!file.rename(temporary.file, output.file)){
+    unlink(temporary.file)
+    stop('Could not replace HTML with self-contained output.')
+  }
+  unlink(paste0(args$out.bs, 'output_files'), recursive = T)
 }
 
 
@@ -2280,20 +2548,6 @@ transform.to.selfcontained <- function(){
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #                                                               Main code
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
-
-# -----
-# Library
-# -----
-
-suppressMessages(library('vcfR'))
-suppressMessages(library('data.table'))
-suppressMessages(library('RColorBrewer'))
-suppressMessages(library('kinship2'))
-suppressMessages(library('plotly'))
-suppressMessages(library('htmltools'))
-suppressMessages(library('GenomicRanges'))
-suppressMessages(library('DNAcopy'))
-suppressMessages(library('knitr'))
 
 # -----
 # Parameters
@@ -2361,23 +2615,56 @@ args <- list(
 )
 
 cmd.args <- commandArgs(trailingOnly=T)
-if (any(cmd.args == '--settings')){
-  i = which(cmd.args == '--settings')
-  args <- get.file.args(cmd.args[i+1])
-  cmd.args <- cmd.args[-(i:(i+1))]
-}
 if ('--version' %in% cmd.args | '-v' %in% cmd.args){
   cat(version, '\n')
   quit(status=0)
 }
 
 if ('--help' %in% cmd.args | '-h' %in% cmd.args){
-  cat('Please consult https://github.com/leraman/Hopla\n')
+  print.help(args)
   quit(status=0)
+}
+if (getRversion() < minimum.r.version){
+  cat(paste0('ERROR: Hopla requires R >= ', minimum.r.version, '; found ', getRversion(), '.\n'), file = stderr())
+  quit(status=1)
+}
+
+settings.i <- grep('^--settings($|=)', cmd.args)
+if (length(settings.i) > 1){
+  cat('ERROR: --settings may only be supplied once.\n', file = stderr())
+  quit(status=1)
+}
+if (length(settings.i)){
+  i <- settings.i[1]
+  if (grepl('=', cmd.args[i], fixed = T)){
+    settings.file <- sub('^--settings=', '', cmd.args[i])
+    cmd.args <- cmd.args[-i]
+  } else {
+    if (i == length(cmd.args)){
+      cat('ERROR: Missing value for --settings.\n', file = stderr())
+      quit(status=1)
+    }
+    settings.file <- cmd.args[i + 1L]
+    cmd.args <- cmd.args[-c(i, i + 1L)]
+  }
+  args <- get.file.args(settings.file)
 }
 args <- get.cmd.args(cmd.args)
 args <- post.process.args(args)
 rm(cmd.args)
+
+# -----
+# Library
+# -----
+
+suppressMessages(library('vcfR'))
+suppressMessages(library('data.table'))
+suppressMessages(library('RColorBrewer'))
+suppressMessages(library('kinship2'))
+suppressMessages(library('plotly'))
+suppressMessages(library('htmltools'))
+suppressMessages(library('GenomicRanges'))
+suppressMessages(library('DNAcopy'))
 
 # -----
 # Overall options & constants
@@ -2456,6 +2743,8 @@ html.list <- get.html.list()
 
 cat('Saving to HTML ...\n')
 save_html(html.list, file = paste0(args$out.bs, 'output.html'), libdir = paste0(args$out.bs, 'output_files'))
+rm(html.list)
+invisible(gc())
 if (args$self.contained) transform.to.selfcontained()
 
 # -----
@@ -2466,20 +2755,24 @@ if (args$run.merlin){
   cat('Saving Merlin output to tables ...\n')
   for (sample in args$samples.no.u){
     i = which(args$samples.no.u == sample)
+    geno.values <- unlist(lapply(chrs, function(chr) parsed.geno[[chr]][,i]), use.names = F)
+    geno.strands <- split.strands(geno.values)
     geno.table <- cbind(unlist(sapply(chrs, function(chr) rep(chr, nrow(map.list[[chr]])))),
                         unlist(sapply(chrs, function(chr) map.list[[chr]]$pos)),
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.geno[[chr]][,i])), '|', fixed = T), function(y) y[[1]]),
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.geno[[chr]][,i])), '|', fixed = T), function(y) y[[2]]))
+                        geno.strands[[1]],
+                        geno.strands[[2]])
     colnames(geno.table) <- c('chr', 'pos', 'genoA', 'genoB')
     write.table(geno.table, paste0(args$merlin.dir, sample, '-geno.txt'), sep = '\t', row.names = F, quote = F)
+    flow.values <- unlist(lapply(chrs, function(chr) parsed.flow[[chr]][,i]), use.names = F)
+    flow.strands <- split.strands(flow.values)
     flow.table <- cbind(unlist(sapply(chrs, function(chr) rep(chr, nrow(map.list[[chr]])))),
                         unlist(sapply(chrs, function(chr) map.list[[chr]]$pos)),
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[1]),
-                        as.character(letter.colors[sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[1])]),
+                        flow.strands[[1]],
+                        as.character(letter.colors[flow.strands[[1]]]),
                         unlist(sapply(chrs, function(chr) is.corrected[[chr]][,(i*2)-1])),
                         
-                        sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[2]),
-                        as.character(letter.colors[sapply(strsplit(unlist(sapply(chrs, function(chr) parsed.flow[[chr]][,i])), '|', fixed = T), function(y) y[2])]),
+                        flow.strands[[2]],
+                        as.character(letter.colors[flow.strands[[2]]]),
                         unlist(sapply(chrs, function(chr) is.corrected[[chr]][,(i*2)])))
     colnames(flow.table) <- c('chr', 'pos', 'flowA', 'flowA.hexcol', 'flowA.iscorrected', 'flowB', 'flowB.hexcol', 'flowB.iscorrected')
     write.table(flow.table, paste0(args$merlin.dir, sample, '-flow.txt'), sep = '\t', row.names = F, quote = F)

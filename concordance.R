@@ -1,22 +1,33 @@
-cmd.args <- commandArgs(trailingOnly=T)
+#!/usr/bin/env Rscript
 
-flow1 <- read.csv(cmd.args[1], header = T, stringsAsFactors = F, sep = '\t')
-flow1$id <- paste0(flow1$chr, ':', flow1$pos)
-flow2 <- read.csv(cmd.args[2], header = T, stringsAsFactors = F, sep = '\t')
-flow2$id <- paste0(flow2$chr, ':', flow2$pos)
+cmd.args <- commandArgs(trailingOnly = T)
+if (any(cmd.args %in% c('-h', '--help'))){
+  cat('Usage: concordance.R FLOW1 FLOW2 [RELATIVE]\n')
+  quit(status = 0)
+}
+if (length(cmd.args) < 2 || length(cmd.args) > 3){
+  cat('ERROR: expected two flow tables and optional T/TRUE relative comparison flag.\n', file = stderr())
+  quit(status = 1)
+}
 
-inter <- intersect(flow1$id, flow2$id)
+flow1 <- data.table::fread(cmd.args[1])
+flow2 <- data.table::fread(cmd.args[2])
+flow1[, input.order := .I]
+flows <- merge(
+  flow1[, .(chr, pos, input.order, flowA.1 = flowA.hexcol, flowB.1 = flowB.hexcol)],
+  flow2[, .(chr, pos, flowA.2 = flowA.hexcol, flowB.2 = flowB.hexcol)],
+  by = c('chr', 'pos'),
+  sort = F
+)
+data.table::setorder(flows, input.order)
 
-flow1 <- flow1[flow1$id %in% inter, ]
-flow2 <- flow2[flow2$id %in% inter, ]
+basenames <- sub('-.*$', '', basename(cmd.args[1:2]))
 
-last <- function(x) x[length(x)]
-first <- function(x) x[1]
-
-basenames <- as.character(sapply(cmd.args[1:2], function(x) last(strsplit(x, '/', fixed = T)[[1]])))
-basenames <- as.character(sapply(basenames, function(x) first(strsplit(x, '-', fixed = T)[[1]])))
-
+#' Calculate concordance between two haplotype-colour vectors.
+#' @param x,y Character vectors of equal length.
+#' @return A numeric percentage.
 concorde <- function(x, y){
+  stopifnot(is.character(x), is.character(y), length(x) == length(y))
   negmask <- x == 'X' | y == 'X'
   x = x[!negmask]
   y = y[!negmask]
@@ -31,7 +42,7 @@ concorde <- function(x, y){
   return(round(length(which(x == y)) / length(x) * 100, 2))
 }
 
-cat(paste0(basenames[1], '-1 vs ', basenames[2], '-1: ', concorde(flow1$flowA.hexcol, flow2$flowA.hexcol), '%\n'))
-cat(paste0(basenames[1], '-1 vs ', basenames[2], '-2: ', concorde(flow1$flowA.hexcol, flow2$flowB.hexcol), '%\n'))
-cat(paste0(basenames[1], '-2 vs ', basenames[2], '-1: ', concorde(flow1$flowB.hexcol, flow2$flowA.hexcol), '%\n'))
-cat(paste0(basenames[1], '-2 vs ', basenames[2], '-2: ', concorde(flow1$flowB.hexcol, flow2$flowB.hexcol), '%\n'))
+cat(paste0(basenames[1], '-1 vs ', basenames[2], '-1: ', concorde(flows$flowA.1, flows$flowA.2), '%\n'))
+cat(paste0(basenames[1], '-1 vs ', basenames[2], '-2: ', concorde(flows$flowA.1, flows$flowB.2), '%\n'))
+cat(paste0(basenames[1], '-2 vs ', basenames[2], '-1: ', concorde(flows$flowB.1, flows$flowA.2), '%\n'))
+cat(paste0(basenames[1], '-2 vs ', basenames[2], '-2: ', concorde(flows$flowB.1, flows$flowB.2), '%\n'))

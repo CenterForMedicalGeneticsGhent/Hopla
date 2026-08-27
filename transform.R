@@ -1,22 +1,21 @@
-cmd.args <- commandArgs(trailingOnly=T)
-#cmd.args <- c('/Users/leraman/phd/lisa/publication/ASPA_09-2020-01096/SingleParent/hopla-merlin/DNA052977-flow.txt',
-#              '/Users/leraman/phd/lisa/publication/ASPA_09-2020-01096/SingleParent/hopla-merlin/DNA052979-flow.txt')
+#!/usr/bin/env Rscript
 
-flow1 <- read.csv(cmd.args[1], header = T, stringsAsFactors = F, sep = '\t')
-flow1$id <- paste0(flow1$chr, ':', flow1$pos)
-flow2 <- read.csv(cmd.args[2], header = T, stringsAsFactors = F, sep = '\t')
-flow2$id <- paste0(flow2$chr, ':', flow2$pos)
+cmd.args <- commandArgs(trailingOnly = T)
+if (any(cmd.args %in% c('-h', '--help'))){
+  cat('Usage: transform.R FLOW1 FLOW2 MODE\n  MODE: 1 compares matching strands; 2 compares crossed strands.\n')
+  quit(status = 0)
+}
+if (length(cmd.args) != 3 || !(cmd.args[3] %in% c('1', '2'))){
+  cat('ERROR: expected two flow tables and MODE 1 or 2.\n', file = stderr())
+  quit(status = 1)
+}
 
-inter <- intersect(flow1$id, flow2$id)
-
-flow1 <- flow1[flow1$id %in% inter, ]
-flow2 <- flow2[flow2$id %in% inter, ]
-
-last <- function(x) x[length(x)]
-first <- function(x) x[1]
-
-basenames <- as.character(sapply(cmd.args[1:2], function(x) last(strsplit(x, '/', fixed = T)[[1]])))
-basenames <- as.character(sapply(basenames, function(x) first(strsplit(x, '-', fixed = T)[[1]])))
+flow1 <- data.table::fread(cmd.args[1])
+flow2 <- data.table::fread(cmd.args[2])
+flow2.rows <- flow2[flow1, on = .(chr, pos), which = T]
+matched <- !is.na(flow2.rows)
+flow1 <- flow1[matched]
+flow2 <- flow2[flow2.rows[matched]]
 
 if (cmd.args[3] == '1'){
   x <- flow1$flowA.hexcol == flow2$flowA.hexcol
@@ -31,4 +30,4 @@ if (cmd.args[3] == '2'){
 flow1$flowA.hexcol <- x
 flow1$flowB.hexcol <- y
 
-write.table(flow1, paste0(gsub('.txt', '', cmd.args[1]), '-relative.txt'), quote = F, sep = '\t', row.names = F)
+data.table::fwrite(flow1, paste0(tools::file_path_sans_ext(cmd.args[1]), '-relative.txt'), quote = F, sep = '\t')
