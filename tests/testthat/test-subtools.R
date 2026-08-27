@@ -325,6 +325,56 @@ test_that("type.convert coercion warnings are logged at debug", {
   expect_match(paste(logged, collapse = "\n"), "NAs introduced by coercion")
 })
 
+test_that("variant depth histograms contain bins instead of raw depths", {
+  skip_if_not_installed("plotly")
+  engine <- engine_functions()
+  engine$args <- list(
+    samples_no_u = "sample",
+    samples_out = "Sample",
+    sample_ids = "sample"
+  )
+  engine$colors <- "#1f78b4"
+  depths <- rep(seq_len(1000), 100)
+
+  figures <- engine$get_var_depth_hist(list(sample = data.frame(DP = depths)))
+  built <- plotly::plotly_build(figures$sample)
+  trace <- built$x$data[[1]]
+
+  expect_identical(trace$type, "bar")
+  expect_lte(length(trace$x), 100L)
+  expect_equal(sum(trace$y), length(depths))
+})
+
+test_that("htmlwidget JSON is compressed and round-trips", {
+  engine <- engine_functions()
+  payload <- paste0('{"value":"', strrep("compressible-data-", 1000), '"}')
+  html <- paste0(
+    "<html><head></head><body>",
+    '<script type="application/json" data-for="htmlwidget-test">',
+    payload,
+    "</script></body></html>"
+  )
+
+  compressed <- engine$compress_widget_data(html)
+  tag <- regmatches(
+    compressed,
+    regexpr(
+      '<script type="application/gzip\\+json"[^>]*>[^<]+</script>',
+      compressed,
+      perl = TRUE
+    )
+  )
+  encoded <- sub("^.*>", "", sub("</script>$", "", tag))
+  restored <- rawToChar(memDecompress(
+    base64enc::base64decode(encoded),
+    type = "gzip"
+  ))
+
+  expect_identical(restored, payload)
+  expect_false(grepl(payload, compressed, fixed = TRUE))
+  expect_match(compressed, 'DecompressionStream\\("deflate"\\)')
+})
+
 test_that("mark_region draws region and flank traces", {
   skip_if_not_installed("plotly")
   engine <- engine_functions()

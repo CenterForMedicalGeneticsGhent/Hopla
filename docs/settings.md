@@ -220,7 +220,10 @@ raw uncorrected genotypes remain available on hover.
   dot in the visualizations.
 - **`self_contained`** (`boolean`, default `false`) Whether to generate a
   self-contained HTML file. Local JavaScript, CSS, fonts, and images are inlined
-  in R; Hopla does not invoke Pandoc.
+  in R, and Plotly data is compressed for the browser to expand before
+  rendering. The report remains a single offline file and requires JavaScript
+  and a current browser with `DecompressionStream` support. Hopla does not
+  invoke Pandoc.
 - **`cairo`** (`boolean`, default `false`) Whether the cairo bitmap device
   should be used (required by some systems for plotting).
 

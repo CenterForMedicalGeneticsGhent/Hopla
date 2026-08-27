@@ -30,6 +30,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 - Reworked haplotype window voting to bound temporary memory to one neighbourhood.
 - Reduced repeated VCF, genotype-strand, concordance, and table parsing.
+- Pre-binned variant-depth histograms and compressed embedded Plotly data to
+  reduce self-contained HTML report size.
 - Aligned helper-script flow tables with keyed `data.table` joins.
 - Replaced individual command-line analysis options with one required settings-file argument.
 - Moved `vcf_file` and `out_dir` from the settings file to `hopla run`
