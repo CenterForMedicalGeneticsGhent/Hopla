@@ -1,0 +1,51 @@
+# Complete Hopla YAML settings example.
+sample_ids: [DNA052961, U1, DNA052959, DNA052960, DNA052963, DNA052966]
+
+father_ids: [null, null, U1, null, DNA052960, DNA052960]
+mother_ids: [null, null, DNA052961, null, DNA052959, DNA052959]
+genders: [F, M, F, M, null, null]
+run_merlin: true
+# Pass a cytoband table with -c; omit it to download hg38 cytoBand.txt.gz from UCSC.
+
+dp_hard_limit_ids: [DNA052961, DNA052959, DNA052960]
+dp_hard_limit: 10
+af_hard_limit_ids: [DNA052961, DNA052959, DNA052960]
+af_hard_limit: 0.25
+dp_soft_limit_ids: [DNA052963, DNA052966]
+dp_soft_limit: 10
+
+keep_informative_ids: [DNA052959, DNA052960]
+keep_hetero_ids: []
+
+regions:
+  - chr17:43044294-43125363
+reference_ids: []
+carrier_ids: []
+affected_ids: [DNA052961, DNA052959]
+nonaffected_ids: [DNA052960]
+info:
+  - "Disease: Breast cancer - BRCA1 (Chr17:43,044,294-43,125,363)"
+  - "Inheritance: Autosomal Dominant"
+  - "Sequencing note: Embryo V17-V18"
+
+baf_ids: [DNA052963, DNA052966]
+merlin_model: best
+min_seg_var: 5
+min_seg_var_x: 15
+window_size_voting: 10000000
+window_size_voting_x: 10000000
+keep_chromosomes_only: true
+keep_regions_only: false
+concordance_table: true
+
+x_cutoff: 1.5
+y_cutoff: 0.6
+window_size: 1000000
+regions_flanking_size: 2000000
+limit_baf_to_p: false
+limit_pm_to_p: true
+value_of_p: 0.15
+color_palette: Paired
+dot_factor: 2
+self_contained: true
+cairo: false

@@ -1,0 +1,123 @@
+name: R package CI
+
+on:
+  pull_request:
+    branches: [main, 2.0.0]
+    paths:
+      - "hopla-r/**"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/r-ci.yaml"
+  push:
+    branches: [main, master]
+    paths:
+      - "hopla-r/**"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/r-ci.yaml"
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Lint, build, and check R package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: v0.77.1
+          cache: true
+          locked: true
+          environments: hopla-r-dev
+
+      - name: Lint R code
+        run: pixi run -e hopla-r-dev lint
+
+      - name: Build source package
+        run: |
+          pixi run -e hopla-r-dev R CMD build hopla-r
+          mkdir -p dist
+          mv hopla_*.tar.gz dist/
+
+      - name: Check source package
+        run: pixi run -e hopla-r-dev R CMD check --no-manual dist/hopla_*.tar.gz
+
+      - name: Upload R package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hopla-r-package
+          path: dist/hopla_*.tar.gz
+
+      - name: Attach R package to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/hopla_*.tar.gz
+
+  image:
+    name: Build and publish R image
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: hopla-r/Dockerfile
+          load: true
+          tags: hopla:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: docker run --rm hopla:${GITHUB_SHA} hopla -V
+
+      - name: Save Docker image artifact
+        run: |
+          mkdir -p dist
+          docker save hopla:${GITHUB_SHA} | gzip -9 > dist/hopla-image-linux-64.tar.gz
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hopla-docker-image
+          path: dist/hopla-image-linux-64.tar.gz
+
+      - name: Log in to Quay
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Publish Docker tags
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: quay.io/cmgg/hopla
+        run: |
+          tags=("$IMAGE:${GITHUB_SHA}")
+          if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
+            package_version="$(awk '/^Version:/{print $2}' hopla-r/DESCRIPTION)"
+            tags+=("$IMAGE:${package_version}" "$IMAGE:stable")
+          else
+            tags+=("$IMAGE:latest")
+          fi
+          for tag in "${tags[@]}"; do
+            docker tag "hopla:${GITHUB_SHA}" "$tag"
+            docker push "$tag"
+          done
+
+      - name: Attach Docker image to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/hopla-image-linux-64.tar.gz

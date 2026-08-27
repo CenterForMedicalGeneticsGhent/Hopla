@@ -1,0 +1,52 @@
+import determinePositionSampleID from "./determinePositionSampleID";
+import determinekeepLimitIDHardDP from "./determineKeepLimitIDHardDP";
+import determinekeepLimitIDHardAF from "./determineKeepLimitIDHardAF";
+import determineDiseaseStatus from "./determineDiseaseStatus";
+
+export default function extractInfoSiblings(paramsObject, config){
+    // Retrieve Params
+    var sampleIDs=paramsObject.pedigreeMapping.siblings.filter(function(id){
+        return id !== "" && determinePositionSampleID(id,paramsObject["sample.ids"]) !== -1;
+    });
+    var indicesOfID=sampleIDs.map(function(d){
+        return determinePositionSampleID(d,paramsObject["sample.ids"]);
+    }); 
+    var genders=indicesOfID.map(function(i){
+        return paramsObject["genders"][i];
+    });
+    var keepLimitIDHardDPs=sampleIDs.map(function(d){
+        return determinekeepLimitIDHardDP(d,paramsObject["dp.hard.limit.ids"]);
+    }); 
+    var keepLimitIDHardAFs=sampleIDs.map(function(d){
+        return determinekeepLimitIDHardAF(d,paramsObject["af.hard.limit.ids"]);
+    });
+    var keepLimitIDSoftDPs=sampleIDs.map(function(){
+        return "hide";
+    }); 
+    var keepBafIDs=sampleIDs.map(function(){
+        return "hide";
+    });
+    var keepInformativeIDs=sampleIDs.map(function(){
+        return "hide";
+    }); 
+    var diseaseStati=sampleIDs.map(function(d){
+        return determineDiseaseStatus(d,paramsObject["carrier.ids"],paramsObject["affected.ids"],paramsObject["nonaffected.ids"]);
+    });
+
+
+    // Assign Params
+    for (let i=0; i<sampleIDs.length;i++){
+        config.configPedigree.configSiblings.push({})
+        config.configPedigree.configSiblings[i].sampleID=sampleIDs[i];
+        config.configPedigree.configSiblings[i].gender=genders[i];
+        config.configPedigree.configSiblings[i].keepLimitIDHardDP=keepLimitIDHardDPs[i];
+        config.configPedigree.configSiblings[i].keepLimitIDHardAF=keepLimitIDHardAFs[i];
+        config.configPedigree.configSiblings[i].keepLimitIDSoftDP=keepLimitIDSoftDPs[i];
+        config.configPedigree.configSiblings[i].keepBafIDs=keepBafIDs[i];
+        config.configPedigree.configSiblings[i].keepInformativeIDs=keepInformativeIDs[i];
+        config.configPedigree.configSiblings[i].diseaseStatus=diseaseStati[i];
+    }
+
+    return config;
+
+}

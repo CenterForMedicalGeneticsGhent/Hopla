@@ -1,0 +1,6 @@
+^\.lintr$
+^Dockerfile$
+^docs$
+^tools$
+^hopla_.*\.tar\.gz$
+^hopla\.Rcheck$

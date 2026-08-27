@@ -1,0 +1,43 @@
+Package: hopla
+Title: Genomic Family Analysis and Interactive Reporting
+Version: 2.0.0
+Authors@R: c(
+    person("Lennart", "Raman", email = "leraman@users.noreply.github.com",
+           role = "aut"),
+    person("Matthias", "De Smet",
+           email = "matthdsm@users.noreply.github.com",
+           role = c("aut", "cre")),
+    person("Center for Medical Genetics Ghent",
+           email = "ict.cmgg@uzgent.be",
+           role = c("cph", "fnd"))
+    )
+Description: Analyses single- and multi-sample variant call format files for
+    family relationships, variant quality, copy number, Mendelian errors, and
+    pedigree haplotypes. Produces a self-contained interactive HTML report and
+    provides tools for comparing and transforming haplotype flow tables.
+License: MIT + file LICENSE
+URL: https://github.com/CenterForMedicalGeneticsGhent/Hopla
+BugReports: https://github.com/CenterForMedicalGeneticsGhent/Hopla/issues
+Depends:
+    R (>= 4.4.0)
+Imports:
+    base64enc,
+    data.table,
+    DNAcopy,
+    GenomicRanges,
+    htmltools,
+    jsonlite,
+    jsonvalidate,
+    kinship2,
+    plotly,
+    RColorBrewer,
+    scales,
+    tools,
+    utils,
+    vcfR,
+    yaml
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+SystemRequirements: Merlin 1.1.2 (optional; Linux only)

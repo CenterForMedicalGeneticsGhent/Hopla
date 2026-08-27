@@ -1,0 +1,55 @@
+import determinePositionSampleID from "./determinePositionSampleID";
+import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
+import determineDiseaseStatus from "./determineDiseaseStatus";
+import determineKeepHeteroIDs from "./determineKeepHeteroIDs";
+import determineKeepBafIDs from "./determineKeepBafIDs";
+
+export default function extractInfoEmbryos(paramsObject, config){
+    
+    // Retrieve Params
+    var sampleIDs = paramsObject.pedigreeMapping.embryos.filter(function(id){
+        return id !== "" && determinePositionSampleID(id,paramsObject["sample.ids"]) !== -1;
+    });
+    var indicesOfID=sampleIDs.map(function(d){
+        return determinePositionSampleID(d,paramsObject["sample.ids"]);
+    }); 
+    var genders=indicesOfID.map(function(i){
+        return paramsObject["genders"][i];
+    });
+    var keepLimitIDHardDPs=sampleIDs.map(function(){
+        return "hide";
+    }); 
+    var keepLimitIDHardAFs=sampleIDs.map(function(){
+        return "hide";
+    });
+    var keepLimitIDSoftDPs=sampleIDs.map(function(d){
+        return determinekeepLimitIDSoftDP(d,paramsObject["dp.soft.limit.ids"]);
+    }); 
+    var keepBafIDs=sampleIDs.map(function(d){
+        return determineKeepBafIDs(d,paramsObject["baf.ids"]);
+    });
+    var keepInformativeIDs=sampleIDs.map(function(){
+        return "hide";
+    });
+    var keepHeteroIDs=determineKeepHeteroIDs(paramsObject["keep.hetero.ids"]);
+    var diseaseStati=sampleIDs.map(function(d){
+        return determineDiseaseStatus(d,paramsObject["carrier.ids"],paramsObject["affected.ids"],paramsObject["nonaffected.ids"]);
+    });
+
+    // Assign Params
+    for (let i=0; i<sampleIDs.length;i++){
+        config.configPedigree.configEmbryos.embryoList.push({})
+        config.configPedigree.configEmbryos.embryoList[i].sampleID=sampleIDs[i];
+        config.configPedigree.configEmbryos.embryoList[i].gender=genders[i];
+        config.configPedigree.configEmbryos.embryoList[i].keepLimitIDHardDP=keepLimitIDHardDPs[i];
+        config.configPedigree.configEmbryos.embryoList[i].keepLimitIDHardAF=keepLimitIDHardAFs[i];
+        config.configPedigree.configEmbryos.embryoList[i].keepLimitIDSoftDP=keepLimitIDSoftDPs[i];
+        config.configPedigree.configEmbryos.embryoList[i].keepBafIDs=keepBafIDs[i];
+        config.configPedigree.configEmbryos.embryoList[i].keepInformativeIDs=keepInformativeIDs[i];
+        config.configPedigree.configEmbryos.embryoList[i].diseaseStatus=diseaseStati[i];
+    }
+    config.configPedigree.configEmbryos.keepHeteroIDs=keepHeteroIDs;
+
+    return config;
+    
+}

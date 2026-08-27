@@ -1,2 +1,12 @@
 .Rhistory
 *.lock
+!pixi.lock
+.pixi/
+*merlin
+*.html
+.DS_Store
+tests/assets
+hopla-r/hopla_*.tar.gz
+hopla-r/hopla.Rcheck/
+hopla-ui/node_modules/
+hopla-ui/dist/
