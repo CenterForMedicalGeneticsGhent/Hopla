@@ -39,8 +39,11 @@ var listFields = [
 ];
 
 export default function extractParams(configString){
-    if (typeof configString !== "string" || configString.length > 1024 * 1024) {
-        throw new Error("Invalid Hopla configuration");
+    if (typeof configString !== "string") {
+        throw new Error("the file could not be read as text");
+    }
+    if (configString.length > 1024 * 1024) {
+        throw new Error("the file is larger than the 1 MB limit");
     }
 
     var paramsObject = readArguments(configString);

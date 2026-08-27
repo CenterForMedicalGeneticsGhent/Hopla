@@ -60,7 +60,10 @@ export default {
                         emit(newConfig);
                     }
                     catch (error) {
-                        setError(`This is not a valid Hopla configuration: ${error.message}`);
+                        var reason = String(error.message || "").replace(/\.$/, "");
+                        setError(reason === ""
+                            ? "This is not a valid Hopla configuration."
+                            : `This is not a valid Hopla configuration: ${reason}.`);
                     }
                 }
                 fileReader.readAsText(file);

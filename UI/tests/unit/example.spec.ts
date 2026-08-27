@@ -153,13 +153,13 @@ describe('Hopla configuration conversion', () => {
 
   it('rejects configuration text it cannot turn into a pedigree', () => {
     expect(() => config2Form('vcf.file=/tmp/example.vcf.gz')).toThrow(
-      'Missing required configuration field: sample.ids='
+      'no sample.ids argument was found'
     )
     expect(() =>
       config2Form(['sample.ids=A,B', 'father.ids=NA,NA', 'mother.ids=NA,NA'].join('\n'))
-    ).toThrow('Cannot reconstruct the pedigree')
+    ).toThrow('no father.ids or mother.ids relationships were found')
     expect(() => config2Form('x'.repeat(1024 * 1024 + 1))).toThrow(
-      'Invalid Hopla configuration'
+      'the file is larger than the 1 MB limit'
     )
   })
 })

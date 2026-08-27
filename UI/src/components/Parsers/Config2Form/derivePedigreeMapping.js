@@ -14,7 +14,7 @@ var placeholders = {
 export default function derivePedigreeMapping(paramsObject){
     var sampleIDs = readIDs(paramsObject["sample.ids"]);
     if (sampleIDs.length === 0){
-        throw new Error("Missing required configuration field: sample.ids=");
+        throw new Error("no sample.ids argument was found");
     }
     var fatherIDs = readParentIDs(paramsObject["father.ids"], sampleIDs.length);
     var motherIDs = readParentIDs(paramsObject["mother.ids"], sampleIDs.length);
@@ -130,7 +130,7 @@ function selectYoungestCouple(members, depths){
         }
     }
     if (selected === null){
-        throw new Error("Cannot reconstruct the pedigree: no father.ids or mother.ids relationships were found");
+        throw new Error("no father.ids or mother.ids relationships were found, so the pedigree cannot be reconstructed");
     }
     return selected;
 }
