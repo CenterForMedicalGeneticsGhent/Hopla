@@ -1,0 +1,27 @@
+[workspace]
+name = "hopla"
+version = "1.1.0"
+description = "Genomic family analysis and interactive reporting"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[dependencies]
+r-base = ">=4.4,<5"
+r-vcfr = ">=1.16"
+"r-data.table" = ">=1.17"
+r-rcolorbrewer = ">=1.1_3"
+r-kinship2 = ">=1.9"
+r-plotly = ">=4.12"
+r-htmltools = ">=0.5"
+r-base64enc = ">=0.1_3"
+r-scales = ">=1.4"
+bioconductor-genomicranges = ">=1.54"
+bioconductor-dnacopy = ">=1.76"
+
+[target.linux-64.dependencies]
+merlin = "1.1.2.*"
+
+[tasks]
+hopla = "Rscript hopla.R"
+concordance = "Rscript concordance.R"
+transform = "Rscript transform.R"
