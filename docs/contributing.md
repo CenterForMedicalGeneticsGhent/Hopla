@@ -21,6 +21,12 @@ Details: [install.md](install.md).
 - Maintain a CRAN-compatible R package (`DESCRIPTION`, `NAMESPACE`, `R/`, `man/`, `tests/`, and `inst/`).
 - Public R functions require Roxygen-style source comments and matching Rd documentation.
 - The installed analysis engine lives under `exec/`; the schema lives under `inst/schema/`.
+- Keep `exec/hopla-run.R` as the orchestration entry point. Put private engine
+  functions in the ordered `exec/lib/` modules documented in
+  [architecture.md](architecture.md).
+- Do not source `exec/lib/` from `R/`, add its functions to `NAMESPACE`, or
+  expose them as package APIs. Preserve module load order and verify the files
+  survive `R CMD build` and `R CMD INSTALL`.
 - Keep the package version, CLI version, pixi version, and R changelog release in sync. CLI-breaking changes require a major version bump.
 - Record R pipeline changes in [`CHANGELOG-R.md`](../CHANGELOG-R.md).
 - Keep this manual in `docs/` in sync with the schema, engine defaults, and CLI.

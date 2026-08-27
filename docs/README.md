@@ -10,6 +10,7 @@ This manual compiles the former root README, settings reference, contributor ins
 - [Command line](cli.md)
 - [Settings](settings.md)
 - [HTML output](output.md)
+- [Package and engine structure](architecture.md)
 - [Web UI](ui.md)
 - [Contributing](contributing.md)
 - [R pipeline changelog](../CHANGELOG-R.md)

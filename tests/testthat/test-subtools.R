@@ -47,9 +47,26 @@ engine_path <- function() {
   stop("Could not locate hopla engine.", call. = FALSE)
 }
 
+engine_module_paths <- function() {
+  module_dir <- file.path(dirname(engine_path()), "lib")
+  sort(list.files(module_dir, pattern = "\\.R$", full.names = TRUE))
+}
+
+engine_source_paths <- function() {
+  c(engine_path(), engine_module_paths())
+}
+
+engine_source_lines <- function() {
+  unlist(lapply(engine_source_paths(), readLines), use.names = FALSE)
+}
+
+engine_expressions <- function() {
+  unlist(lapply(engine_source_paths(), function(path) as.list(parse(path))), recursive = FALSE)
+}
+
 engine_local_functions <- function() {
   pattern <- "^[[:space:]]*([A-Za-z._][A-Za-z0-9._]*)[[:space:]]*(<-|=)[[:space:]]*function.*$"
-  lines <- readLines(engine_path())
+  lines <- engine_source_lines()
   unique(sub(pattern, "\\1", lines[grepl(pattern, lines)]))
 }
 
@@ -66,7 +83,7 @@ engine_calls <- function() {
     calls[[length(calls) + 1L]] <<- expression
     for (part in call_parts(expression)) walk(part)
   }
-  for (expression in parse(engine_path())) {
+  for (expression in engine_expressions()) {
     if (is.call(expression)) walk(expression)
   }
   calls
@@ -81,7 +98,7 @@ is_function_assignment <- function(expression) {
 
 engine_functions <- function() {
   env <- new.env(parent = asNamespace("plotly"))
-  for (expression in parse(engine_path())) {
+  for (expression in engine_expressions()) {
     if (is_function_assignment(expression)) {
       eval(expression, env)
     }
@@ -486,13 +503,33 @@ hopla_namespace_available <- function() {
   any(grepl("TRUE", output, fixed = TRUE))
 }
 
+test_that("engine entry point loads the documented private modules", {
+  expect_identical(
+    basename(engine_module_paths()),
+    c(
+      "00-input.R",
+      "10-merlin.R",
+      "20-plot-helpers.R",
+      "30-haplotype-plots.R",
+      "40-analysis-plots.R",
+      "50-report.R"
+    )
+  )
+  entrypoint <- readLines(engine_path())
+  for (module in basename(engine_module_paths())) {
+    expect_true(any(grepl(module, entrypoint, fixed = TRUE)))
+  }
+})
+
 test_that("scripts run from an installed layout without the source R directory", {
   skip_if_not(hopla_namespace_available(), "hopla is not installed")
 
   exec_dir <- file.path(tempfile("hopla-installed"), "exec")
-  dir.create(exec_dir, recursive = TRUE)
+  module_dir <- file.path(exec_dir, "lib")
+  dir.create(module_dir, recursive = TRUE)
   file.copy(hopla_cli_path(), file.path(exec_dir, "hopla"))
   file.copy(engine_path(), file.path(exec_dir, "hopla-run.R"))
+  file.copy(engine_module_paths(), module_dir)
 
   engine_status <- system2(
     rscript(),
@@ -533,7 +570,7 @@ test_that("axes without tick labels do not set a title standoff", {
 })
 
 test_that("report text and plots share one sans-serif font stack", {
-  source_lines <- readLines(engine_path())
+  source_lines <- engine_source_lines()
   definition <- grep("^report_font <- ", source_lines, value = TRUE)
 
   expect_length(definition, 1L)
@@ -603,7 +640,7 @@ test_that("engine reads DNAcopy segment output under its real column names", {
     all(c("chrom", "loc.start", "loc.end", "seg.mean") %in% names(segmented$output))
   )
 
-  source_lines <- readLines(engine_path())
+  source_lines <- engine_source_lines()
   expect_true(any(grepl("dat_seg\\$loc\\.start", source_lines)))
   expect_false(any(grepl("dat_seg\\$(loc_start|loc_end|seg_mean)", source_lines)))
 })
