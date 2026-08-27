@@ -6,7 +6,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 ### Added
 
-- Added a reproducible pixi environment and linux-64 lockfile with R 4.4 or newer.
+- Added a reproducible pixi environment and lockfile for `linux-64`,
+  `linux-aarch64`, and `osx-arm64` with R 4.4 or newer.
 - Added a minimal multi-stage Docker image built from the pixi lockfile.
 - Added Roxygen-style parameter and return type information to the R scripts.
 - Added a JSON Schema covering every supported analysis setting.

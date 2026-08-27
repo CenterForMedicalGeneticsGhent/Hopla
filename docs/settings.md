@@ -78,8 +78,7 @@ before analysis starts. The engine does not create a missing output directory.
   `y_cutoff`). Order matches `sample_ids`. Example: `[M, F, null]`.
 - **`run_merlin`** (`boolean`, default `true`) Whether Merlin haplotyping should
   run. The Merlin executables directory (`path/to/merlin-1.1.2/executables`)
-  must be on `$PATH`, which is automatic with pixi/conda install. Merlin runs
-  on Linux only.
+  must be on `$PATH`, which is automatic with pixi/conda install.
 - **`cytoband_file`** (`string`, no default) [UCSC cytoband
   file](https://hgdownload.soe.ucsc.edu/downloads.html#human). When given,
   chromosome bands are shown on top of chromosome-wise figures and

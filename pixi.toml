@@ -3,7 +3,7 @@ name = "hopla"
 version = "2.0.0"
 description = "Genomic family analysis and interactive reporting"
 channels = ["conda-forge", "bioconda"]
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 
 [dependencies]
 r-base = ">=4.4,<5"
@@ -20,8 +20,6 @@ bioconductor-dnacopy = ">=1.76"
 r-jsonlite = ">=2.0.0,<3"
 r-yaml = ">=2.3.12,<3"
 r-jsonvalidate = ">=1.5.0,<2"
-
-[target.linux-64.dependencies]
 merlin = "1.1.2.*"
 
 [tasks]

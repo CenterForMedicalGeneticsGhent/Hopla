@@ -7,7 +7,8 @@ Agents should also read the autodiscovered [AGENTS.md](../AGENTS.md) at the repo
 ## Runtime and dependencies
 
 - Use the root pixi environment and committed `pixi.lock`.
-- Keep `linux-64` supported. Merlin 1.1.2 is a Linux-only dependency.
+- Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
+  available on each of those platforms.
 - Require R 4.4 or newer.
 - Add R dependencies to both `pixi.toml` and `DESCRIPTION`; regenerate `pixi.lock` with pixi.
 - Do not install CRAN packages outside pixi.

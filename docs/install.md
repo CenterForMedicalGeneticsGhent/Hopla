@@ -4,7 +4,9 @@ Hopla requires R 4.4 or newer.
 
 ## Pixi (Linux)
 
-The repository includes a locked [pixi](https://pixi.sh) environment for Linux (`linux-64`). Merlin 1.1.2 is a Linux-only dependency of that environment.
+The repository includes a locked [pixi](https://pixi.sh) environment for
+`linux-64`, `linux-aarch64`, and `osx-arm64`. Merlin 1.1.2 is included on each
+of those platforms.
 
 ```bash
 pixi install
@@ -62,7 +64,7 @@ These are installed automatically with pixi or conda:
 - Standalone tools
     - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2)
 
-Merlin’s version should be exactly as given. The Merlin executables folder (`path/to/merlin-1.1.2/executables`) must be on `$PATH`, which is automatic with pixi or conda install. Merlin runs on Linux only.
+Merlin’s version should be exactly as given. The Merlin executables folder (`path/to/merlin-1.1.2/executables`) must be on `$PATH`, which is automatic with pixi or conda install.
 
 Plotly’s version is ideally no lower than given. For the remaining packages, other versions are very likely to work.
 
