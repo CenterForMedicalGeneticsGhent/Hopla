@@ -1357,7 +1357,7 @@ get_haplo_tables <- function(){
     cells = list(values = t(table),
                  line = list(color = t(cols_line), width = t(fill_matrix(table, 1))), fill = list(color = t(cols_fill)),
                  font = list(color = rgb(.2,.2,.2), size = 9)), hoverinfo = 'none')
-  fig <- fig %>% layout(autosize = T)
+  fig <- fig %>% layout(autosize = T, font = list(family = report_font))
   return(fig)
 }
 
@@ -1429,7 +1429,7 @@ get_plotly_table <- function(vcf_list){
     cells = list(values = t(table),
                  line = list(color = t(cols_line), width = t(fill_matrix(table, 1))), fill = list(color = t(cols_fill)),
                  font = list(color = rgb(.2,.2,.2), size = 9), height = 30), hoverinfo = 'none')
-  fig <- fig %>% layout(autosize = T)
+  fig <- fig %>% layout(autosize = T, font = list(family = report_font))
 
   return(fig)
 }
@@ -2063,6 +2063,8 @@ get_html_list <- function(){
     return(l)
   }
 
+  html_list <- append_list(html_list, tags$style(paste0('body{font-family:', report_font, ';}')))
+
   add_main_header <- function(html_list, h){
     html_list <- append_list(html_list, tags$hr())
     html_list <- append_list(html_list, tags$hr())
@@ -2099,6 +2101,7 @@ get_html_list <- function(){
     widths <- c(panning, rep((1 - 2*panning) / n_col, n_col), panning)
     this_subplot <- subplot(plot_list_ap, nrows=n_row+2, margin=margin, titleY=T, titleX=T,
                             heights=heights, widths = widths)
+    this_subplot$x$layout$font$family <- report_font
     if (!is.null(override_hover_mode)) this_subplot$x$layout$hovermode <- override_hover_mode
     return(this_subplot)
   }
@@ -2716,6 +2719,9 @@ if (args$cairo) options(bitmaptype='cairo')
 
 colors = brewer.pal(brewer.pal.info[args$color_palette,]$maxcolors, args$color_palette)
 chrs <- paste0('chr', c(1:22, 'X'))
+
+# Resolved by the browser, so the report stays self-contained without web fonts.
+report_font <- 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
 
 # -----
 # Initialize

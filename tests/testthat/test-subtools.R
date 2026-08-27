@@ -476,6 +476,18 @@ test_that("axes without tick labels do not set a title standoff", {
   expect_identical(offenders, character())
 })
 
+test_that("report text and plots share one sans-serif font stack", {
+  source_lines <- readLines(engine_path())
+  definition <- grep("^report_font <- ", source_lines, value = TRUE)
+
+  expect_length(definition, 1L)
+  expect_match(definition, "sans-serif")
+  # page text, plotly grids, and plotly tables must all pick up the stack
+  expect_true(any(grepl("body{font-family:", source_lines, fixed = TRUE)))
+  expect_true(any(grepl("layout$font$family <- report_font", source_lines, fixed = TRUE)))
+  expect_true(any(grepl("font = list(family = report_font)", source_lines, fixed = TRUE)))
+})
+
 test_that("engine passes valid named arguments to package functions", {
   packages <- c(
     "plotly", "data.table", "GenomicRanges", "DNAcopy", "vcfR", "htmltools",

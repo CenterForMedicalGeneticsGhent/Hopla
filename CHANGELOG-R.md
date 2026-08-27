@@ -29,6 +29,10 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 ### Changed
 
+- Switched the report text, plots, and tables to a modern sans-serif system
+  font stack; no web font is downloaded or embedded.
+- Widened the row spacing of the BAF panel grids so a chromosome or sample
+  label stays with its own panel.
 - Reworked haplotype window voting to bound temporary memory to one neighbourhood.
 - Reduced repeated VCF, genotype-strand, concordance, and table parsing.
 - Pre-binned variant-depth histograms and compressed embedded Plotly data to
