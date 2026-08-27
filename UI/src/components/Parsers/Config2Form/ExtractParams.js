@@ -27,11 +27,14 @@ export default function extractParams(configString){
             ));
         })
         .filter(function(d){
-            return d.includes("=");
+            return d.includes("=") || d.includes(":");
         })
         .map(function(d){
             //split lines in key and value
             var separator = d.indexOf("=");
+            if (separator === -1) {
+                separator = d.indexOf(":");
+            }
             return [d.slice(0, separator), d.slice(separator + 1)];
         })
         .map(function(d){

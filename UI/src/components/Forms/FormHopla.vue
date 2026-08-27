@@ -70,7 +70,7 @@
   } from "../Templates";
 
   export default {
-    name: 'Form',
+    name: 'HoplaForm',
     components: {
       TabPedigree,
       TabParameters,

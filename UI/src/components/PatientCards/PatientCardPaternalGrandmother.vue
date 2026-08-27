@@ -62,7 +62,6 @@ v-else
     },
     data: function() {
       return {
-      
         paternalGrandmotherImg,
       };
     },

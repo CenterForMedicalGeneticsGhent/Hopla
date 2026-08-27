@@ -61,7 +61,6 @@ v-else
     },
     data: function() {
       return {
-      
         fatherImg,
       };
     },

@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@types/lodash": "^4.17.25",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/compiler-dom": "^3.5.42",
     "@vue/compiler-sfc": "^3.5.42",
