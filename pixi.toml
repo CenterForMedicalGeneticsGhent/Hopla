@@ -36,6 +36,31 @@ r-lintr = ">=3.2,<4"
 check = { cmd = "R CMD build . && R CMD check --no-manual hopla_*.tar.gz", cwd = "hopla-r" }
 lint = { cmd = "Rscript tools/lint.R", cwd = "hopla-r" }
 
+[feature.hopla-py.dependencies]
+python = ">=3.12,<3.14"
+cyvcf2 = "*"
+jsonschema = "*"
+numpy = "*"
+polars = "*"
+pydantic = ">=2"
+pyyaml = "*"
+typer = "*"
+pip = "*"
+merlin = "1.1.2.*"
+
+[feature.hopla-py-dev.dependencies]
+mypy = "*"
+pytest = "*"
+ruff = "*"
+
+[feature.hopla-py.tasks]
+install = { cmd = "python -m pip install --no-deps -e hopla-py" }
+hopla-py = { cmd = "python -m hopla.cli", cwd = "hopla-py", depends-on = ["install"] }
+
+[feature.hopla-py-dev.tasks]
+lint-py = { cmd = "ruff check hopla-py && mypy hopla-py/src", depends-on = ["install"] }
+test-py = { cmd = "pytest hopla-py/tests", depends-on = ["install"] }
+
 [feature.hopla-ui.dependencies]
 nodejs = ">=22.12,<23"
 
@@ -51,4 +76,6 @@ default = ["hopla-r"]
 dev = ["hopla-r", "hopla-r-dev"]
 hopla-r = { features = ["hopla-r"], no-default-feature = true }
 hopla-r-dev = { features = ["hopla-r", "hopla-r-dev"], no-default-feature = true }
+hopla-py = { features = ["hopla-py"], no-default-feature = true }
+hopla-py-dev = { features = ["hopla-py", "hopla-py-dev"], no-default-feature = true }
 hopla-ui = { features = ["hopla-ui"], no-default-feature = true }

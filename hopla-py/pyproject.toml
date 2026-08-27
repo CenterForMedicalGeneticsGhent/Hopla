@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hopla"
+version = "2.0.0"
+description = "Genomic family analysis and interactive reporting"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+  "cyvcf2",
+  "jsonschema",
+  "numpy",
+  "polars",
+  "pydantic>=2",
+  "pyyaml",
+  "typer",
+]
+
+[project.optional-dependencies]
+export = ["pyarrow", "pybigwig"]
+dev = ["mypy", "pytest", "ruff"]
+
+[project.scripts]
+hopla = "hopla.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hopla"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"../hopla-r/inst/schema/hopla.schema.json" = "hopla/schema/hopla.schema.json"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ANN", "D"]
+ignore = ["D203", "D213"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["hopla"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
