@@ -304,16 +304,15 @@ test_that("mark_region draws region and flank traces", {
   )
 })
 
-test_that("engine helpers do not shadow plotly or data.table exports", {
-  skip_if_not_installed("plotly")
-  # trim() and parse() predate the package layout and are scoped so that the
-  # shadowed base/GenomicRanges functions are never needed alongside them.
-  allowed <- c("trim", "parse")
-  defined <- setdiff(ls(engine_functions()), allowed)
-  exported <- c(
-    getNamespaceExports("plotly"),
-    getNamespaceExports("data.table")
+test_that("engine helpers do not shadow attached package exports", {
+  packages <- c(
+    "base", "plotly", "data.table", "GenomicRanges", "DNAcopy", "vcfR",
+    "htmltools", "kinship2", "scales", "RColorBrewer"
   )
+  for (package in packages) skip_if_not_installed(package)
+
+  defined <- ls(engine_functions())
+  exported <- unlist(lapply(packages, getNamespaceExports), use.names = FALSE)
 
   expect_identical(intersect(defined, exported), character())
 })

@@ -37,7 +37,7 @@ hopla_init_log_level()
 #' Trim leading and trailing whitespace.
 #' @param x A character vector.
 #' @return A character vector.
-trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+trim_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 #' Split phased genotype strings into two strands.
 #' @param x A character vector containing `|`.
@@ -788,7 +788,7 @@ parse_merlin <- function(args){
     return(matrix(unlist(final_lines), ncol = length(final_lines[[1]]), byrow = TRUE))
   }
 
-  parse <- function(file, chrs, o){
+  parse_chromosome_tables <- function(file, chrs, o){
     all_chr <- readLines(file)
     starts <- which(grepl('FAMILY', all_chr))
     ends <- c(starts[-1] - 1, length(all_chr))
@@ -807,10 +807,10 @@ parse_merlin <- function(args){
   table_order = get_table_order(paste0(args$merlin_dir, 'merlin.chr'))
   table_order_x = get_table_order(paste0(args$merlin_dir, 'merlinX.chr'))
 
-  parsed_geno <- parse(paste0(args$merlin_dir, 'merlin.chr'), chrs[1:22], table_order)
-  parsed_flow <- parse(paste0(args$merlin_dir, 'merlin.flow'), chrs[1:22], table_order)
-  parsed_geno_x <- parse(paste0(args$merlin_dir, 'merlinX.chr'), chrs[23], table_order_x)
-  parsed_flow_x <- parse(paste0(args$merlin_dir, 'merlinX.flow'), chrs[23], table_order_x)
+  parsed_geno <- parse_chromosome_tables(paste0(args$merlin_dir, 'merlin.chr'), chrs[1:22], table_order)
+  parsed_flow <- parse_chromosome_tables(paste0(args$merlin_dir, 'merlin.flow'), chrs[1:22], table_order)
+  parsed_geno_x <- parse_chromosome_tables(paste0(args$merlin_dir, 'merlinX.chr'), chrs[23], table_order_x)
+  parsed_flow_x <- parse_chromosome_tables(paste0(args$merlin_dir, 'merlinX.flow'), chrs[23], table_order_x)
 
   for (i in which(args$genders == 'M')){
     parsed_geno_x$chrX[,i] <- paste0(parsed_geno_x$chrX[,i], 'X')
@@ -1309,7 +1309,7 @@ get_haplo_tables <- function(){
   table <- rbind(rep(c('1', '2'), length(args$samples_no_u)), sapply(rows, cbind))
   table <- cbind(c('', rep(c('1', '2'), length(args$samples_no_u))), table)
   table <- cbind(c('', unlist(lapply(args$samples_no_u, function(x) c(paste0('(', which(args$samples_no_u == x), ') ',
-                                                                             trim(gsub(x, '', args$samples_out[args$sample_ids == x]))),
+                                                                             trim_whitespace(gsub(x, '', args$samples_out[args$sample_ids == x]))),
                                                                       args$samples_no_u[args$samples_no_u == x])))), table)
   table <- rbind(c('', '', unlist(lapply(args$samples_no_u, function(x) rep(paste0('(', which(args$samples_no_u == x), ')'),2)))), table)
   table <- cbind(table, rep('', nrow(table)))
@@ -1380,7 +1380,7 @@ get_plotly_table <- function(vcf_list){
   table <- rbind(rep(c('0/0', '0/1', '1/1'), length(args$samples_no_u)), sapply(rows, cbind))
   table <- cbind(c('', rep(c('0/0', '0/1', '1/1'), length(args$samples_no_u))), table)
   table <- cbind(c('', unlist(lapply(args$samples_no_u, function(x) c(paste0('(', which(args$samples_no_u == x), ')'),
-                                                                      x, trim(gsub(x, '', args$samples_out[args$sample_ids == x])))))), table)
+                                                                      x, trim_whitespace(gsub(x, '', args$samples_out[args$sample_ids == x])))))), table)
   table <- rbind(c('', '', unlist(lapply(args$samples_no_u, function(x) c('',paste0('(', which(args$samples_no_u == x), ')'),'')))), table)
   table <- cbind(table, rep('', nrow(table)))
 
