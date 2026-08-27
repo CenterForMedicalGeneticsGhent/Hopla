@@ -120,29 +120,29 @@ post_process_args <- function(args){
   stopifnot(is.list(args))
   no_u_mask <- !sapply(args$sample_ids, function(x) toupper(substr(x,1,1)) == 'U' &
                          !is.na(suppressWarnings(as.numeric(substr(x,2,999)))))
-  
+
   if (!length(args$genders)) args$genders = rep(NA, length(args$sample_ids))
   if (!length(args$mother_ids)) args$mother_ids = rep(NA, length(args$sample_ids))
   if (!length(args$father_ids)) args$father_ids = rep(NA, length(args$sample_ids))
-  
+
   args$samples_no_u <- args$sample_ids[no_u_mask]
   args$samples_u <- args$sample_ids[!no_u_mask]
-  
+
   not_last_in_line <- unique(c(args$mother_ids, args$father_ids))
   not_last_in_line <- not_last_in_line[not_last_in_line %in% args$samples_no_u]
   last_in_line <- args$samples_no_u[!args$samples_no_u %in% not_last_in_line]
-  
+
   if (length(args$samples_no_u) == 1){
     not_last_in_line = args$samples_no_u
     last_in_line = args$samples_no_u
   }
-  
+
   if (!length(args$dp_hard_limit_ids)) args$dp_hard_limit_ids = not_last_in_line
   if (!length(args$af_hard_limit_ids)) args$af_hard_limit_ids = not_last_in_line
   if (!length(args$dp_soft_limit_ids)) args$dp_soft_limit_ids = last_in_line
   if (!length(args$window_size_voting_x)) args$window_size_voting_x = args$window_size_voting
   if (!length(args$min_seg_var_x)) args$min_seg_var_x = args$min_seg_var
-  
+
   man_args <- c('vcf_file', 'sample_ids')
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man_args){
@@ -150,7 +150,7 @@ post_process_args <- function(args){
       quit(status=1)
     }
   }
-  
+
   not_in_error <- function(arg){
     not_in <- function(xs, ys){
       for (x in xs){
@@ -166,17 +166,17 @@ post_process_args <- function(args){
       quit(status=1)
     }
   }
-  
+
   cat('Selected parameters ...\n')
   for (arg in names(args)[!(names(args) %in% c('samples_u', 'samples_no_u'))]){
     if (!length(args[[arg]])) next
     cat(paste0('  ... ', arg, ': ', paste(args[[arg]], collapse = ','), '\n'))
-    
+
     if (any(is.na(args[[arg]])) & !(arg %in% c('father_ids', 'mother_ids', 'genders'))){
       cat(paste0('ERROR: No \'NA\' allowed in argument --', arg,'. Please correct.\n'))
       quit(status=1)
     }
-    
+
     if (arg == 'sample_ids'){
       if (length(args$sample_ids) > 1){
         if (!length(which(!is.na(args$mother_ids))) & !length(which(!is.na(args$father_ids)))){
@@ -186,14 +186,14 @@ post_process_args <- function(args){
         }
       }
     }
-    
+
     if (arg == 'genders'){
       if (!all(args$genders %in% c('M', 'F', NA))){
         cat("ERROR: Setting 'genders' should be coded as 'M', 'F' or 'NA'. Please correct.\n")
         quit(status=1)
       }
     }
-    
+
     for (same_length_arg in c('father_ids', 'mother_ids', 'genders')){
       if (arg == same_length_arg){
         if (!(length(args$sample_ids) == length(args[[same_length_arg]]))){
@@ -202,14 +202,14 @@ post_process_args <- function(args){
         }
       }
     }
-    
+
     if (arg %in% c('father_ids', 'mother_ids', 'dp_hard_limit_ids', 'af_hard_limit_ids',
                   'dp_soft_limit_ids', 'keep_informative_ids', 'keep_hetero_ids',
                   'reference_ids', 'carrier_ids', 'affected_ids',
                   'nonaffected_ids', 'baf_ids')){
       not_in_error(arg)
     }
-    
+
     if (arg %in% c('dp_hard_limit_ids', 'af_hard_limit_ids', 'dp_soft_limit_ids',
                    'keep_informative_ids', 'keep_hetero_ids', 'baf_ids')){
       if (length(intersect(args[[arg]], args$samples_u))){
@@ -217,7 +217,7 @@ post_process_args <- function(args){
         quit(status=1)
       }
     }
-    
+
     if (arg == 'run_merlin' & args$run_merlin){
       if (length(args$sample_ids) == 1){
         cat(paste0('WARNING: Only one sample provided. Setting run_merlin FALSE.\n'))
@@ -228,21 +228,21 @@ post_process_args <- function(args){
         args$run_merlin = F
       }
     }
-    
+
     if (arg == 'keep_informative_ids'){
       if (!(length(args[[arg]]) %in% c(0,2))){
         cat(paste0('ERROR: No or two samples should be given at keep_informative_ids. Please correct.\n'))
         quit(status=1)
       }
     }
-    
+
     if (arg == 'merlin_model'){
       if (!(args$merlin_model %in% c('sample', 'best'))){
         cat('ERROR: Argument merlin_model should be coded as \'sample\' or \'best\'. Please correct.\n')
         quit(status=1)
       }
     }
-    
+
     if (arg == 'vcf_file'){
       if (!file.exists(args$vcf_file)){
         cat('ERROR: The file given by vcf_file does not exist. Please correct.\n')
@@ -268,7 +268,7 @@ post_process_args <- function(args){
       }
     }
   }
-  
+
   add_annot <- function(letter, annot = NULL){
     if (!is.null(annot)){
       args$samples_out[args$sample_ids %in% args[[annot]]] <- paste0(args$samples_out[args$sample_ids %in% args[[annot]]],
@@ -285,7 +285,7 @@ post_process_args <- function(args){
   args <- add_annot('C', 'carrier_ids')
   args <- add_annot('A', 'affected_ids')
   args <- add_annot('N', 'nonaffected_ids')
-  
+
   return(args)
 }
 
@@ -365,13 +365,13 @@ load_samples <- function(args){
       DP = depths[,sample],
       stringsAsFactors = F
     )
-    
+
     vcf_b$GT[vcf_b$GT == '0' & vcf_a$CHROM == 'chrX'] <- '0/0'
     vcf_b$GT[vcf_b$GT == '1' & vcf_a$CHROM == 'chrX'] <- '1/1'
     vcf_b$GT <- gsub('|', '/', vcf_b$GT, fixed = T)
     vcf_b$DP[is.na(vcf_b$DP)] <- 0
     vcf_b$AF <- suppressWarnings(round(ad[[2]] / total_ad, 3))
-    
+
     sample_vcf <- cbind(vcf_a, vcf_b)
     sample_vcf$pos_out <- pos_out
     vcfs[[sample]] <- sample_vcf
@@ -388,20 +388,20 @@ load_samples <- function(args){
 #' @return A completed character vector.
 predict_genders <- function(genders){
   cat('Predicting genders ...\n')
-  
+
   x_pos_mask <- which(vcfs[[1]]$CHROM %in% 'chrX')
   x_copies <- sapply(args$samples_no_u, function(s) mean(vcfs[[s]]$DP[x_pos_mask]) /
                        mean(vcfs[[s]]$DP[vcfs[[1]]$CHROM %in% chrs[-23]])) * 2
-  
+
   x_model <- ifelse(x_copies < args$x_cutoff, 'M', 'F')
-  
+
   y_pos_mask <- which(vcfs[[1]]$CHROM %in% 'chrY' &
                         ((vcfs[[1]]$POS > 11700001 & vcfs[[1]]$POS < 21800000)))
   y_copies <- sapply(args$samples_no_u, function(s) mean(vcfs[[s]]$DP[y_pos_mask]) /
                        mean(vcfs[[s]]$DP[vcfs[[1]]$CHROM %in% chrs[-23]])) * 2
-  
+
   y_model <- ifelse(y_copies < args$y_cutoff, 'F', 'M')
-  
+
   for (s in args$sample_ids[is.na(genders)]){
     if (s %in% args$mother_ids){
       cat(paste0('  ... ', s, ' is included in mother_ids, setting gender: F\n'))
@@ -491,7 +491,7 @@ add_ghosts <- function(args){
 #' @return A filtered list of sample data frames.
 apply_filter1 <- function(vcf_list){
   cat('Applying filter 1 ...\n')
-  
+
   ## hard filters
   ### AF
   if (!length(args$af_hard_limit_ids)){
@@ -507,13 +507,13 @@ apply_filter1 <- function(vcf_list){
     dp_filter_matrix <- sapply(vcf_list[args$dp_hard_limit_ids], function(x) x$DP >= args$dp_hard_limit)
     keep_these_2 <- rowSums(dp_filter_matrix, na.rm = T) == length(args$dp_hard_limit_ids)
   }
-  
+
   hard_mask <- keep_these_1 & keep_these_2
   if (!any(hard_mask)){
     cat('ERROR: No variants remain after applying filter 1.\n')
     quit(status=1)
   }
-  
+
   for (sample in args$samples_no_u){
     x <- vcf_list[[sample]][which(hard_mask),]
     if (sample %in% args$dp_soft_limit_ids){
@@ -523,21 +523,21 @@ apply_filter1 <- function(vcf_list){
         for (n in c('AF', 'DP')) x[[n]][!soft_mask] <- NA
       }
     }
-    
+
     hom_ref <- which(x$GT == '0/0')
     het_alt <- which(x$GT == '0/1')
     hom_alt <- which(x$GT == '1/1')
-    
+
     x$GENO <- 'N/N'
     x$GENO[hom_ref] <- paste0(x$REF, '/', x$REF)[hom_ref]
     x$GENO[het_alt] <- paste0(x$REF, '/', x$ALT)[het_alt]
     x$GENO[hom_alt] <- paste0(x$ALT, '/', x$ALT)[hom_alt]
-    
+
     if (all(x$GENO == 'N/N')){
       cat(paste0('ERROR: No variants remain for sample ', sample ,' after applying filter 1.\n'))
       quit(status=1)
     }
-    
+
     vcf_list[[sample]] <- x
   }
   return(vcf_list)
@@ -548,7 +548,7 @@ apply_filter1 <- function(vcf_list){
 #' @return A filtered list of sample data frames.
 apply_filter2 <- function(vcf_list){
   cat('Applying filter 2 ...\n')
-  
+
   new_mask <- rep(T, nrow(vcf_list[[1]]))
   if (length(args$keep_informative_ids) == 2){
     informative_mask <- rep(F, length(new_mask))
@@ -562,7 +562,7 @@ apply_filter2 <- function(vcf_list){
     }
     new_mask <- new_mask & informative_mask
   }
-  
+
   if (length(args$keep_hetero_ids)){
     hetero_mask <- rep(F, length(new_mask))
     for (sample in args$keep_hetero_ids){
@@ -570,18 +570,18 @@ apply_filter2 <- function(vcf_list){
     }
     new_mask <- new_mask & hetero_mask
   }
-  
+
   if (!all(chrs %in% unique(vcf_list[[1]]$CHROM[new_mask]))){
     cat('ERROR: No variants remain in at least one of the chromosomes after applying filter 2.\n')
     quit(status=1)
   }
-  
+
   for (sample in args$samples_no_u){
     vcf_list[[sample]] <- vcf_list[[sample]][new_mask,]
   }
-  
+
   ## set remaining non-hetero to missing data
-  
+
   if (length(args$keep_hetero_ids)){
     for (sample in args$keep_hetero_ids){
       is <- which(vcf_list[[sample]]$GT %in% c('0/0', '1/1') & vcf_list[[sample]]$CHROM %in% chrs[1:22])
@@ -592,7 +592,7 @@ apply_filter2 <- function(vcf_list){
       }
     }
   }
-  
+
   return(vcf_list)
 }
 
@@ -617,10 +617,10 @@ apply_filter2 <- function(vcf_list){
 #' @return A chromosome-indexed list of marker maps.
 run_merlin <- function(args, vcfs_filtered2){
   ## prepare run 1
-  
+
   ped_1 <- cbind(rep(1, length(args$sample_ids)), args$sample_ids, args$father_ids, args$mother_ids, args$genders)
   ped_1[is.na(ped_1)] <- '0' ; ped_1[,5][ped_1[,5] == 'M'] <- '1' ; ped_1[,5][ped_1[,5] == 'F'] <- '2'
-  
+
   ped_2 <- matrix(ncol = nrow(vcfs_filtered2[[1]]), nrow = nrow(ped_1))
   for (s in args$sample_ids){
     if (s %in% args$samples_u){
@@ -629,14 +629,14 @@ run_merlin <- function(args, vcfs_filtered2){
       ped_2[which(args$sample_ids == s),] <- vcfs_filtered2[[s]]$GENO
     }
   }
-  
+
   dat <- cbind('M', vcfs_filtered2[[1]]$ID)
   map <- cbind(substr(vcfs_filtered2[[1]]$CHROM, 4, 10), vcfs_filtered2[[1]]$ID)
   map <- cbind(map, vcfs_filtered2[[1]]$POS / 1000000)
   autosome_m <- map[,1] %in% as.character(1:22)
-  
+
   dir.create(args$merlin_dir, showWarnings = F, recursive = T)
-  
+
   suppressMessages(fwrite(cbind(ped_1, ped_2[,autosome_m]), paste0(args$merlin_dir, 'merlin.ped'),
                           col.names = F, row.names = F, quote = F, sep = '\t'))
   write.table(dat[autosome_m,], paste0(args$merlin_dir, 'merlin.dat'), col.names = F,
@@ -649,9 +649,9 @@ run_merlin <- function(args, vcfs_filtered2){
               row.names = F, quote = F, sep = '\t')
   write.table(map[!autosome_m,], paste0(args$merlin_dir, 'merlinX.map'), col.names = F,
               row.names = F, quote = F, sep = '\t')
-  
+
   ## execute 1
-  
+
   cat('Running Merlin --error ...\n')
   system(paste0('"', as.character(Sys.which("merlin")), '"',
                 ' -d "', args$merlin_dir, 'merlin.dat"',
@@ -665,17 +665,17 @@ run_merlin <- function(args, vcfs_filtered2){
                 ' -m "', args$merlin_dir, 'merlinX.map"',
                 ' --error --prefix "',
                 args$merlin_dir, 'merlinX" > "', args$merlin_dir, 'merlinX.o"'))
-  
+
   ## prepare run 2
-  
+
   cat('Parsing & removing unlikely variants ...\n')
-  
+
   unl_var <- as.character(read.table(paste0(args$merlin_dir, 'merlin.err'), header = T)[,3])
   unl_var_x <- as.character(read.table(paste0(args$merlin_dir, 'merlinX.err'), header = T)[,3])
-  
+
   unl_mask <- !(map[,2] %in% unl_var)
   unl_mask_x <- !(map[,2] %in% unl_var_x)
-  
+
   overall_map <- map[unl_mask & unl_mask_x,]
   map_list <- list()
   for (chr in chrs){
@@ -685,7 +685,7 @@ run_merlin <- function(args, vcfs_filtered2){
     colnames(map_list[[chr]]) <- c('id', 'pos')
     map_list[[chr]]$pos_out <- scales::comma(map_list[[chr]]$pos, accuracy = 1)
   }
-  
+
   suppressMessages(fwrite(cbind(ped_1, ped_2[,autosome_m & unl_mask]),
                           paste0(args$merlin_dir, 'merlin.ped'),
                           col.names = F, row.names = F, quote = F, sep = '\t'))
@@ -700,12 +700,12 @@ run_merlin <- function(args, vcfs_filtered2){
               col.names = F, row.names = F, quote = F, sep = '\t')
   write.table(map[!autosome_m & unl_mask_x,], paste0(args$merlin_dir, 'merlinX.map'),
               col.names = F, row.names = F, quote = F, sep = '\t')
-  
+
   ## run 2
-  
-  
+
+
   cat(paste0('Running Merlin --', args$merlin_model,' ...\n'))
-  
+
   system(paste0('"', as.character(Sys.which("merlin")), '"',
                 ' -d "', args$merlin_dir, 'merlin.dat"',
                 ' -p "', args$merlin_dir, 'merlin.ped"',
@@ -718,7 +718,7 @@ run_merlin <- function(args, vcfs_filtered2){
                 ' -m "', args$merlin_dir, 'merlinX.map"',
                 ' --', args$merlin_model,' --prefix "',
                 args$merlin_dir, 'merlinX" > "', args$merlin_dir, 'merlinX.o"'))
-  
+
   return(map_list)
 }
 
@@ -730,9 +730,9 @@ run_merlin <- function(args, vcfs_filtered2){
 #' @param args A validated argument list.
 #' @return A list containing genotype, flow, and marker-map lists.
 parse_merlin <- function(args){
-  
+
   cat('Loading & parsing Merlin output ...\n')
-  
+
   get_table_order <- function(file){
     all_chr <- readLines(file)
     starts <- which(grepl('FAMILY', all_chr))
@@ -740,18 +740,18 @@ parse_merlin <- function(args){
     per_chr = all_chr[starts[1]:ends[1]]
     per_chr = per_chr[per_chr != '']
     lines = per_chr[-1]
-    
+
     header = paste0(lines[which(grepl('(', lines, fixed = T))], collapse = '')
     header = gsub("\\s*\\([^\\)]+\\)", "", header)
     header = strsplit(header, ' ')[[1]]
     header = header[header != '']
     return(match(args$sample_ids, header))
   }
-  
+
   zip_lists <- function(x, y){
     lapply(1:min(length(x), length(y)), function(i) c(x[[i]], y[[i]]))
   }
-  
+
   lines_to_frame <- function(lines){
     starts_i <- which(grepl('(', lines, fixed = T)) + 1
     ends_i <- c(starts_i[-1] - 2, length(lines))
@@ -766,9 +766,9 @@ parse_merlin <- function(args){
     lines <- gsub("^[ ]+|[ ]+$", "", lines, perl = T)
     lines <- gsub("[ ]+", "-", lines, perl = T)
     lines <- gsub("||", "|", lines, fixed = T)
-    
+
     lines <- strsplit(lines, '-')
-    
+
     final_lines <- lines[starts_i[1]:ends_i[1]]
     if (length(starts_i) > 1){
       for (i in 2:length(starts_i)){
@@ -777,7 +777,7 @@ parse_merlin <- function(args){
     }
     return(matrix(unlist(final_lines), ncol = length(final_lines[[1]]), byrow = TRUE))
   }
-  
+
   parse <- function(file, chrs, o){
     all_chr <- readLines(file)
     starts <- which(grepl('FAMILY', all_chr))
@@ -793,35 +793,35 @@ parse_merlin <- function(args){
     }
     return(parsed)
   }
-  
+
   table_order = get_table_order(paste0(args$merlin_dir, 'merlin.chr'))
   table_order_x = get_table_order(paste0(args$merlin_dir, 'merlinX.chr'))
-  
+
   parsed_geno <- parse(paste0(args$merlin_dir, 'merlin.chr'), chrs[1:22], table_order)
   parsed_flow <- parse(paste0(args$merlin_dir, 'merlin.flow'), chrs[1:22], table_order)
   parsed_geno_x <- parse(paste0(args$merlin_dir, 'merlinX.chr'), chrs[23], table_order_x)
   parsed_flow_x <- parse(paste0(args$merlin_dir, 'merlinX.flow'), chrs[23], table_order_x)
-  
+
   for (i in which(args$genders == 'M')){
     parsed_geno_x$chrX[,i] <- paste0(parsed_geno_x$chrX[,i], 'X')
     parsed_flow_x$chrX[,i] <- paste0(parsed_flow_x$chrX[,i], 'X')
   }
-  
+
   parsed_geno$chrX <- parsed_geno_x$chrX
   parsed_flow$chrX <- parsed_flow_x$chrX
-  
+
   for (chr in chrs){
     bad_inhs <- sapply(1:nrow(parsed_geno[[chr]]), function(i) all(grepl('NA', parsed_geno[[chr]][i,])))
     parsed_geno[[chr]] <- parsed_geno[[chr]][!bad_inhs,]
     parsed_flow[[chr]] <- parsed_flow[[chr]][!bad_inhs,]
     map_list[[chr]] <- map_list[[chr]][!bad_inhs,]
   }
-  
+
   for (chr in chrs){
     parsed_geno[[chr]] <- parsed_geno[[chr]][,which(args$sample_ids %in% args$samples_no_u)]
     parsed_flow[[chr]] <- parsed_flow[[chr]][,which(args$sample_ids %in% args$samples_no_u)]
   }
-  
+
   return(list(parsed_geno = parsed_geno, parsed_flow = parsed_flow, map_list = map_list))
 }
 
@@ -865,7 +865,7 @@ correct_profiles <- function(args, parsed_flow){
       is_corrected[[chr]][,i*2] <- F
     }
   }
-  
+
   correct_vector_1 <- function(v, pos, max_distance){
     letters <- unique(v)
     if (length(letters) < 2 || max_distance == 0) return(v)
@@ -884,7 +884,7 @@ correct_profiles <- function(args, parsed_flow){
     }
     corrected
   }
-  
+
   correct_vector_2 <- function(flow, geno, min_seg_var){
     breakpoints <- which(c('ZZ', flow) != c(flow, 'ZZ'))
     for (i in 1:(length(breakpoints)-1)){
@@ -899,7 +899,7 @@ correct_profiles <- function(args, parsed_flow){
     }
     return(flow)
   }
-  
+
   if (args$window_size_voting != 0 | args$min_seg_var != 0){
     cat('Correcting haplotypes, working ...\n')
     for (chr in chrs[1:22]){
@@ -927,7 +927,7 @@ correct_profiles <- function(args, parsed_flow){
       }
     }
   }
-  
+
   if (args$window_size_voting_x != 0 | args$min_seg_var_x != 0){
     if (args$window_size_voting == 0 & args$min_seg_var == 0) cat('Correcting haplotypes, working ...\n')
     chr = chrs[23]
@@ -989,12 +989,12 @@ mark_region <- function(fig, chr_cs, ylim, region, chr_lengths, plot_flanks = T)
   flank_s <- s - args$regions_flanking_size ; flank_s <- max(flank_s, 1)
   e <- as.numeric(strsplit(strsplit(region, ':')[[1]][2], '-')[[1]][2]) ; e <- min(e, chr_lengths[c])
   flank_e <- e + args$regions_flanking_size ; flank_e <- min(flank_e, chr_lengths[c])
-  
+
   region_start <- paste0(c, ':', scales::comma(s, accuracy = 1))
   region_end <- paste0(c, ':', scales::comma(e, accuracy = 1))
   flank_start <- paste0(c, ':', scales::comma(flank_s, accuracy = 1))
   flank_end <- paste0(c, ':', scales::comma(flank_e, accuracy = 1))
-  
+
   add_trace <- function(fig, xs, text, size = 1/2){
     fig <- fig %>% add_trace(x = xs, y = ylim, name = 'region',
                              hoverinfo = "text", line = list(color = colors[length(letters) + 1], width = args$dot_factor * size),
@@ -1002,10 +1002,10 @@ mark_region <- function(fig, chr_cs, ylim, region, chr_lengths, plot_flanks = T)
                              mode='lines+markers', hoverlabel=list(bgcolor=colors[length(letters) + 1]), inherit = F)
     return(fig)
   }
-  
+
   fig <- add_trace(fig, c(chr_cs[c] + s, chr_cs[c] + s), paste0(region_start, ' (region start)'))
   fig <- add_trace(fig, c(chr_cs[c] + e, chr_cs[c] + e), paste0(region_end, ' (region end)'))
-  
+
   if (plot_flanks){
     fig <- add_trace(fig, rep(chr_cs[c] + flank_s, 2), paste0(flank_start, ' (flank start)'), 1/4)
     fig <- add_trace(fig, rep(chr_cs[c] + flank_e, 2), paste0(flank_end, ' (flank end)'), 1/4)
@@ -1036,7 +1036,7 @@ add_cytoband <- function(fig, chr, y, line_width = 4){
                              scales::comma(seq, accuracy = 1), ')'))
     cols <- c(cols, rep(col, length(seq)))
   }
-  
+
   fig <- add_markers(fig, x = s, y = rep(y, length(s)), text=names, name = NULL,
                      hoverinfo='text', marker = list(color = cols, size = args$dot_factor * .1),
                      type='scatter', mode='marker', inherit = F)
@@ -1130,7 +1130,7 @@ get_haplo_profiles <- function(){
     breakpoints <- breakpoints[-length(breakpoints)]
     return(list(breakpoints = breakpoints, colors = colors))
   }
-  
+
   filter_region <- function(frame, chr, whole_chromosome = F){
     if (length(args$regions)){
       for (region in args$regions){
@@ -1147,7 +1147,7 @@ get_haplo_profiles <- function(){
     }
     return(frame[-(1:nrow(frame)),])
   }
-  
+
   add_marker_and_trace <- function(fig, y, f = 'f1', mar = 'y-down-open', symbol_offset = .3){
     for (i in 1:(length(breaks[[s]][[f]])-1)){
       if (i != 1){
@@ -1164,9 +1164,9 @@ get_haplo_profiles <- function(){
     }
     return(fig)
   }
-  
+
   chr_lengths <- sapply(chrs, function(x) max(vcfs_filtered2[[1]]$POS[vcfs_filtered2[[1]]$CHROM == x]))
-  
+
   haplo_profiles <- list()
   for (c in chrs){
     haplo_frames <- list()
@@ -1203,9 +1203,9 @@ get_haplo_profiles <- function(){
       haplo_frames[[length(haplo_frames) + 1L]] <- haplo_frame_sub
     }
     haplo_frame <- data.table::rbindlist(haplo_frames)
-    
+
     ## raw data points
-    
+
     colnames(haplo_frame) <- c('x', 'y', 'id', 'col', 'symbol', 'name')
     haplo_frame_for_plotly <- haplo_frame
     if (args$keep_chromosomes_only) haplo_frame_for_plotly <- filter_region(haplo_frame, c, whole_chromosome = T)
@@ -1216,25 +1216,25 @@ get_haplo_profiles <- function(){
                                                                                             line=list(color=~col)),
                  type = 'scattergl', mode = 'markers', hoverinfo = 'text', height = 900 * length(args$samples_no_u),
                  hoverlabel=list(bgcolor=~col))
-    
+
     ## layout
-    
+
     p <- p %>% layout(xaxis = list(title = list(text=c, standoff=10), showticklabels = F,
                                    zeroline = F, showgrid = F), showlegend = F,
                       yaxis = list(title = '',showticklabels = F, zeroline = F, showgrid = F,
                                    fixedrange = T, range = c(-1, length(args$samples_no_u) * 3 + 1)),
                       annotations = annot_list)
-    
+
     ## add traces and recombination points
-    
+
     for (s in args$samples_no_u){
       y2 <- length(args$samples_no_u) * 3 - which(args$samples_no_u == s) * 3
       p <- add_marker_and_trace(p, length(args$samples_no_u) * 3 - which(args$samples_no_u == s) * 3 + 1)
       p <- add_marker_and_trace(p, length(args$samples_no_u) * 3 - which(args$samples_no_u == s) * 3, 'f2', 'y-up-open', symbol_offset = -.3)
     }
-    
+
     ## add regions
-    
+
     if (length(args$regions)){
       for (region in args$regions){
         if (c == strsplit(region, ':')[[1]][1]){
@@ -1243,15 +1243,15 @@ get_haplo_profiles <- function(){
         }
       }
     }
-    
+
     ## add cytobands
-    
+
     if (length(args$cytoband_file)){
       p <- add_cytoband(p, c, max(haplo_frame$y) + 2)
     } else {
       p <- add_locus_bar(p, c, chr_lengths[[c]], max(haplo_frame$y) + 2)
     }
-    
+
     haplo_profiles[[c]] <- p
   }
   return(haplo_profiles)
@@ -1295,7 +1295,7 @@ get_haplo_tables <- function(){
       rows[[length(rows) + 1]] <- row
     }
   }
-  
+
   table <- rbind(rep(c('1', '2'), length(args$samples_no_u)), sapply(rows, cbind))
   table <- cbind(c('', rep(c('1', '2'), length(args$samples_no_u))), table)
   table <- cbind(c('', unlist(lapply(args$samples_no_u, function(x) c(paste0('(', which(args$samples_no_u == x), ') ',
@@ -1303,7 +1303,7 @@ get_haplo_tables <- function(){
                                                                       args$samples_no_u[args$samples_no_u == x])))), table)
   table <- rbind(c('', '', unlist(lapply(args$samples_no_u, function(x) rep(paste0('(', which(args$samples_no_u == x), ')'),2)))), table)
   table <- cbind(table, rep('', nrow(table)))
-  
+
   cols_fill <- fill_matrix(table, 'white')
   cols_fill[1:2,] <- colors[1] ; cols_fill[,1:2] <- colors[1]
   cols_fill[1:2,1:2] <- 'white'
@@ -1324,7 +1324,7 @@ get_haplo_tables <- function(){
   }
   cols_line[1:2,1:2] <- 'white'
   cols_line[,ncol(cols_line)] <- 'white'
-  
+
   fig <- plot_ly(
     type = 'table',
     header = list(
@@ -1359,21 +1359,21 @@ get_plotly_table <- function(vcf_list){
         for (l in 1:3){
           if (j > i) { row <- c(row, '') ; next }
           if (k != l & j == i){ row <- c(row, '') ; next }
-          row <- c(row, scales::comma(length(intersect(x$ID[which(x$GT == states[k])], 
+          row <- c(row, scales::comma(length(intersect(x$ID[which(x$GT == states[k])],
                                                        y$ID[which(y$GT == states[l])])), accuracy = 1))
         }
       }
       rows[[length(rows) + 1]] <- row
     }
   }
-  
+
   table <- rbind(rep(c('0/0', '0/1', '1/1'), length(args$samples_no_u)), sapply(rows, cbind))
   table <- cbind(c('', rep(c('0/0', '0/1', '1/1'), length(args$samples_no_u))), table)
   table <- cbind(c('', unlist(lapply(args$samples_no_u, function(x) c(paste0('(', which(args$samples_no_u == x), ')'),
                                                                       x, trim(gsub(x, '', args$samples_out[args$sample_ids == x])))))), table)
   table <- rbind(c('', '', unlist(lapply(args$samples_no_u, function(x) c('',paste0('(', which(args$samples_no_u == x), ')'),'')))), table)
   table <- cbind(table, rep('', nrow(table)))
-  
+
   cols_fill <- fill_matrix(table, 'white')
   cols_fill[1:2,] <- colors[1] ; cols_fill[,1:2] <- colors[1]
   cols_fill[1:2,1:2] <- 'white'
@@ -1396,7 +1396,7 @@ get_plotly_table <- function(vcf_list){
   }
   cols_line[1:2,1:2] <- 'white'
   cols_line[,ncol(cols_line)] <- 'white'
-  
+
   fig <- plot_ly(
     type = 'table',
     header = list(
@@ -1407,7 +1407,7 @@ get_plotly_table <- function(vcf_list){
                  line = list(color = t(cols_line), width = t(fill_matrix(table, 1))), fill = list(color = t(cols_fill)),
                  font = list(color = rgb(.2,.2,.2), size = 9), height = 30), hoverinfo = 'none')
   fig <- fig %>% layout(autosize = T)
-  
+
   return(fig)
 }
 
@@ -1426,7 +1426,7 @@ write_pedigree <- function(file){
     status[which(args$sample_ids %in% args$carrier),2] <- 1
   }
   if (length(args$affected)) status[which(args$sample_ids %in% args$affected),] <- 1
-  
+
   pedi <- suppressWarnings(pedigree(args$samples_out,
                                     args$samples_out[match(args$father_ids, args$sample_ids)],
                                     args$samples_out[match(args$mother_ids, args$sample_ids)],
@@ -1459,22 +1459,22 @@ get_var_dis_fig <- function(vcf_list){
                              scales::comma(breaks[-length(breaks)] + args$window_size - 1,
                                            accuracy = 1)))
   }
-  
+
   dat <- data.frame(annot, poss, counts)
-  
+
   colnames(dat) <- c('range', 'index', 'count')
   var_dis <- plot_ly(dat, x =~index, y =~count, text=~range, height = 240,
                      marker = list(color = colors[1], alpha = .5, size = 2 * args$dot_factor,
                                    line = list(color = colors[1], alpha = .5)),
                      type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
-  
+
   var_dis <- var_dis %>% layout(xaxis = list(title = list(text='', standoff = 1), showticklabels = F,
                                              zeroline = F, showgrid = F),
                                 showlegend = F, yaxis = list(title = 'variant count', zeroline = F),
                                 hovermode = 'x unified')
-  
+
   var_dis <- add_chr_lines(var_dis, chr_cs, c(-max(dat$count)*.1, max(dat$count)*1.1))
-  
+
   if (length(args$regions)){
     for (region in args$regions){
       var_dis <- mark_region(var_dis, chr_cs, c(-max(dat$count)*.1, max(dat$count)*1.1), region, chr_lengths)
@@ -1507,73 +1507,73 @@ get_var_depth_hist <- function(vcf_list){
 #' Build copy-number segmentation figures.
 #' @return A named list of Plotly htmlwidgets.
 get_cn_fig <- function(){
-  
+
   cluster_max_len_between_cpg = 200
   clusters <- vector('list', length(chrs))
-  
+
   for (chr_i in seq_along(chrs)){
     chr <- chrs[chr_i]
     pos <- vcfs[[1]]$POS[vcfs[[1]]$CHROM == chr]
-    
+
     starts <- c(pos[1], pos[which(pos[-1] - pos[-length(pos)] > cluster_max_len_between_cpg) + 1])
     ends <- c(pos[which(pos[-1] - pos[-length(pos)] > cluster_max_len_between_cpg)], pos[length(pos)])
     amount <- diff(c(0, which(pos[-1] - pos[-length(pos)] > cluster_max_len_between_cpg), length(pos)))
-    
+
     chr_cluster <- matrix(nrow = length(ends), ncol = 4)
     chr_cluster[,1] <- rep(chr, length(starts))
     chr_cluster[,2] <- starts
     chr_cluster[,3] <- ends + 1
     chr_cluster[,4] <- amount
-    
+
     clusters[[chr_i]] <- chr_cluster
   }
-  
+
   clusters <- data.frame(do.call(rbind, clusters), stringsAsFactors = F)
   colnames(clusters) <- c('seqnames', 'start', 'end', 'amount')
   for (i in 2:4) clusters[,i] <- as.numeric(clusters[,i])
   clusters_gr <- GRanges(clusters)
-  
+
   pos_gr <- GRanges(seqnames = vcfs[[1]]$CHROM, ranges = IRanges(start = vcfs[[1]]$POS, width = 1))
-  
+
   chr_lengths <- sapply(chrs, function(x) max(vcfs[[1]]$POS[vcfs[[1]]$CHROM == x]))
   cn <- GRanges(seqnames = chrs, ranges = IRanges(start = 1, width = chr_lengths))
   cn <- as.data.frame(slidingWindows(cn, width = args$window_size, step = args$window_size))[,3:5]
   cn_gr <- GRanges(cn)
-  
+
   hits <- findOverlaps(clusters_gr, pos_gr, select = 'all')
   hits <- split(hits@to, hits@from)
-  
+
   hits2 <- findOverlaps(cn_gr, clusters_gr, select = 'all')
   hits2 <- split(hits2@to, hits2@from)
-  
+
   copy_number_plots <- list()
   for (s in args$samples_no_u){
     vcf <- vcfs[[s]]
     var_mask <- vcf$GT != './.'
-    
+
     dat_clusters <- clusters
     dat_clusters$mean_depth[as.numeric(names(hits))] <- sapply(hits, function(hit) mean(vcf$AD[hit][var_mask[hit]], na.rm = T))
-    
+
     dat_cn <- cn
     dat_cn$index <- 1:nrow(dat_cn) * args$window_size - args$window_size / 2
     dat_cn$range <- paste0(dat_cn$seqnames, ':', dat_cn$start, '-', dat_cn$end)
     dat_cn$amount[as.numeric(names(hits2))] <- sapply(hits2, function(hit) length(!is.na(dat_clusters$mean_depth[hit])))
     dat_cn$mean_depth[as.numeric(names(hits2))] <- sapply(hits2, function(hit) mean(dat_clusters$mean_depth[hit], na.rm = T))
     dat_cn$sd_depth[as.numeric(names(hits2))] <- sapply(hits2, function(hit) sd(dat_clusters$mean_depth[hit], na.rm = T))
-    
+
     x <- dat_cn$mean_depth ; y <- dat_cn$sd_depth ; m <- !is.na(y) & !is.na(x)
     dat_cn$resi <- NA; dat_cn$resi[m] <- lm(y[m] ~ x[m])$residuals
-    
+
     weights <- dat_cn$amount / mean(dat_cn$amount, na.rm = T)
     dat_cn$weight <- weights * 2 * args$dot_factor
-    
+
     dat_cn$mask <- dat_cn$amount >= as.numeric(quantile(dat_cn$amount[dat_cn$amount != 0], .05, na.rm = T)) &
       dat_cn$resi < as.numeric(quantile(dat_cn$resi, .95, na.rm = T)) &
       dat_cn$resi > as.numeric(quantile(dat_cn$resi, .05, na.rm = T))
     dat_cn$mask[is.na(dat_cn$mask)] <- F
-    
+
     dat_cn$ratio <- log2(dat_cn$mean_depth / median(dat_cn$mean_depth[dat_cn$mask], na.rm = T))
-    
+
     cd_object <- CNA(dat_cn$ratio[dat_cn$mask],
                      dat_cn$seqnames[dat_cn$mask],
                      dat_cn$start[dat_cn$mask], data_type = "logratio", sampleid = "X")
@@ -1581,24 +1581,24 @@ get_cn_fig <- function(){
       segmented_cd_object <- segment(cd_object, verbose=1, weights = dat_cn$weight[dat_cn$mask]),
       file = nullfile()
     )
-    
+
     dat_seg <- segmented_cd_object$output
     dat_seg$loc_end <- dat_seg$loc_end + args$window_size - 1
-    
+
     cn_plot <- plot_ly(dat_cn[dat_cn$mask,], x =~index, y =~ratio, text =~range, name = s,
                        height = 210 * length(args$samples_no_u),
                        marker = list(color = colors[1], alpha = .5, size = args$dot_factor * 2,
                                      line = list(color = colors[1], alpha = .5)),
                        type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
-    
+
     chr_lengths <- sapply(chrs, function(chr) length(which(dat_cn$seqnames == chr))) * args$window_size
     chr_cs <- c(0, sapply(chrs, function(chr) last(which(dat_cn$seqnames == chr))) * args$window_size)
     names(chr_cs) <- c(chrs, 'end')
-    
+
     lower <- min(-2.25, quantile(dat_cn$ratio, na.rm = T, .01))
     upper <- max(2.25, quantile(dat_cn$ratio, na.rm = T, .99))
     ylim = c(lower, upper)
-    
+
     for (i in 1:nrow(dat_seg)){
       st <- dat_seg$loc_start[i] + chr_cs[as.character(dat_seg$chrom[i])]
       e <- dat_seg$loc_end[i] + chr_cs[as.character(dat_seg$chrom[i])]
@@ -1611,19 +1611,19 @@ get_cn_fig <- function(){
                   marker = list(color = colors[2], size = .1),
                   mode='lines+markers', inherit = T)
     }
-    
+
     cn_plot <- cn_plot %>% layout(xaxis = list(title = list(text=args$samples_out[args$sample_ids == s],
                                                             standoff = 1),
                                                showticklabels = F, zeroline = F, showgrid = F),
                                   showlegend = F, yaxis = list(title = 'log2(ratio)', zeroline = F, range = ylim))
-    
+
     cn_plot <- add_chr_lines(cn_plot, chr_cs, ylim)
     if (length(args$regions)){
       for (region in args$regions){
         cn_plot <- mark_region(cn_plot, chr_cs, ylim, region, chr_lengths)
       }
     }
-    
+
     copy_number_plots[[s]] <- cn_plot
   }
   return(copy_number_plots)
@@ -1639,49 +1639,49 @@ get_cn_fig <- function(){
 #' @param n_rel Number of plotted relationships.
 #' @return A Plotly htmlwidget.
 get_men_err_fig <- function(child, father, mother, n_rel){
-  
+
   get_trio_error <- function(gt_child, gt_parent_1, gt_parent_2){
     trio_error <- rep(0, length(gt_child))
-    
+
     m <- gt_parent_1 == '0/0' & gt_parent_2 == '0/0'
     trio_error[m] <- 1
     trio_error[m][gt_child[m] %in% c('0/1', '1/1')] <- 2
-    
+
     m <- (gt_parent_1 == '0/1' & gt_parent_2 == '0/0') | (gt_parent_1 == '0/0' & gt_parent_2 == '0/1')
     trio_error[m] <- 1
     trio_error[m][gt_child[m] %in% c('1/1')] <- 2
-    
+
     m <- (gt_parent_1 == '1/1' & gt_parent_2 == '0/1') | (gt_parent_1 == '0/1' & gt_parent_2 == '1/1')
     trio_error[m] <- 1
     trio_error[m][gt_child[m] %in% c('0/0')] <- 2
-    
+
     m <- gt_parent_1 == '1/1' & gt_parent_2 == '1/1'
     trio_error[m] <- 1
     trio_error[m][gt_child[m] %in% c('0/0', '0/1')] <- 2
-    
+
     m <- (gt_parent_1 == '0/0' & gt_parent_2 == '1/1') | (gt_parent_1 == '1/1' & gt_parent_2 == '0/0')
     trio_error[m] <- 1
     trio_error[m][gt_child[m] %in% c('0/0', '1/1')] <- 2
 
     return(trio_error)
   }
-  
+
   get_duo_error <- function(gt_child, gt_parent){
     duo_error <- rep(0, length(gt_child))
-    
+
     m <- gt_parent == '0/0'
     duo_error[m] <- 1
     duo_error[m][gt_child[m] %in% c('1/1')] <- 2
-    
+
     m <- gt_parent == '1/1'
     duo_error[m] <- 1
     duo_error[m][gt_child[m] %in% c('0/0')] <- 2
-    
+
     return(duo_error)
   }
-  
+
   man_err_frame <- vcfs_filtered[[child]][,1:2]
-  
+
   if (length(father) & length(mother)) man_err_frame$trio <- get_trio_error(vcfs_filtered[[child]]$GT,
                                                                             vcfs_filtered[[father]]$GT,
                                                                             vcfs_filtered[[mother]]$GT)
@@ -1689,22 +1689,22 @@ get_men_err_fig <- function(child, father, mother, n_rel){
                                                          vcfs_filtered[[father]]$GT)
   if (length(mother)) man_err_frame$mot <- get_duo_error(vcfs_filtered[[child]]$GT,
                                                          vcfs_filtered[[mother]]$GT)
-  
+
   man_err_frame_gr <- man_err_frame[,1:2] ; colnames(man_err_frame_gr) <- c('seqnames', 'start')
   man_err_frame_gr$end <- man_err_frame_gr$start + 1
   man_err_frame_gr <- GRanges(man_err_frame_gr)
-  
+
   chr_lengths <- sapply(chrs, function(x) max(vcfs_filtered[[1]]$POS[vcfs_filtered[[1]]$CHROM == x]))
   x <- GRanges(seqnames = chrs, ranges = IRanges(start = 1, width = chr_lengths))
   x <- as.data.frame(slidingWindows(x, width = args$window_size, step = args$window_size))[,3:5]
   x_gr <- GRanges(x)
-  
+
   x$index <- 1:nrow(x) * args$window_size - args$window_size / 2
   x$range <- paste0(x$seqnames, ':', x$start, '-', x$end)
-  
+
   hits <- findOverlaps(x_gr, man_err_frame_gr, select = 'all')
   hits <- split(hits@to, hits@from)
-  
+
   if (length(father) & length(mother)){
     x$trio <- 0
     x$trio[as.numeric(names(hits))] <- sapply(hits, function(hit) length(which(man_err_frame$trio[hit] == 2)))
@@ -1717,55 +1717,55 @@ get_men_err_fig <- function(child, father, mother, n_rel){
     x$mot <- 0
     x$mot[as.numeric(names(hits))] <- sapply(hits, function(hit) length(which(man_err_frame$mot[hit] == 2)))
   }
-  
+
   me_plot <- plot_ly(x, x =~index, y = 0, height = 210 * n_rel,
                      line = list(color = colors[1], width = 0),
                      name = 'trio errors', type = 'scatter', mode = 'lines', hoverinfo = 'none')
-  
+
   if (length(father) & length(mother)){
     me_plot <- me_plot %>% add_trace(x =~index, y =~trio, text =~range,
                                      line = list(color = colors[1], width = args$dot_factor),
                                      name = 'trio errors', type = 'scatter', mode = 'lines', hoverinfo = 'name+y+text')
-    
+
     me_plot <- me_plot %>% add_polygons(x = c(1, x$index, last(x$index)), y = c(0, x$trio,0), inherit = F,
                                         line=list(width=0), fillcolor = colors[1], opacity = .2)
   }
-  
+
   if (length(father)){
     me_plot <- me_plot %>% add_trace(x =~index, y =~fat, text =~range,
                                      line = list(color = colors[2], width = args$dot_factor, dash = 'dot'),
                                      name = 'father errors', type = 'scatter', mode = 'lines', hoverinfo = 'name+y+text')
-    
+
     me_plot <- me_plot %>% add_polygons(x = c(1, x$index, last(x$index)), y = c(0, x$fat,0), inherit = F,
                                         line=list(width=0), fillcolor = colors[2], opacity = .2)
   }
-  
+
   if (length(mother)){
     me_plot <- me_plot %>% add_trace(x =~index, y =~mot, text =~range,
                                      line = list(color = colors[3], width = args$dot_factor, dash = 'dot'),
                                      name = 'mother errors', type = 'scatter', mode = 'lines', hoverinfo = 'name+y+text')
-    
+
     me_plot <- me_plot %>% add_polygons(x = c(1, x$index, last(x$index)), y = c(0, x$mot,0), inherit = F,
                                         line=list(width=0), fillcolor = colors[3], opacity = .2)
   }
-  
+
   ylim = c(0, max(x$trio, x$fat, x$mot, 50, na.rm = T))
-  
+
   me_plot <- me_plot %>% layout(xaxis = list(title = list(text=args$samples_out[args$sample_ids == child], standoff = 5),
                                              showticklabels = F, zeroline = F, showgrid = F),
                                 showlegend = F, yaxis = list(title = 'mendelian error count', zeroline = F, range = ylim))
-  
+
   chr_lengths <- sapply(chrs, function(chr) length(which(x$seqnames == chr))) * args$window_size
   chr_cs <- c(0, sapply(chrs, function(chr) last(which(x$seqnames == chr))) * args$window_size)
   names(chr_cs) <- c(chrs, 'end')
-  
+
   me_plot <- add_chr_lines(me_plot, chr_cs, ylim)
   if (length(args$regions)){
     for (region in args$regions){
       me_plot <- mark_region(me_plot, chr_cs, ylim, region, chr_lengths)
     }
   }
-  
+
   return(me_plot)
 }
 
@@ -1784,19 +1784,19 @@ get_region_baf <- function(){
     st <- max(1, st)
     en <- as.numeric(strsplit(strsplit(region, ':')[[1]][2], '-')[[1]][2]) + args$regions_flanking_size
     en <- min(chr_lengths[c], en)
-    
+
     m <- vcfs_filtered[[1]]$CHROM == c & vcfs_filtered[[1]]$POS > st & vcfs_filtered[[1]]$POS < en
     for (s in args$samples_no_u){
       dat <- data.frame(paste0(vcfs_filtered[[s]]$CHROM[m], ':', vcfs_filtered[[s]]$pos_out[m]),
                         vcfs_filtered[[s]]$POS[m], vcfs_filtered[[s]]$AF[m] * 100)
       colnames(dat) <- c('id', 'index', 'AF')
       dat <- dat[!is.na(dat$AF),]
-      
+
       baf <- plot_ly(dat, x =~index, y =~AF, text =~id, height = 200 * ceiling(length(args$samples_no_u) / 4),
                      marker = list(color = colors[1], alpha = .5,
                                    size = args$dot_factor * 2, line = list(color = colors[1], alpha = .5)),
                      type = 'scatter', mode = 'markers', hoverinfo = 'y+text')
-      
+
       yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,115), fixedrange = T)
       if (which(args$samples_no_u == s) %% 4 != 1) {
         yaxis = list(title = '', showticklabels = F, zeroline = F, range = c(-15,115), fixedrange = T)
@@ -1804,13 +1804,13 @@ get_region_baf <- function(){
       baf <- baf %>% layout(xaxis = list(title = list(text=args$samples_out[args$sample_ids == s], standoff = 1),
                                          showticklabels = F, zeroline = F, showgrid = F),
                             showlegend = F, yaxis = yaxis)
-      
+
       tmp <- c(1) ; names(tmp) <- c
-      
+
       baf <- mark_region(baf, tmp, c(-5,105), region, chr_lengths, plot_flanks = F)
-      
+
       region_out <- paste0(c, ':', scales::comma(st, accuracy = 1), ':', scales::comma(en, accuracy = 1))
-      
+
       bafs[[region_out]][[s]] <- baf
     }
   }
@@ -1829,16 +1829,16 @@ get_genome_baf <- function(s){
                       vcfs_filtered[[s]]$POS[chr_m], vcfs_filtered[[s]]$AF[chr_m] * 100)
     colnames(dat) <- c('id', 'index', 'AF')
     dat <- dat[!is.na(dat$AF),]
-    
+
     if(args$limit_baf_to_p) dat <- dat[sort(sample(nrow(dat),round(nrow(dat) * args$value_of_p))),]
-    
+
     ## raw data
-    
+
     baf <- plot_ly(dat, x = ~index, y = ~AF, text =~id,
                    marker = list(color = colors[1], alpha = .5, size = args$dot_factor * 2,
                                  line = list(color = colors[1], alpha = .5)),
                    type = 'scattergl', mode = 'markers', hoverinfo = 'y+text', height = 1000 * 1.5)
-    
+
     yaxis = list(title = 'BAF (%)', zeroline = F, range = c(-15,125), fixedrange = T)
     if (which(chrs == chr) %% 4 != 1) {
       yaxis = list(title = '', showticklabels = F, zeroline = F, range = c(-15,125), fixedrange = T)
@@ -1846,9 +1846,9 @@ get_genome_baf <- function(s){
     baf <- baf %>% layout(xaxis = list(title = list(text=chr, standoff = 1),
                                        showticklabels = F, zeroline = F, showgrid = F),
                           showlegend = F, yaxis = yaxis)
-    
+
     ## add region
-    
+
     if (length(args$regions)){
       for (region in args$regions){
         if (chr == strsplit(region, ':')[[1]][1]){
@@ -1857,15 +1857,15 @@ get_genome_baf <- function(s){
         }
       }
     }
-    
+
     ## add cytobands
-    
+
     if (length(args$cytoband_file)){
       baf <- add_cytoband(baf, chr, 120)
     } else {
       baf <- add_locus_bar(baf, chr, chr_lengths[[chr]], 120)
     }
-    
+
     bafs[[chr]] <- baf
   }
   return(bafs)
@@ -1881,12 +1881,12 @@ get_genome_baf <- function(s){
 #' @return A chromosome-indexed list of Plotly htmlwidgets.
 get_pm <- function(child, father, mother){
   vcf_child <- vcfs_filtered[[child]]
-  
+
   annot_list <- c('father 0/1 --- mother 0/0|1/1 --- child 0/1',
                   'father 0/1 --- mother 0/0|1/1 --- child 0/0|1/1',
                   'father 0/0|1/1 --- mother 0/1 --- child 0/1',
                   'father 0/0|1/1 --- mother 0/1 --- child 0/0|1/1')
-  
+
   if (length(father) & length(mother)){
     vcf_fat <- vcfs_filtered[[father]]
     vcf_mot <- vcfs_filtered[[mother]]
@@ -1897,7 +1897,7 @@ get_pm <- function(child, father, mother){
     vcf_fat <- vcfs_filtered[[father]]
     m1 <- vcf_fat$GT == '0/1'
     m2 <- vcf_fat$GT %in% c('0/0', '1/1')
-    
+
     annot_list <- c('father 0/1 --- child 0/1',
                     'father 0/1 --- child 0/0|1/1',
                     'father 0/0|1/1 --- child 0/1',
@@ -1907,23 +1907,23 @@ get_pm <- function(child, father, mother){
     vcf_mot <- vcfs_filtered[[mother]]
     m1 <- vcf_mot$GT %in% c('0/0', '1/1')
     m2 <- vcf_mot$GT == '0/1'
-    
+
     annot_list <- c('mother 0/0|1/1 --- child 0/1',
                     'mother 0/0|1/1 --- child 0/0|1/1',
                     'mother 0/1 --- child 0/1',
                     'mother 0/1 --- child 0/0|1/1')
   }
-  
+
   vcf_child$tracks[m1][vcf_child$GT[m1] == '0/1'] <- 5
   vcf_child$tracks[m1][vcf_child$GT[m1] %in% c('0/0', '1/1')] <- 4
-  
+
   vcf_child$tracks[m2][vcf_child$GT[m2] == '0/1'] <- 2
   vcf_child$tracks[m2][vcf_child$GT[m2] %in% c('0/0', '1/1')] <- 1
-  
+
   vcf_child$col <- NA
   vcf_child$col[which(vcf_child$tracks %in% 4:5)] <- colors[1]
   vcf_child$col[which(vcf_child$tracks %in% 1:2)] <- colors[2]
-  
+
   chr_lengths <- sapply(chrs, function(x) max(vcfs_filtered[[1]]$POS[vcfs_filtered[[1]]$CHROM == x]))
   upds <- list()
   for (chr in chrs){
@@ -1932,25 +1932,25 @@ get_pm <- function(child, father, mother){
                       vcf_child$POS[chr_m], vcf_child$tracks[chr_m], vcf_child$col[chr_m])
     colnames(dat) <- c('id', 'index', 'track', 'col')
     dat <- dat[!is.na(dat$track),]
-    
+
     if(args$limit_pm_to_p) dat <- dat[sort(sample(nrow(dat),round(nrow(dat) * args$value_of_p))),]
-    
+
     ## raw data
-    
+
     upd <- plot_ly(dat, x = ~index, y = ~track, text =~id,
                    marker = list(color =~ col, alpha = .5, size = args$dot_factor * 3,
                                  line = list(color =~ col, alpha = .5), symbol = 'cross-thin-open'),
                    type = 'scatter', mode = 'markers', hoverinfo = 'text', height = 1000,
                    hoverlabel=list(bgcolor=~col))
-    
+
     upd <- upd %>% layout(xaxis = list(title = list(text=chr, standoff = 1),
                                        showticklabels = F, zeroline = F, showgrid = F),
                           yaxis = list(title = '', showticklabels = F, zeroline = F,
                                        range = c(.5,6), fixedrange = T, showgrid = F),
                           showlegend = F)
-    
+
     ## add region
-    
+
     if (length(args$regions)){
       for (region in args$regions){
         if (chr == strsplit(region, ':')[[1]][1]){
@@ -1959,27 +1959,27 @@ get_pm <- function(child, father, mother){
         }
       }
     }
-    
+
     ## add cytobands
-    
+
     if (length(args$cytoband_file)){
       upd <- add_cytoband(upd, chr, 3)
     } else {
       upd <- add_locus_bar(upd, chr, chr_lengths[[chr]], 3)
     }
-    
+
     upds[[chr]] <- upd
   }
-  
+
   upd <- plot_ly(dat[1,], x = ~index, y = ~track, text =~id,
                  marker = list(color =~ 'white'),
                  type = 'scatter', mode = 'markers', hoverinfo = 'none', height = 1000)
-  
+
   upd <- upd %>% layout(xaxis = list(title = list(text='', standoff = 1),
                                      showticklabels = F, zeroline = F, showgrid = F),
                         yaxis = list(title = '', showticklabels = F, zeroline = F,
                                      range = c(.5,6), fixedrange = T, showgrid = F),
-                        showlegend = F, 
+                        showlegend = F,
                         annotations = list(list(x = chr_lengths[[chr]] / 2, y = 5, font = list(color = colors[1]),
                                                 text = annot_list[1], showarrow = F),
                                            list(x = chr_lengths[[chr]] / 2, y = 4, font = list(color = colors[1]),
@@ -1994,7 +1994,7 @@ get_pm <- function(child, father, mother){
   } else {
     upd <- add_locus_bar(upd, chr, chr_lengths[[chr]], 3)
   }
-  
+
   upds[[24]] <- upd
   return(upds)
 }
@@ -2021,14 +2021,14 @@ get_pm <- function(child, father, mother){
 #' @return An htmltools tag list containing Plotly htmlwidgets.
 get_html_list <- function(){
   cat('Generating visualizations, working ...\n')
-  
+
   html_list <- list()
   append_list <- function(list, x){
     l <- list
     l[[length(l) + 1]] <- x
     return(l)
   }
-  
+
   add_main_header <- function(html_list, h){
     html_list <- append_list(html_list, tags$hr())
     html_list <- append_list(html_list, tags$hr())
@@ -2037,7 +2037,7 @@ get_html_list <- function(){
     html_list <- append_list(html_list, tags$hr())
     return(html_list)
   }
-  
+
   get_empty <- function(){
     p <- plot_ly(x = 0, y = 0, name = NULL, type = 'scatter', mode = 'markers',
                  marker = list(color = 'white', size = .01), hoverinfo='skip')
@@ -2046,10 +2046,10 @@ get_html_list <- function(){
                       showlegend = F)
     return(p)
   }
-  
+
   do_subplot <- function(plot_list, n_col = 1, panning = .03, margin = .02, override_hover_mode = NULL){
     n_row <- ceiling(length(plot_list) / n_col)
-    
+
     plot_list_ap <- lapply(1:(n_col + 2), function(x) get_empty())
     for (i in 1:n_row){
       plot_list_ap <- c(plot_list_ap, lapply(1, function(x) get_empty()))
@@ -2060,7 +2060,7 @@ get_html_list <- function(){
       plot_list_ap <- c(plot_list_ap, lapply(1, function(x) get_empty()))
     }
     plot_list_ap <- c(plot_list_ap, lapply((length(plot_list_ap)+1):((n_col+2)*(n_row+2)), function(x) get_empty()))
-    
+
     heights <- c(panning, rep((1 - 2*panning) / n_row, n_row), panning)
     widths <- c(panning, rep((1 - 2*panning) / n_col, n_col), panning)
     this_subplot <- subplot(plot_list_ap, nrows=n_row+2, margin=margin, titleY=T, titleX=T,
@@ -2068,7 +2068,7 @@ get_html_list <- function(){
     if (!is.null(override_hover_mode)) this_subplot$x$layout$hovermode <- override_hover_mode
     return(this_subplot)
   }
-  
+
   get_ado <- function(vcf_list, mother, father, child){
     ado_set <- vcf_list[[1]]$ID[which((vcf_list[[mother]]$GT == '0/0' & vcf_list[[father]]$GT == '1/1') |
                                         (vcf_list[[father]]$GT == '0/0' & vcf_list[[mother]]$GT == '1/1'))]
@@ -2077,7 +2077,7 @@ get_html_list <- function(){
                   sum(ado_table[which(names(ado_table) %in% c('0/0', '0/1', '1/1'))]) * 100, 2)
     return(paste0(ado, '%'))
   }
-  
+
   get_adi <- function(vcf_list, mother, father, child){
     adi_set <- vcf_list[[1]]$ID[which((vcf_list[[mother]]$GT == '1/1' & vcf_list[[father]]$GT == '1/1'))]
     adi_table <- table(vcf_list[[child]]$GT[which(vcf_list[[child]]$ID %in% adi_set)])
@@ -2085,45 +2085,45 @@ get_html_list <- function(){
                   sum(adi_table[which(names(adi_table) %in% c('0/0', '0/1', '1/1'))]) * 100, 2)
     return(paste0(adi, '%'))
   }
-  
+
   ## info
-  
+
   if (length(args$info)){
     html_list <- add_main_header(html_list, "Family/disease information")
     for (part in args$info){
       html_list <- append_list(html_list, tags$p(part))
     }
   }
-  
+
   ## pedigree
-  
+
   if (length(args$samples_no_u) > 1){
     cat('  ... at pedigree \n')
-    
+
     html_list <- add_main_header(html_list, "Family tree")
-    
+
     write_pedigree(paste0(args$out_bs, 'ped.tree.png'))
     x <- htmltools::img(src = file_data_uri(paste0(args$out_bs, 'ped.tree.png')),
                         style = paste0('height:',5*100,'px;width:',log(length(args$sample_ids)) * 4 * 100,'px'))
     invisible(file.remove(paste0(args$out_bs, 'ped.tree.png')))
     html_list <- append_list(html_list, x)
   }
-  
+
   # raw
-  
+
   html_list <- add_main_header(html_list, "Filter 0: single nucleotide variants")
-  
+
   ## variant statistics
-  
+
   html_list <- append_list(html_list, tags$h3("Variant statistics"))
-  
+
   add_tot_number_of_variants <- function(html_list, vcf_list){
     nvars <- c()
     for (s in args$samples_no_u){
       nvars <- c(nvars, paste0(s, ': ', scales::comma(nrow(vcf_list[[s]][vcf_list[[s]]$GT %in% c('0/0', '0/1', '1/1'),]), accuracy = 1)))
     }
     html_list <- append_list(html_list, tags$p(paste0('° overall; ', paste0(nvars, collapse = ' | '))))
-    
+
     get_vars_in_region <- function(vcf_list, sample, region){
       r_split <- strsplit(region, ':')[[1]]
       c = r_split[1]
@@ -2137,20 +2137,20 @@ get_html_list <- function(){
       n3 <- length(which(x$CHROM == c & x$POS >= e & x$POS <= e_flank & x$GT %in% c('0/0', '0/1', '1/1')))
       return(list(n1 = n1, n2 = n2, n3 = n3))
     }
-    
+
     for (region in args$regions){
       nvars <- c()
       for (s in args$samples_no_u){
         nvars <- c(nvars, paste0(s, ': ', scales::comma(get_vars_in_region(vcf_list, s, region)$n1, accuracy = 1)))
       }
       html_list <- append_list(html_list, tags$p(paste0('° in ', region, '; ', paste0(nvars, collapse = ' | '))))
-      
+
       nvars <- c()
       for (s in args$samples_no_u){
         nvars <- c(nvars, paste0(s, ': ', scales::comma(get_vars_in_region(vcf_list, s, region)$n2, accuracy = 1)))
       }
       html_list <- append_list(html_list, tags$p(paste0('° in ', region, ' (left flank); ', paste0(nvars, collapse = ' | '))))
-      
+
       nvars <- c()
       for (s in args$samples_no_u){
         nvars <- c(nvars, paste0(s, ': ', scales::comma(get_vars_in_region(vcf_list, s, region)$n3, accuracy = 1)))
@@ -2159,28 +2159,28 @@ get_html_list <- function(){
     }
     return(html_list)
   }
-  
+
   cat('  ... at total number of variants (raw) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Total number of variants"))
   html_list <- add_tot_number_of_variants(html_list, vcfs)
-  
+
   cat('  ... at number of variants table (raw) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Number of variants table"))
   html_list <- append_list(html_list, get_plotly_table(vcfs))
-  
+
   if (length(args$samples_no_u) > 1){
     html_list <- append_list(html_list, tags$h4("Allelic drop-out (ADO) & allelic drop-in (ADI)"))
     for (child in args$samples_no_u){
       father <- args$father_ids[args$sample_ids == child]
       mother <- args$mother_ids[args$sample_ids == child]
-      
+
       has_father <- !is.na(father) & !(father %in% args$samples_u)
       has_mother <- !is.na(mother) & !(mother %in% args$samples_u)
-      
+
       html_list <- append_list(html_list, tags$h5(child))
-      
+
       if (has_mother & has_father){
         html_list <- append_list(html_list, tags$p(paste0(
           'ADO = ', get_ado(vcfs, mother, father, child))))
@@ -2191,60 +2191,60 @@ get_html_list <- function(){
       }
     }
   }
-  
+
   ## var depth
-  
+
   cat('  ... at variant depth (raw) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Variant depth"))
   html_list <- append_list(html_list, do_subplot(get_var_depth_hist(vcfs), n_col = 4))
-  
+
   ## number of variants
-  
+
   cat('  ... at number of variants profile (raw) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Number of variants profile"))
   html_list <- append_list(html_list, do_subplot(list(get_var_dis_fig(vcfs))))
-  
+
   ## copy number
-  
+
   cat('  ... at vcf-based copy number (raw) \n')
-  
+
   html_list <- append_list(html_list, tags$h3("Vcf-based copy number (bam-based verification recommended)"))
   html_list <- append_list(html_list, do_subplot(get_cn_fig()))
-  
+
   # filtered 1
-  
+
   html_list <- add_main_header(html_list, "Filter 1: filter 0, --dp_hard_limit, af_hard_limit and --dp_soft_limit")
-  
+
   ## variant statistics
-  
+
   html_list <- append_list(html_list, tags$h3("Variant statistics"))
-  
+
   cat('  ... at total number of variants (filter 1) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Total number of variants"))
   html_list <- add_tot_number_of_variants(html_list, vcfs_filtered)
-  
+
   cat('  ... at number of variants table (filter 1) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Number of variants table"))
   html_list <- append_list(html_list, get_plotly_table(vcfs_filtered))
-  
+
   n_rel <- 0
   if (length(args$samples_no_u) > 1){
     html_list <- append_list(html_list, tags$h4("Allelic drop-out (ADO) & allelic drop-in (ADI)"))
     for (child in args$samples_no_u){
       father <- args$father_ids[args$sample_ids == child]
       mother <- args$mother_ids[args$sample_ids == child]
-      
+
       has_father <- !is.na(father) & !(father %in% args$samples_u)
       has_mother <- !is.na(mother) & !(mother %in% args$samples_u)
-      
+
       html_list <- append_list(html_list, tags$h5(child))
-      
+
       if (has_mother | has_father) n_rel <- n_rel + 1
-      
+
       if (has_mother & has_father){
         html_list <- append_list(html_list, tags$p(paste0(
           'ADO = ', get_ado(vcfs_filtered, mother, father, child))))
@@ -2255,23 +2255,23 @@ get_html_list <- function(){
       }
     }
   }
-  
+
   ## var depth
-  
+
   cat('  ... at variant depth (filter 1) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Variant depth"))
   html_list <- append_list(html_list, do_subplot(get_var_depth_hist(vcfs_filtered), n_col = 4))
-  
+
   ## number of variants
-  
+
   cat('  ... at number of variants profile (filter 1) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Number of variants profile"))
   html_list <- append_list(html_list, do_subplot(list(get_var_dis_fig(vcfs_filtered))))
-  
+
   ## BAF
-  
+
   if (length(args$regions)){
     cat('  ... at B-allele frequency (regions; filter 1) \n')
     html_list <- append_list(html_list, tags$h3("B-allele frequency (BAF), region(s) of interest"))
@@ -2281,9 +2281,9 @@ get_html_list <- function(){
       html_list <- append_list(html_list, do_subplot(regions_baf[[region]], n_col = 4))
     }
   }
-  
+
   ## BAF detail
-  
+
   if (length(args$baf_ids)){
     cat('  ... at B-allele frequency (genome-wide; filter 1) \n')
     if (args$limit_baf_to_p){
@@ -2297,33 +2297,33 @@ get_html_list <- function(){
       html_list <- append_list(html_list, do_subplot(get_genome_baf(s), n_col = 2, panning = .015, margin = .012))
     }
   }
-  
+
   ## Mendelian errors
-  
+
   if (length(args$sample_ids) > 1){
-    
+
     men_err_plots <- list()
     for (s in args$samples_no_u){
       father <- args$father_ids[args$sample_ids == s]
       mother <- args$mother_ids[args$sample_ids == s]
-      
+
       has_father <- !is.na(father) & !(father %in% args$samples_u)
       has_mother <- !is.na(mother) & !(mother %in% args$samples_u)
-      
+
       if (length(father[has_father]) | length(mother[has_mother])){
         men_err_plots[[s]] <- get_men_err_fig(s, father[has_father], mother[has_mother], n_rel)
       }
     }
     if (length(men_err_plots)){
       cat('  ... at mendelian errors (filter 1) \n')
-      
+
       html_list <- append_list(html_list, tags$h3("Mendelian errors"))
       html_list <- append_list(html_list, do_subplot(men_err_plots, n_col = 1))
     }
   }
-  
+
   ## Parent mapping
-  
+
   if (length(args$sample_ids) > 1){
     cat('  ... at parent mapping (filter 1) \n')
     if (args$limit_pm_to_p){
@@ -2334,65 +2334,65 @@ get_html_list <- function(){
     for (s in args$samples_no_u){
       father <- args$father_ids[args$sample_ids == s]
       mother <- args$mother_ids[args$sample_ids == s]
-      
+
       has_father <- !is.na(father) & !(father %in% args$samples_u)
       has_mother <- !is.na(mother) & !(mother %in% args$samples_u)
-      
+
       if (length(father[has_father]) | length(mother[has_mother])){
         html_list <- append_list(html_list, tags$h4(args$samples_out[args$sample_ids == s]))
         html_list <- append_list(html_list, do_subplot(get_pm(s, father[has_father], mother[has_mother]), n_col = 4))
       }
     }
   }
-  
+
   # filtered 2
-  
+
   html_list <- add_main_header(html_list, "Filter 2: filter 0, filter 1, keep_informative_ids and --keep_hetero_ids")
-  
+
   ## variant statistics
-  
+
   html_list <- append_list(html_list, tags$h3("Variant statistics"))
-  
+
   cat('  ... at total number of variants (filter 2) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Total number of variants"))
   html_list <- add_tot_number_of_variants(html_list, vcfs_filtered2)
-  
+
   cat('  ... at number of variants table (filter 2) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Number of variants table"))
   html_list <- append_list(html_list, get_plotly_table(vcfs_filtered2))
-  
+
   ## var depth
-  
+
   cat('  ... at variant depth (filter 2) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Variant depth"))
   html_list <- append_list(html_list, do_subplot(get_var_depth_hist(vcfs_filtered2), n_col = 4))
-  
+
   ## number of variants
-  
+
   cat('  ... at number of variants profile (filter 2) \n')
-  
+
   html_list <- append_list(html_list, tags$h4("Number of variants profile"))
   html_list <- append_list(html_list, do_subplot(list(get_var_dis_fig(vcfs_filtered2))))
-  
+
   ## Merlin
-  
+
   if (args$run_merlin){
-    
+
     cat('  ... at Merlin (filter 2) \n')
-    
+
     html_list <- append_list(html_list, tags$h3("Haplotyping by Merlin"))
     html_list <- append_list(html_list, do_subplot(get_haplo_profiles(), n_col = 2, panning = .015, margin = .007,
                                                    override_hover_mode = 'X unified'))
-    
+
     if (args$concordance_table){
       html_list <- append_list(html_list, tags$h3("Haplotyping by Merlin: strand concordance"))
       html_list <- append_list(html_list, get_haplo_tables())
     }
   }
-  
+
   return(html_list)
 }
 
@@ -2508,14 +2508,14 @@ args <- list(
   ## mandatory arguments
   vcf_file=c(),
   sample_ids=c(),
-  
+
   ## important optional arguments
   father_ids=c(),
   mother_ids=c(),
   genders=c(),
   run_merlin=T,
   cytoband_file=c(),
-  
+
   ## variant inclusion arguments: filter 1
   dp_hard_limit_ids=c(),
   dp_hard_limit=10,
@@ -2523,11 +2523,11 @@ args <- list(
   af_hard_limit=0,
   dp_soft_limit_ids=c(),
   dp_soft_limit=10,
-  
+
   ## variant inclusion arguments: filter 2
   keep_informative_ids=c(),
   keep_hetero_ids=c(),
-  
+
   ## sample/disease annotation
   regions=c(),
   reference_ids=c(),
@@ -2535,10 +2535,10 @@ args <- list(
   affected_ids=c(),
   nonaffected_ids=c(),
   info=c(),
-  
+
   ## BAF profiles
   baf_ids=c(),
-  
+
   ## merlin profiles
   merlin_model='best',
   min_seg_var=5,
@@ -2548,7 +2548,7 @@ args <- list(
   keep_chromosomes_only=T,
   keep_regions_only=F,
   concordance_table=T,
-  
+
   ## remaining features
   out_dir=c('./'),
   fam_id='hopla',
@@ -2662,14 +2662,14 @@ if (args$run_merlin){
   parsed_flow <- merlin_out$parsed_flow
   map_list <- merlin_out$map_list
   rm(merlin_out)
-  
+
   parsed_geno <- update_geno(parsed_geno)
 
   corrected_data <- correct_profiles(args, parsed_flow)
   parsed_flow = corrected_data$parsed_flow
   is_corrected = corrected_data$is_corrected
   rm(corrected_data)
-  
+
   letters <- unique(unlist(strsplit(unique(unlist(parsed_flow)), '')))
   letters <- letters[!(letters %in% c('|', 'X'))]
   letter_colors <- c(colors[1:length(letters)], 'white')
@@ -2713,7 +2713,7 @@ if (args$run_merlin){
                         flow_strands[[1]],
                         as.character(letter_colors[flow_strands[[1]]]),
                         unlist(sapply(chrs, function(chr) is_corrected[[chr]][,(i*2)-1])),
-                        
+
                         flow_strands[[2]],
                         as.character(letter_colors[flow_strands[[2]]]),
                         unlist(sapply(chrs, function(chr) is_corrected[[chr]][,(i*2)])))
