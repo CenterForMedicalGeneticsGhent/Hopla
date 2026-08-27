@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -49,6 +50,9 @@ def load_vcf(path: Path, samples: tuple[str, ...]) -> tuple[SiteTable, GenotypeM
         gt = np.full(len(samples), -1, dtype=np.int8)
         called = (raw_gt[:, 0] >= 0) & (raw_gt[:, 1] >= 0)
         gt[called] = (raw_gt[called, 0] + raw_gt[called, 1]).astype(np.int8)
+        if chrom == "chrX":
+            haploid = (raw_gt[:, 0] >= 0) & (raw_gt[:, 1] < 0)
+            gt[haploid] = (raw_gt[haploid, 0] * 2).astype(np.int8)
         ad = _format_matrix(variant, "AD", len(samples), 2)
         dp = _format_matrix(variant, "DP", len(samples))[:, 0]
         chroms.append(CHROMOSOME_CODES[chrom])
@@ -77,3 +81,17 @@ def load_vcf(path: Path, samples: tuple[str, ...]) -> tuple[SiteTable, GenotypeM
         sample_index={sample: index for index, sample in enumerate(samples)},
     )
     return sites, matrix
+
+
+def mask_male_x_heterozygotes(
+    sites: SiteTable,
+    matrix: GenotypeMatrix,
+    sample_ids: Sequence[str],
+    genders: Sequence[str | None],
+) -> None:
+    """Mark diploid heterozygous chromosome-X calls missing in male samples."""
+    x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
+    for sample in matrix.samples:
+        if genders[sample_ids.index(sample)] == "M":
+            sample_index = matrix.sample_index[sample]
+            matrix.gt[sample_index, x_mask & (matrix.gt[sample_index] == 1)] = -1
