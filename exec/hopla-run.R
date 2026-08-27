@@ -1864,9 +1864,14 @@ get_region_baf <- function(){
       if (which(args$samples_no_u == s) %% 4 != 1) {
         yaxis = list(title = '', showticklabels = F, zeroline = F, range = c(-15,115), fixedrange = T)
       }
-      baf <- baf %>% layout(xaxis = list(title = args$samples_out[args$sample_ids == s],
+      baf <- baf %>% layout(xaxis = list(title = '',
                                          showticklabels = F, zeroline = F, showgrid = F),
-                            showlegend = F, yaxis = yaxis)
+                            showlegend = F, yaxis = yaxis,
+                            annotations = list(list(
+                              x = (st + en) / 2, y = -10,
+                              text = args$samples_out[args$sample_ids == s],
+                              showarrow = F, font = list(size = 11)
+                            )))
 
       tmp <- c(1) ; names(tmp) <- c
 
@@ -1906,9 +1911,13 @@ get_genome_baf <- function(s){
     if (which(chrs == chr) %% 4 != 1) {
       yaxis = list(title = '', showticklabels = F, zeroline = F, range = c(-15,125), fixedrange = T)
     }
-    baf <- baf %>% layout(xaxis = list(title = chr,
+    baf <- baf %>% layout(xaxis = list(title = '',
                                        showticklabels = F, zeroline = F, showgrid = F),
-                          showlegend = F, yaxis = yaxis)
+                          showlegend = F, yaxis = yaxis,
+                          annotations = list(list(
+                            x = chr_lengths[[chr]] / 2, y = -10,
+                            text = chr, showarrow = F, font = list(size = 11)
+                          )))
 
     ## add region
 
@@ -2345,7 +2354,7 @@ get_html_list <- function(){
     for (region in names(regions_baf)){
       html_list <- append_list(html_list, tags$h4(region))
       html_list <- append_list(html_list, do_subplot(regions_baf[[region]], n_col = 4,
-                                                     margin = c(.02, .02, .07, .07)))
+                                                     panning = .06, margin = .05))
     }
   }
 
@@ -2361,8 +2370,8 @@ get_html_list <- function(){
     }
     for (s in args$baf_ids){
       html_list <- append_list(html_list, tags$h4(args$samples_out[args$sample_ids == s]))
-      html_list <- append_list(html_list, do_subplot(get_genome_baf(s), n_col = 2, panning = .015,
-                                                     margin = c(.012, .012, .02, .02)))
+      html_list <- append_list(html_list, do_subplot(get_genome_baf(s), n_col = 2,
+                                                     panning = .03, margin = .02))
     }
   }
 
