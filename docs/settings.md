@@ -5,13 +5,17 @@ The file is validated against [`inst/schema/hopla.schema.json`](../inst/schema/h
 before the VCF or analysis packages are loaded. Unknown properties, invalid
 types, missing mandatory values, and out-of-range values fail immediately.
 
-Command-line flags no longer override individual analysis options. The `run`
-subtool accepts exactly one settings file:
+Command-line flags no longer override individual analysis options. Paths for
+the VCF and output directory are CLI arguments, not settings properties:
 
 ```bash
-pixi run hopla run path/to/settings.yaml
-hopla run path/to/settings.json
+pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
+hopla run path/to/settings.json path/to/family.vcf.gz
 ```
+
+Both paths must already exist. `-o OUT_DIR` defaults to the current working
+directory (`$PWD`).
 
 A complete example is [`example/settings.yaml`](../example/settings.yaml).
 
@@ -31,7 +35,6 @@ A complete example is [`example/settings.yaml`](../example/settings.yaml).
 - `keep_informative_ids` accepts at most two sample IDs.
 
 ```yaml
-vcf_file: /data/family.vcf.gz
 sample_ids: [sample_C, sample_B, sample_A]
 father_ids: [null, null, sample_C]
 mother_ids: [null, null, sample_B]
@@ -48,11 +51,15 @@ Equivalent JSON is accepted. Types and constraints are identical.
 
 ## Mandatory settings
 
-- **`vcf_file`** (`string`) Path to a (multisample) `vcf.gz` file.
 - **`sample_ids`** (`string` array) Sample IDs to analyze. They must be present
-  in `vcf_file`. Example: `[sample_C, sample_B, sample_A]`. Missing pedigree
-  members can be added with unknown IDs `U1`, `U2`, …, which is useful to define
-  uncle/niece/… relations by reusing those IDs in `father_ids` and `mother_ids`.
+  in the VCF given on the CLI. Example: `[sample_C, sample_B, sample_A]`. Missing
+  pedigree members can be added with unknown IDs `U1`, `U2`, …, which is useful
+  to define uncle/niece/… relations by reusing those IDs in `father_ids` and
+  `mother_ids`.
+
+The VCF file is the `VCF` operand to `hopla run`. The output directory is
+optional `-o OUT_DIR` (default `$PWD`). Both paths are checked for existence
+before analysis starts. The engine does not create a missing output directory.
 
 ## Optional settings
 
@@ -184,7 +191,6 @@ raw uncorrected genotypes remain available on hover.
 
 ### Remaining features
 
-- **`out_dir`** (`string`, default `./`) Path to the output folder.
 - **`fam_id`** (`string`, default `hopla`) Family ID, used in output file names.
 - **`x_cutoff`** (`number`, default `1.5`) X chromosome copy-number cutoff for
   gender prediction (one copy assumed in males, two in females).
@@ -228,8 +234,9 @@ An example legacy file is [`example/legacy-settings.txt`](../example/legacy-sett
 
 Conversion rules:
 
-- Dotted keys are mapped to snake_case schema properties (`vcf.file` →
-  `vcf_file`, `min.seg.var.X` → `min_seg_var_x`).
+- Dotted keys are mapped to snake_case schema properties
+  (`min.seg.var.X` → `min_seg_var_x`).
+- `vcf.file` and `out.dir` are omitted; pass those paths on the CLI instead.
 - Empty assignments are omitted so schema/engine defaults apply.
 - Comma-separated lists become YAML arrays.
 - `NA` in parent and gender lists becomes YAML `null`.
@@ -239,7 +246,8 @@ Conversion rules:
 
 | Legacy key | YAML / JSON key |
 | --- | --- |
-| `vcf.file` | `vcf_file` |
+| `vcf.file` | *(CLI `VCF` operand; omitted from YAML)* |
+| `out.dir` | *(CLI `-o OUT_DIR`; omitted from YAML)* |
 | `sample.ids` | `sample_ids` |
 | `father.ids` | `father_ids` |
 | `mother.ids` | `mother_ids` |
@@ -269,7 +277,6 @@ Conversion rules:
 | `keep.chromosomes.only` | `keep_chromosomes_only` |
 | `keep.regions.only` | `keep_regions_only` |
 | `concordance.table` | `concordance_table` |
-| `out.dir` | `out_dir` |
 | `fam.id` / `fam.ID` | `fam_id` |
 | `X.cutoff` | `x_cutoff` |
 | `Y.cutoff` | `y_cutoff` |

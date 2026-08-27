@@ -1,15 +1,33 @@
+require_existing_run_paths <- function(vcf_file, out_dir) {
+  if (!file.exists(vcf_file) || dir.exists(vcf_file)) {
+    stop("VCF file does not exist: ", vcf_file, call. = FALSE)
+  }
+  if (!dir.exists(out_dir)) {
+    stop("Output directory does not exist: ", out_dir, call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 #' Run a Hopla analysis
 #'
 #' Runs the analysis engine in a clean R process after validating the supplied
 #' YAML or JSON settings file.
 #'
 #' @param settings Path to a `.yaml`, `.yml`, or `.json` settings file.
+#' @param vcf_file Path to a (multisample) `vcf.gz` file. Must exist.
+#' @param out_dir Output directory. Defaults to the current working directory
+#'   and must already exist.
 #' @param engine Optional path to the Hopla engine. Intended for development and
 #'   testing; installed packages locate it automatically.
 #' @return The engine process exit status, invisibly.
 #' @export
-hopla_run <- function(settings, engine = NULL) {
-  stopifnot(is.character(settings), length(settings) == 1L)
+hopla_run <- function(settings, vcf_file, out_dir = getwd(), engine = NULL) {
+  stopifnot(
+    is.character(settings), length(settings) == 1L,
+    is.character(vcf_file), length(vcf_file) == 1L,
+    is.character(out_dir), length(out_dir) == 1L
+  )
+  require_existing_run_paths(vcf_file, out_dir)
 
   if (is.null(engine)) {
     engine <- system.file("exec", "hopla-run.R", package = "hopla")
@@ -24,7 +42,12 @@ hopla_run <- function(settings, engine = NULL) {
 
   status <- system2(
     file.path(R.home("bin"), "Rscript"),
-    c(shQuote(normalizePath(engine)), shQuote(settings))
+    c(
+      shQuote(normalizePath(engine)),
+      shQuote(normalizePath(settings, mustWork = FALSE)),
+      shQuote(normalizePath(vcf_file)),
+      shQuote(normalizePath(out_dir))
+    )
   )
   invisible(status)
 }
@@ -315,6 +338,14 @@ hopla_convert_settings <- function(legacy, output = NULL, schema = NULL) {
   schema_doc <- jsonlite::fromJSON(schema, simplifyVector = FALSE)
   properties <- schema_doc$properties
   raw <- parse_legacy_settings_file(legacy)
+  cli_only <- intersect(names(raw), c("vcf_file", "out_dir"))
+  if (length(cli_only)) {
+    message(
+      "Note: ", paste(cli_only, collapse = ", "),
+      " belong on the CLI and were omitted from the YAML."
+    )
+    raw[cli_only] <- NULL
+  }
 
   unknown <- setdiff(names(raw), names(properties))
   if (length(unknown)) {

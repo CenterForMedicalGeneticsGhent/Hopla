@@ -14,8 +14,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Added a standard CRAN source-package layout and testthat coverage.
 - Added `run`, `convert`, `concordance`, and `transform` subtools to the `hopla` command.
 - Added conversion from the legacy `key=value` settings format to schema-validated YAML.
-- Added `docs/settings.md` with the full settings reference (types, defaults,
-  constraints, and legacy key mapping).
+- Added Matthias De Smet as collaborator and maintainer, and Center for Medical
+  Genetics Ghent as maintainer.
 - Added snake_case linting through lintr, available as the pixi `lint` task and
   enforced in CI.
 
@@ -25,6 +25,9 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 - Reduced repeated VCF, genotype-strand, concordance, and table parsing.
 - Aligned helper-script flow tables with keyed `data.table` joins.
 - Replaced individual command-line analysis options with one required settings-file argument.
+- Moved `vcf_file` and `out_dir` from the settings file to `hopla run`
+  (`[-o OUT_DIR] SETTINGS VCF`). Both paths must exist; `OUT_DIR` defaults to
+  the current working directory.
 - Replaced the standalone helper scripts with exported package functions.
 - Updated the documented R dependency versions.
 

@@ -1,6 +1,4 @@
 # Complete Hopla YAML settings example.
-vcf_file: directory/to/family.vcf.gz
-out_dir: directory/to/output
 sample_ids: [DNA052961, U1, DNA052959, DNA052960, DNA052963, DNA052966]
 
 father_ids: [null, null, U1, null, DNA052960, DNA052960]

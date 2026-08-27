@@ -38,10 +38,9 @@ docker run --rm hopla hopla -V
 
 The `run` subtool accepts exactly one `.yaml`, `.yml`, or `.json` settings file. It validates the complete document against [`inst/schema/hopla.schema.json`](inst/schema/hopla.schema.json) before loading the VCF or analysis packages.
 
-`vcf_file` and `sample_ids` are mandatory. Lists must be YAML/JSON arrays; use `null` for an unknown parent or gender.
+`sample_ids` is mandatory in the settings file. The VCF path and output directory are CLI arguments (`hopla run [-o OUT_DIR] SETTINGS VCF`); `OUT_DIR` defaults to the current working directory and both paths must already exist. Lists must be YAML/JSON arrays; use `null` for an unknown parent or gender.
 
 ```yaml
-vcf_file: /data/family.vcf.gz
 sample_ids: [sample_C, sample_B, sample_A]
 father_ids: [null, null, sample_C]
 mother_ids: [null, null, sample_B]
@@ -82,9 +81,10 @@ See [CHANGELOG-R.md](CHANGELOG-R.md) for changes to the R pipeline scripts.
 # Running Hopla
 
 ```bash
-pixi run hopla run path/to/settings.yaml
+pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
 # or, in an installed Bioconda environment:
-hopla run path/to/settings.json
+hopla run path/to/settings.json path/to/family.vcf.gz
 ```
 
 Flow-table utilities are available as subtools:
@@ -100,7 +100,7 @@ pixi run hopla transform family-a-flow.txt family-b-flow.txt 1
 ```bash
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
 cd hopla
-pixi run hopla run example/settings.yaml
+pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
 # Output

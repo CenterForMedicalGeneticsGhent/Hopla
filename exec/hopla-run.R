@@ -51,8 +51,9 @@ array_args <- c(
 #' Print command-line help.
 #' @return Invisible `NULL`.
 print_help <- function(){
-  cat('Usage: hopla SETTINGS.{yaml,yml,json}\n\n')
+  cat('Usage: hopla-run.R SETTINGS.{yaml,yml,json} VCF OUT_DIR\n\n')
   cat('The settings file is validated against hopla.schema.json before analysis.\n')
+  cat('VCF and OUT_DIR are command-line paths and must already exist.\n')
   cat('Use YAML or JSON arrays for list options such as sample_ids and regions.\n\n')
   cat('  -h, --help       Show this help and exit\n')
   cat('  -V, --version    Show the version and exit\n')
@@ -143,7 +144,7 @@ post_process_args <- function(args){
   if (!length(args$window_size_voting_x)) args$window_size_voting_x = args$window_size_voting
   if (!length(args$min_seg_var_x)) args$min_seg_var_x = args$min_seg_var
 
-  man_args <- c('vcf_file', 'sample_ids')
+  man_args <- c('sample_ids')
   for (arg in names(args)){
     if (!length(args[[arg]]) & arg %in% man_args){
       cat(paste0('ERROR: Argument --', arg, ' is mandatory. Please provide.\n'))
@@ -243,12 +244,6 @@ post_process_args <- function(args){
       }
     }
 
-    if (arg == 'vcf_file'){
-      if (!file.exists(args$vcf_file)){
-        cat('ERROR: The file given by vcf_file does not exist. Please correct.\n')
-        quit(status=1)
-      }
-    }
     if (arg == 'cytoband_file'){
       if (length(args$cytoband_file) & !file.exists(args$cytoband_file)){
         cat('ERROR: The file given by cytoband_file does not exist. Please correct.\n')
@@ -2506,8 +2501,8 @@ transform_to_selfcontained <- function(){
 
 args <- list(
   ## mandatory arguments
-  vcf_file=c(),
   sample_ids=c(),
+  vcf_file=c(),
 
   ## important optional arguments
   father_ids=c(),
@@ -2550,7 +2545,7 @@ args <- list(
   concordance_table=T,
 
   ## remaining features
-  out_dir=c('./'),
+  out_dir=c(),
   fam_id='hopla',
   x_cutoff=1.5,
   y_cutoff=.6,
@@ -2580,8 +2575,8 @@ if (getRversion() < minimum_r_version){
   quit(status=2)
 }
 
-if (length(cmd_args) != 1){
-  cat('ERROR: Provide exactly one YAML or JSON settings file. Run -h for usage.\n', file = stderr())
+if (length(cmd_args) != 3){
+  cat('ERROR: Provide a settings file, VCF path, and output directory. Run -h for usage.\n', file = stderr())
   quit(status=2)
 }
 
@@ -2593,6 +2588,16 @@ schema_candidates <- c(
 )
 schema_file <- schema_candidates[file.exists(schema_candidates)][1]
 args <- get_settings_args(cmd_args[1], args, schema_file)
+args$vcf_file <- cmd_args[2]
+args$out_dir <- cmd_args[3]
+if (!file.exists(args$vcf_file) || dir.exists(args$vcf_file)){
+  cat(paste0('ERROR: VCF file does not exist: ', args$vcf_file, '\n'), file = stderr())
+  quit(status=1)
+}
+if (!dir.exists(args$out_dir)){
+  cat(paste0('ERROR: Output directory does not exist: ', args$out_dir, '\n'), file = stderr())
+  quit(status=1)
+}
 args <- post_process_args(args)
 rm(cmd_args, schema_candidates, schema_file, script_arg, script_file)
 
@@ -2623,7 +2628,6 @@ chrs <- paste0('chr', c(1:22, 'X'))
 # Initialize
 # -----
 
-dir.create(args$out_dir, showWarnings = F, recursive = T)
 args$out_dir <- normalizePath(args$out_dir)
 
 args$fam_id <- gsub("[[:punct:]]", ".", args$fam_id)

@@ -16,11 +16,12 @@ if (file.exists(development_source)) {
 usage <- function() {
   cat(
     "Usage:\n",
-    "  hopla [-hV] [--] run SETTINGS.{yaml,yml,json}\n",
+    "  hopla [-hV] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF\n",
     "  hopla [-hV] [--] convert LEGACY [OUTPUT]\n",
     "  hopla [-hV] [--] concordance [-r] FLOW1 FLOW2\n",
     "  hopla [-hV] [--] transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
     "MODE is 1 for matching strands or 2 for crossed strands.\n",
+    "OUT_DIR defaults to the current working directory.\n",
     sep = ""
   )
 }
@@ -150,15 +151,29 @@ parse_convert_options <- function(args) {
 }
 
 parse_run_options <- function(args) {
+  out_dir <- getwd()
   index <- 1L
   while (index <= length(args)) {
     token <- args[[index]]
     if (token == "--") {
-      return(list(operands = after_option_terminator(args, index)))
+      return(list(out_dir = out_dir, operands = after_option_terminator(args, index)))
     }
     if (token == "--help") show_help()
     if (token == "--version") show_version()
+    if (token == "-o") {
+      if (index == length(args)) {
+        usage_error("missing value for -o.")
+      }
+      out_dir <- args[[index + 1L]]
+      index <- index + 2L
+      next
+    }
     if (startsWith(token, "--")) usage_error(paste0("unknown option: ", token))
+    if (startsWith(token, "-o") && nchar(token) > 2L) {
+      out_dir <- substring(token, 3L)
+      index <- index + 1L
+      next
+    }
     if (startsWith(token, "-") && token != "-") {
       parse_short_options(token)
       index <- index + 1L
@@ -166,7 +181,7 @@ parse_run_options <- function(args) {
     }
     break
   }
-  list(operands = remaining_operands(args, index))
+  list(out_dir = out_dir, operands = remaining_operands(args, index))
 }
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -189,11 +204,13 @@ status <- tryCatch({
     run = {
       parsed_run <- parse_run_options(operands)
       run_operands <- parsed_run$operands
-      if (length(run_operands) != 1L) {
-        usage_error("run expects one settings file.")
+      if (length(run_operands) != 2L) {
+        usage_error("run expects a settings file and a VCF file.")
       }
       engine_status <- hopla_run(
         run_operands[[1]],
+        run_operands[[2]],
+        parsed_run$out_dir,
         file.path(package_root, "exec", "hopla-run.R")
       )
       if (!is.null(engine_status) && is.numeric(engine_status) && engine_status != 0L) {

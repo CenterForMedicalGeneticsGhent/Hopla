@@ -144,13 +144,16 @@ test_that("cli transform requires mode operand", {
 
 test_that("settings schema uses snake_case keys", {
   schema <- jsonlite::fromJSON(schema_path(), simplifyVector = FALSE)
-  expect_true(all(c("vcf_file", "sample_ids") %in% schema$required))
+  expect_true("sample_ids" %in% schema$required)
+  expect_false("vcf_file" %in% names(schema$properties))
+  expect_false("out_dir" %in% names(schema$properties))
   expect_false(any(grepl("\\.", unlist(schema$required))))
 })
 
 legacy_fixture <- function(path, extra = character()) {
   writeLines(c(
     "vcf.file=/data/family.vcf.gz",
+    "out.dir=/tmp",
     "sample.ids=child,dad,mom",
     "father.ids=dad,NA,NA",
     "mother.ids=mom,NA,NA",
@@ -176,7 +179,8 @@ test_that("legacy settings convert to validated snake_case yaml", {
   expect_identical(hopla_convert_settings(legacy, output, schema_path()), output)
   converted <- yaml::read_yaml(output)
 
-  expect_identical(converted$vcf_file, "/data/family.vcf.gz")
+  expect_null(converted$vcf_file)
+  expect_null(converted$out_dir)
   expect_identical(converted$sample_ids, c("child", "dad", "mom"))
   expect_identical(converted$father_ids, list("dad", NULL, NULL))
   expect_identical(converted$genders, c("F", "M", "F"))
@@ -192,8 +196,8 @@ test_that("legacy settings convert to validated snake_case yaml", {
 test_that("legacy conversion rejects unknown keys and missing required fields", {
   unknown <- tempfile(fileext = ".txt")
   missing <- tempfile(fileext = ".txt")
-  writeLines(c("vcf.file=/data/family.vcf.gz", "sample.ids=child", "unknown.arg=1"), unknown)
-  writeLines("vcf.file=/data/family.vcf.gz", missing)
+  writeLines(c("sample.ids=child", "unknown.arg=1"), unknown)
+  writeLines("run.merlin=T", missing)
 
   expect_error(hopla_convert_settings(unknown, tempfile(fileext = ".yaml"), schema_path()), "Unknown")
   expect_error(hopla_convert_settings(missing, tempfile(fileext = ".yaml"), schema_path()), "validation")
@@ -207,5 +211,18 @@ test_that("cli convert writes yaml and reports usage errors", {
   expect_equal(hopla_cli_status("convert"), 2L)
   expect_equal(hopla_cli_status("convert", legacy, output), 0L)
   expect_true(file.exists(output))
-  expect_match(paste(readLines(output), collapse = "\n"), "vcf_file:")
+  expect_match(paste(readLines(output), collapse = "\n"), "sample_ids:")
+  expect_false(any(grepl("vcf_file|out_dir", readLines(output))))
+})
+
+test_that("cli run requires settings and vcf and checks path existence", {
+  settings <- tempfile(fileext = ".yaml")
+  writeLines("sample_ids: [child]", settings)
+  missing_vcf <- file.path(tempdir(), "no-such-family.vcf.gz")
+  missing_dir <- file.path(tempdir(), "no-such-hopla-out")
+
+  expect_equal(hopla_cli_status("run"), 2L)
+  expect_equal(hopla_cli_status("run", settings), 2L)
+  expect_equal(hopla_cli_status("run", settings, missing_vcf), 1L)
+  expect_equal(hopla_cli_status("run", "-o", missing_dir, settings, tempfile()), 1L)
 })

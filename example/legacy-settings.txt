@@ -9,9 +9,10 @@
 ##      - Arguments (one line each, with the exception of the info block) use 'argument=value'
 ##      - Everything following '#' is ignored, serving as a comment
 ##      - Convert with: hopla convert example/legacy-settings.txt
+##      - vcf.file and out.dir are omitted; pass those paths on the CLI instead
 
 # -------------------
-# MANDATORY ARGUMENTS
+# SAMPLE ARGUMENTS
 # -------------------
 
 vcf.file=directory to vcf.gz

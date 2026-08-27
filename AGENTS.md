@@ -36,10 +36,13 @@ scope unless a task explicitly names it.
 - Validate settings against the schema before loading a VCF or the heavy
   analysis packages. Reject unknown properties.
 - Keep the CLI small:
-  - `hopla run SETTINGS`
+  - `hopla run [-o OUT_DIR] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
+- `vcf_file` and `out_dir` are CLI paths, not settings properties. Validate that
+  the VCF file and output directory exist. `OUT_DIR` defaults to the current
+  working directory.
 - `convert` maps the legacy `key=value` settings format to schema-validated YAML.
 - Return zero for help, version, and successful commands; return status 2 for
   invalid usage and status 1 for runtime failures.

@@ -4,9 +4,8 @@
   "title": "Hopla settings",
   "type": "object",
   "additionalProperties": false,
-  "required": ["vcf_file", "sample_ids"],
+  "required": ["sample_ids"],
   "properties": {
-    "vcf_file": {"type": "string", "minLength": 1},
     "sample_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
     "father_ids": {"type": "array", "items": {"type": ["string", "null"]}},
     "mother_ids": {"type": "array", "items": {"type": ["string", "null"]}},
@@ -36,7 +35,6 @@
     "keep_chromosomes_only": {"type": "boolean", "default": true},
     "keep_regions_only": {"type": "boolean", "default": false},
     "concordance_table": {"type": "boolean", "default": true},
-    "out_dir": {"type": "string", "default": "./"},
     "fam_id": {"type": "string", "minLength": 1, "default": "hopla"},
     "x_cutoff": {"type": "number", "default": 1.5},
     "y_cutoff": {"type": "number", "default": 0.6},
