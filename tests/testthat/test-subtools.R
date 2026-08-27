@@ -208,6 +208,7 @@ test_that("settings schema uses snake_case keys", {
   expect_true("sample_ids" %in% schema$required)
   expect_false("vcf_file" %in% names(schema$properties))
   expect_false("out_dir" %in% names(schema$properties))
+  expect_false("cytoband_file" %in% names(schema$properties))
   expect_false(any(grepl("\\.", unlist(schema$required))))
 })
 
@@ -215,6 +216,7 @@ legacy_fixture <- function(path, extra = character()) {
   writeLines(c(
     "vcf.file=/data/family.vcf.gz",
     "out.dir=/tmp",
+    "cytoband.file=/ref/cytoband.hg38.txt",
     "sample.ids=child,dad,mom",
     "father.ids=dad,NA,NA",
     "mother.ids=mom,NA,NA",
@@ -242,6 +244,7 @@ test_that("legacy settings convert to validated snake_case yaml", {
 
   expect_null(converted$vcf_file)
   expect_null(converted$out_dir)
+  expect_null(converted$cytoband_file)
   expect_identical(converted$sample_ids, c("child", "dad", "mom"))
   expect_identical(converted$father_ids, list("dad", NULL, NULL))
   expect_identical(converted$genders, c("F", "M", "F"))
@@ -273,7 +276,7 @@ test_that("cli convert writes yaml and reports usage errors", {
   expect_equal(hopla_cli_status("convert", legacy, output), 0L)
   expect_true(file.exists(output))
   expect_match(paste(readLines(output), collapse = "\n"), "sample_ids:")
-  expect_false(any(grepl("vcf_file|out_dir", readLines(output))))
+  expect_false(any(grepl("vcf_file|out_dir|cytoband_file", readLines(output))))
 })
 
 test_that("cli run requires settings and vcf and checks path existence", {
@@ -286,6 +289,31 @@ test_that("cli run requires settings and vcf and checks path existence", {
   expect_equal(hopla_cli_status("run", settings), 2L)
   expect_equal(hopla_cli_status("run", settings, missing_vcf), 1L)
   expect_equal(hopla_cli_status("run", "-o", missing_dir, settings, tempfile()), 1L)
+})
+
+test_that("cli run takes the cytoband table as a path", {
+  settings <- tempfile(fileext = ".yaml")
+  writeLines("sample_ids: [child]", settings)
+  vcf <- tempfile(fileext = ".vcf.gz")
+  file.create(vcf)
+  missing_cytoband <- file.path(tempdir(), "no-such-cytoband.txt")
+
+  expect_equal(hopla_cli_status("run", "-c"), 2L)
+  expect_equal(hopla_cli_status("run", "-c", missing_cytoband, settings, vcf), 1L)
+  expect_error(
+    hopla_run(settings, vcf, tempdir(), cytoband_file = missing_cytoband),
+    "Cytoband file does not exist"
+  )
+})
+
+test_that("cytoband_file is rejected as a settings property", {
+  settings <- tempfile(fileext = ".yaml")
+  writeLines(c("sample_ids: [child]", "cytoband_file: /ref/cytoband.hg38.txt"), settings)
+  vcf <- tempfile(fileext = ".vcf.gz")
+  file.create(vcf)
+
+  # schema violations are usage errors, like any other unknown property
+  expect_equal(hopla_cli_status("run", settings, vcf), 2L)
 })
 
 test_that("log level filters stdout records", {
@@ -343,6 +371,34 @@ test_that("variant depth histograms contain bins instead of raw depths", {
   expect_identical(trace$type, "bar")
   expect_lte(length(trace$x), 100L)
   expect_equal(sum(trace$y), length(depths))
+})
+
+test_that("variant depth histograms share one scale across panels", {
+  skip_if_not_installed("plotly")
+  engine <- engine_functions()
+  engine$args <- list(
+    samples_no_u = c("a", "b"),
+    samples_out = c("A", "B"),
+    sample_ids = c("a", "b")
+  )
+  engine$colors <- "#1f78b4"
+
+  # very different depth distributions must still land on one common axis
+  figures <- engine$get_var_depth_hist(list(
+    a = data.frame(DP = rep(c(10, 20, 30), 200)),
+    b = data.frame(DP = rep(c(300, 400), 5))
+  ))
+  built <- lapply(figures, plotly::plotly_build)
+
+  expect_equal(
+    unlist(built$a$x$layout$xaxis$range),
+    unlist(built$b$x$layout$xaxis$range)
+  )
+  expect_equal(
+    unlist(built$a$x$layout$yaxis$range),
+    unlist(built$b$x$layout$yaxis$range)
+  )
+  expect_equal(built$a$x$data[[1]]$x, built$b$x$data[[1]]$x)
 })
 
 test_that("htmlwidget JSON is compressed and round-trips", {

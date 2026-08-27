@@ -20,12 +20,13 @@ if (file.exists(development_source)) {
 usage <- function() {
   cat(
     "Usage:\n",
-    "  hopla [-hV] [-L LEVEL] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF\n",
+    "  hopla [-hV] [-L LEVEL] [--] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS.{yaml,yml,json} VCF\n",
     "  hopla [-hV] [-L LEVEL] [--] convert LEGACY [OUTPUT]\n",
     "  hopla [-hV] [-L LEVEL] [--] concordance [-r] FLOW1 FLOW2\n",
     "  hopla [-hV] [-L LEVEL] [--] transform FLOW1 FLOW2 MODE [OUTPUT]\n\n",
     "MODE is 1 for matching strands or 2 for crossed strands.\n",
     "OUT_DIR defaults to the current working directory.\n",
+    "CYTOBAND defaults to the hg38 table downloaded from UCSC.\n",
     "LEVEL is error, warn, info, or debug (default info).\n",
     sep = ""
   )
@@ -171,6 +172,7 @@ parse_convert_options <- function(args) {
 
 parse_run_options <- function(args) {
   out_dir <- getwd()
+  cytoband_file <- NULL
   log_level <- NULL
   index <- 1L
   while (index <= length(args)) {
@@ -178,6 +180,7 @@ parse_run_options <- function(args) {
     if (token == "--") {
       return(list(
         out_dir = out_dir,
+        cytoband_file = cytoband_file,
         log_level = log_level,
         operands = after_option_terminator(args, index)
       ))
@@ -189,6 +192,14 @@ parse_run_options <- function(args) {
         usage_error("missing value for -o.")
       }
       out_dir <- args[[index + 1L]]
+      index <- index + 2L
+      next
+    }
+    if (token == "-c") {
+      if (index == length(args)) {
+        usage_error("missing value for -c.")
+      }
+      cytoband_file <- args[[index + 1L]]
       index <- index + 2L
       next
     }
@@ -206,6 +217,11 @@ parse_run_options <- function(args) {
       index <- index + 1L
       next
     }
+    if (startsWith(token, "-c") && nchar(token) > 2L) {
+      cytoband_file <- substring(token, 3L)
+      index <- index + 1L
+      next
+    }
     if (startsWith(token, "-L") && nchar(token) > 2L) {
       log_level <- substring(token, 3L)
       index <- index + 1L
@@ -218,7 +234,12 @@ parse_run_options <- function(args) {
     }
     break
   }
-  list(out_dir = out_dir, log_level = log_level, operands = remaining_operands(args, index))
+  list(
+    out_dir = out_dir,
+    cytoband_file = cytoband_file,
+    log_level = log_level,
+    operands = remaining_operands(args, index)
+  )
 }
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -258,6 +279,7 @@ status <- tryCatch({
         run_operands[[1]],
         run_operands[[2]],
         parsed_run$out_dir,
+        cytoband_file = parsed_run$cytoband_file,
         engine = file.path(package_root, "exec", "hopla-run.R"),
         log_level = hopla_log_level()
       )

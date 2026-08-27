@@ -68,9 +68,10 @@ array_args <- c(
 #' Print command-line help.
 #' @return Invisible `NULL`.
 print_help <- function(){
-  cat('Usage: hopla-run.R SETTINGS.{yaml,yml,json} VCF OUT_DIR\n\n')
+  cat('Usage: hopla-run.R SETTINGS.{yaml,yml,json} VCF OUT_DIR [CYTOBAND]\n\n')
   cat('The settings file is validated against hopla.schema.json before analysis.\n')
-  cat('VCF and OUT_DIR are command-line paths and must already exist.\n')
+  cat('VCF, OUT_DIR, and CYTOBAND are command-line paths and must already exist.\n')
+  cat('The hg38 cytoband table is downloaded from UCSC when CYTOBAND is omitted.\n')
   cat('Use YAML or JSON arrays for list options such as sample_ids and regions.\n\n')
   cat('  -h, --help       Show this help and exit\n')
   cat('  -V, --version    Show the version and exit\n')
@@ -246,11 +247,6 @@ post_process_args <- function(args){
       }
     }
 
-    if (arg == 'cytoband_file'){
-      if (length(args$cytoband_file) & !file.exists(args$cytoband_file)){
-        hopla_fail('The file given by cytoband_file does not exist. Please correct.')
-      }
-    }
     if (arg == 'value_of_p'){
       if (args$value_of_p <= 0 | args$value_of_p > 1){
         hopla_fail('value_of_p should be within ]0, 1]. Please correct.')
@@ -1514,26 +1510,59 @@ get_var_dis_fig <- function(vcf_list){
 #' @param vcf_list A named list of sample data frames.
 #' @return A named list of Plotly htmlwidgets.
 get_var_depth_hist <- function(vcf_list){
-  varhists <- list()
-  for (s in args$samples_no_u){
+  sample_depths <- function(s){
     depths <- vcf_list[[s]]$DP
-    depths <- depths[is.finite(depths) & depths != 0]
-    if (length(depths)){
-      number_of_bins <- min(100L, max(1L, nclass.Sturges(depths)))
-      binned <- graphics::hist(depths, breaks = number_of_bins, plot = F)
-      depth_counts <- data.frame(
-        depth = binned$mids,
-        count = binned$counts
-      )
-    } else {
-      depth_counts <- data.frame(depth = numeric(), count = integer())
+    depths[is.finite(depths) & depths != 0]
+  }
+
+  # One set of breaks and one pair of axis ranges, so the panels stay comparable.
+  lowest <- Inf ; highest <- -Inf ; total <- 0
+  for (s in args$samples_no_u){
+    depths <- sample_depths(s)
+    if (!length(depths)) next
+    lowest <- min(lowest, depths) ; highest <- max(highest, depths)
+    total <- total + length(depths)
+  }
+
+  varhists <- list()
+  panel_height <- 200 * ceiling(length(args$samples_no_u) / 4)
+  if (!is.finite(lowest)){
+    for (s in args$samples_no_u){
+      empty <- data.frame(depth = numeric(), count = integer())
+      hist <- plot_ly(empty, x = ~depth, y = ~count, type = 'bar', hoverinfo = 'x+y',
+                      marker = list(color = colors[1]), height = panel_height)
+      varhists[[s]] <- hist %>% layout(xaxis = list(title = list(text = args$samples_out[args$sample_ids == s],
+                                                                 standoff = 1),
+                                                    zeroline = F, showgrid = F),
+                                       yaxis = list(title = 'density', zeroline = F), showlegend = F)
     }
-    hist <- plot_ly(depth_counts, x = ~depth, y = ~count, type = "bar", hoverinfo = 'x+y',
-                    marker = list(color = colors[1]), height = 200 * ceiling(length(args$samples_no_u) / 4))
-    hist <- hist %>% layout(xaxis = list(title = list(text= args$samples_out[args$sample_ids == s] , standoff = 1),
-                                         zeroline = F, showgrid = F),
-                            yaxis = list(range = 0),
-                            showlegend = F, yaxis = list(title = 'density', zeroline = F))
+    return(varhists)
+  }
+
+  if (highest == lowest){ lowest <- lowest - .5 ; highest <- highest + .5 }
+  number_of_bins <- min(100L, max(1L, ceiling(log2(total)) + 1L))
+  breaks <- seq(lowest, highest, length.out = number_of_bins + 1L)
+  mids <- breaks[-length(breaks)] + diff(breaks) / 2
+
+  counts <- list()
+  for (s in args$samples_no_u){
+    depths <- sample_depths(s)
+    counts[[s]] <- if (length(depths)){
+      graphics::hist(depths, breaks = breaks, plot = F)$counts
+    } else {
+      rep(0L, number_of_bins)
+    }
+  }
+  highest_count <- max(1, unlist(counts))
+
+  for (s in args$samples_no_u){
+    depth_counts <- data.frame(depth = mids, count = counts[[s]])
+    hist <- plot_ly(depth_counts, x = ~depth, y = ~count, type = 'bar', hoverinfo = 'x+y',
+                    marker = list(color = colors[1]), height = panel_height)
+    hist <- hist %>% layout(xaxis = list(title = list(text = args$samples_out[args$sample_ids == s], standoff = 1),
+                                         zeroline = F, showgrid = F, range = c(lowest, highest)),
+                            yaxis = list(title = 'density', zeroline = F, range = c(0, highest_count)),
+                            showlegend = F)
     varhists[[s]] <- hist
   }
   return(varhists)
@@ -2602,14 +2631,16 @@ transform_to_selfcontained <- function(){
 args <- list(
   ## mandatory arguments
   sample_ids=c(),
+
+  ## command-line paths
   vcf_file=c(),
+  cytoband_file=c(),
 
   ## important optional arguments
   father_ids=c(),
   mother_ids=c(),
   genders=c(),
   run_merlin=T,
-  cytoband_file=c(),
 
   ## variant inclusion arguments: filter 1
   dp_hard_limit_ids=c(),
@@ -2674,8 +2705,9 @@ if (getRversion() < minimum_r_version){
   hopla_fail('Hopla requires R >= ', minimum_r_version, '; found ', getRversion(), '.', status = 2)
 }
 
-if (length(cmd_args) != 3){
-  hopla_fail('Provide a settings file, VCF path, and output directory. Run -h for usage.', status = 2)
+if (!length(cmd_args) %in% 3:4){
+  hopla_fail('Provide a settings file, VCF path, output directory, and optional cytoband file. Run -h for usage.',
+             status = 2)
 }
 
 script_arg <- grep('^--file=', commandArgs(trailingOnly = F), value = T)
@@ -2688,11 +2720,15 @@ schema_file <- schema_candidates[file.exists(schema_candidates)][1]
 args <- get_settings_args(cmd_args[1], args, schema_file)
 args$vcf_file <- cmd_args[2]
 args$out_dir <- cmd_args[3]
+args$cytoband_file <- if (length(cmd_args) == 4 && nzchar(cmd_args[4])) cmd_args[4] else c()
 if (!file.exists(args$vcf_file) || dir.exists(args$vcf_file)){
   hopla_fail('VCF file does not exist: ', args$vcf_file)
 }
 if (!dir.exists(args$out_dir)){
   hopla_fail('Output directory does not exist: ', args$out_dir)
+}
+if (length(args$cytoband_file) && !file.exists(args$cytoband_file)){
+  hopla_fail('Cytoband file does not exist: ', args$cytoband_file)
 }
 args <- post_process_args(args)
 rm(cmd_args, schema_candidates, schema_file, script_arg, script_file)

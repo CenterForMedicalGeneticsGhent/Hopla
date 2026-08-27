@@ -43,13 +43,13 @@ The rest of the manual is [docs/README.md](docs/README.md).
 - Validate settings against the schema before loading a VCF or the heavy
   analysis packages. Reject unknown properties.
 - Keep the CLI small:
-  - `hopla [-L LEVEL] run [-o OUT_DIR] SETTINGS VCF`
+  - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
-- `vcf_file` and `out_dir` are CLI paths, not settings properties. Validate that
-  the VCF file and output directory exist. `OUT_DIR` defaults to the current
-  working directory.
+- `vcf_file`, `out_dir`, and `cytoband_file` are CLI paths, not settings
+  properties. Validate that supplied paths exist. `OUT_DIR` defaults to the
+  current working directory; an omitted cytoband table is downloaded from UCSC.
 - `convert` maps the legacy `key=value` settings format to schema-validated YAML.
 - Return zero for help, version, and successful commands; return status 2 for
   invalid usage and status 1 for runtime failures.

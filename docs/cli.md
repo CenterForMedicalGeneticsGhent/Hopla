@@ -5,7 +5,7 @@ The `hopla` command is small. Global options are `-h`, `-V` (not `-v`), and
 precede operands.
 
 ```
-hopla [-hV] [-L LEVEL] [--] run [-o OUT_DIR] SETTINGS.{yaml,yml,json} VCF
+hopla [-hV] [-L LEVEL] [--] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS.{yaml,yml,json} VCF
 hopla [-hV] [-L LEVEL] [--] convert LEGACY [OUTPUT]
 hopla [-hV] [-L LEVEL] [--] concordance [-r] FLOW1 FLOW2
 hopla [-hV] [-L LEVEL] [--] transform FLOW1 FLOW2 MODE [OUTPUT]
@@ -16,7 +16,8 @@ hopla [-hV] [-L LEVEL] [--] transform FLOW1 FLOW2 MODE [OUTPUT]
 - `LEVEL` is `error`, `warn`, `info`, or `debug` (default `info`). `warning` aliases `warn`; `quiet` aliases `error`. The `HOPLA_LOG_LEVEL` environment variable sets the same default. Error and warning records go to standard error; information and debug records go to standard output, each prefixed with a timestamp and the level name. Major analysis steps log at `info`; per-sample, per-chromosome, and per-plot progress logs at `debug`. Expected R coercion warnings while parsing missing AD values are muffled and logged at `debug`.
 
 - `run` validates one settings file against [`inst/schema/hopla.schema.json`](../inst/schema/hopla.schema.json) before loading the VCF or analysis packages, then writes the HTML report.
-- `VCF` and `OUT_DIR` are filesystem paths, not settings keys. Both must already exist. The engine does not create a missing output directory. `-o OUT_DIR` defaults to the current working directory (`$PWD`).
+- `VCF`, `OUT_DIR`, and `CYTOBAND` are filesystem paths, not settings keys. Supplied paths must already exist. The engine does not create a missing output directory. `-o OUT_DIR` defaults to the current working directory (`$PWD`).
+- `-c CYTOBAND` takes a [UCSC cytoband table](https://hgdownload.soe.ucsc.edu/downloads.html#human), which draws chromosome bands on the chromosome-wise figures. When omitted, Hopla downloads and decompresses [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz).
 - `convert` maps a legacy `key=value` settings file to schema-validated YAML. `OUTPUT` defaults to the input path with a `.yaml` extension.
 - `concordance` compares two haplotype flow tables. `-r` compares each flow relative to its first retained marker.
 - `transform` rewrites a flow table relative to another. `MODE` is `1` for matching strands or `2` for crossed strands. `OUTPUT` defaults to `<flow1>-relative.txt`.
@@ -38,6 +39,7 @@ With pixi:
 ```bash
 pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
 pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
 ```
 
 With an installed Bioconda environment:

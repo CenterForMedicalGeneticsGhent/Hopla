@@ -11,7 +11,6 @@
     "mother_ids": {"type": "array", "items": {"type": ["string", "null"]}},
     "genders": {"type": "array", "items": {"enum": ["M", "F", null]}},
     "run_merlin": {"type": "boolean", "default": true},
-    "cytoband_file": {"type": "string"},
     "dp_hard_limit_ids": {"type": "array", "items": {"type": "string"}},
     "dp_hard_limit": {"type": "number", "minimum": 0, "default": 10},
     "af_hard_limit_ids": {"type": "array", "items": {"type": "string"}},

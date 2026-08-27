@@ -31,6 +31,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
 
 - Switched the report text, plots, and tables to a modern sans-serif system
   font stack; no web font is downloaded or embedded.
+- Binned every variant-depth histogram on shared breaks and pinned both axis
+  ranges, so the panels are comparable.
 - Widened the row spacing of the BAF panel grids so a chromosome or sample
   label stays with its own panel.
 - Reworked haplotype window voting to bound temporary memory to one neighbourhood.
@@ -39,9 +41,10 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
   reduce self-contained HTML report size.
 - Aligned helper-script flow tables with keyed `data.table` joins.
 - Replaced individual command-line analysis options with one required settings-file argument.
-- Moved `vcf_file` and `out_dir` from the settings file to `hopla run`
-  (`[-o OUT_DIR] SETTINGS VCF`). Both paths must exist; `OUT_DIR` defaults to
-  the current working directory.
+- Moved `vcf_file`, `out_dir`, and `cytoband_file` from the settings file to
+  `hopla run` (`[-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`). Supplied paths must
+  exist; `OUT_DIR` defaults to the current working directory and an omitted
+  cytoband table is downloaded from UCSC.
 - Replaced the standalone helper scripts with exported package functions.
 - Updated the documented R dependency versions.
 

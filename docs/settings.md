@@ -8,15 +8,17 @@ before the VCF or analysis packages are loaded. Unknown properties, invalid
 types, missing mandatory values, and out-of-range values fail immediately.
 
 Command-line flags no longer override individual analysis options. Paths for
-the VCF and output directory are CLI arguments, not settings properties:
+the VCF, output directory, and cytoband table are CLI arguments, not settings
+properties:
 
 ```bash
 pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
 pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
 hopla run path/to/settings.json path/to/family.vcf.gz
 ```
 
-Both paths must already exist. `-o OUT_DIR` defaults to the current working
+Supplied paths must already exist. `-o OUT_DIR` defaults to the current working
 directory (`$PWD`).
 
 A complete example is [`example/settings.yaml`](../example/settings.yaml).
@@ -60,8 +62,9 @@ Equivalent JSON is accepted. Types and constraints are identical.
   `mother_ids`.
 
 The VCF file is the `VCF` operand to `hopla run`. The output directory is
-optional `-o OUT_DIR` (default `$PWD`). Both paths are checked for existence
-before analysis starts. The engine does not create a missing output directory.
+optional `-o OUT_DIR` (default `$PWD`) and the cytoband table is optional
+`-c CYTOBAND`. Supplied paths are checked for existence before analysis starts.
+The engine does not create a missing output directory.
 
 ## Optional settings
 
@@ -79,13 +82,9 @@ before analysis starts. The engine does not create a missing output directory.
 - **`run_merlin`** (`boolean`, default `true`) Whether Merlin haplotyping should
   run. The Merlin executables directory (`path/to/merlin-1.1.2/executables`)
   must be on `$PATH`, which is automatic with pixi/conda install.
-- **`cytoband_file`** (`string`, no default) [UCSC cytoband
-  file](https://hgdownload.soe.ucsc.edu/downloads.html#human). When given,
-  chromosome bands are shown on top of chromosome-wise figures and
-  interpretability is much improved. Example: `path/to/cytoband.hg38.txt`.
-  When omitted, Hopla downloads
-  [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz),
-  decompresses it, and uses that table.
+
+The cytoband table is a CLI path (`-c CYTOBAND`), not a settings property. See
+[cli.md](cli.md).
 
 If `father_ids`, `mother_ids`, or `genders` are omitted, they are filled with
 `null` for every entry in `sample_ids`.
@@ -243,7 +242,8 @@ Conversion rules:
 
 - Dotted keys are mapped to snake_case schema properties
   (`min.seg.var.X` → `min_seg_var_x`).
-- `vcf.file` and `out.dir` are omitted; pass those paths on the CLI instead.
+- `vcf.file`, `out.dir`, and `cytoband.file` are omitted; pass those paths on
+  the CLI instead.
 - Empty assignments are omitted so schema/engine defaults apply.
 - Comma-separated lists become YAML arrays.
 - `NA` in parent and gender lists becomes YAML `null`.
@@ -260,7 +260,7 @@ Conversion rules:
 | `mother.ids` | `mother_ids` |
 | `genders` | `genders` |
 | `run.merlin` | `run_merlin` |
-| `cytoband.file` | `cytoband_file` |
+| `cytoband.file` | *(CLI `-c CYTOBAND`; omitted from YAML)* |
 | `dp.hard.limit.ids` | `dp_hard_limit_ids` |
 | `dp.hard.limit` | `dp_hard_limit` |
 | `af.hard.limit.ids` | `af_hard_limit_ids` |

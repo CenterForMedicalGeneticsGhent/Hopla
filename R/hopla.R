@@ -1,9 +1,13 @@
-require_existing_run_paths <- function(vcf_file, out_dir) {
+require_existing_run_paths <- function(vcf_file, out_dir, cytoband_file = NULL) {
   if (!file.exists(vcf_file) || dir.exists(vcf_file)) {
     stop("VCF file does not exist: ", vcf_file, call. = FALSE)
   }
   if (!dir.exists(out_dir)) {
     stop("Output directory does not exist: ", out_dir, call. = FALSE)
+  }
+  if (!is.null(cytoband_file) &&
+        (!file.exists(cytoband_file) || dir.exists(cytoband_file))) {
+    stop("Cytoband file does not exist: ", cytoband_file, call. = FALSE)
   }
   invisible(TRUE)
 }
@@ -17,6 +21,8 @@ require_existing_run_paths <- function(vcf_file, out_dir) {
 #' @param vcf_file Path to a (multisample) `vcf.gz` file. Must exist.
 #' @param out_dir Output directory. Defaults to the current working directory
 #'   and must already exist.
+#' @param cytoband_file Optional path to a UCSC cytoband table. Must exist when
+#'   given. The hg38 table is downloaded from UCSC when omitted.
 #' @param log_level Log verbosity: `error`, `warn`, `info`, or `debug`.
 #'   Inherited by the analysis engine.
 #' @param engine Optional path to the Hopla engine. Intended for development and
@@ -27,15 +33,18 @@ hopla_run <- function(
   settings,
   vcf_file,
   out_dir = getwd(),
+  cytoband_file = NULL,
   engine = NULL,
   log_level = NULL
 ) {
   stopifnot(
     is.character(settings), length(settings) == 1L,
     is.character(vcf_file), length(vcf_file) == 1L,
-    is.character(out_dir), length(out_dir) == 1L
+    is.character(out_dir), length(out_dir) == 1L,
+    is.null(cytoband_file) ||
+      (is.character(cytoband_file) && length(cytoband_file) == 1L)
   )
-  require_existing_run_paths(vcf_file, out_dir)
+  require_existing_run_paths(vcf_file, out_dir, cytoband_file)
   if (is.null(log_level)) {
     log_level <- hopla_log_level()
   } else {
@@ -64,15 +73,16 @@ hopla_run <- function(
     }
   }, add = TRUE)
 
-  status <- system2(
-    file.path(R.home("bin"), "Rscript"),
-    c(
-      shQuote(normalizePath(engine)),
-      shQuote(normalizePath(settings, mustWork = FALSE)),
-      shQuote(normalizePath(vcf_file)),
-      shQuote(normalizePath(out_dir))
-    )
+  engine_args <- c(
+    shQuote(normalizePath(engine)),
+    shQuote(normalizePath(settings, mustWork = FALSE)),
+    shQuote(normalizePath(vcf_file)),
+    shQuote(normalizePath(out_dir))
   )
+  if (!is.null(cytoband_file)) {
+    engine_args <- c(engine_args, shQuote(normalizePath(cytoband_file)))
+  }
+  status <- system2(file.path(R.home("bin"), "Rscript"), engine_args)
   invisible(status)
 }
 
@@ -362,7 +372,7 @@ hopla_convert_settings <- function(legacy, output = NULL, schema = NULL) {
   schema_doc <- jsonlite::fromJSON(schema, simplifyVector = FALSE)
   properties <- schema_doc$properties
   raw <- parse_legacy_settings_file(legacy)
-  cli_only <- intersect(names(raw), c("vcf_file", "out_dir"))
+  cli_only <- intersect(names(raw), c("vcf_file", "out_dir", "cytoband_file"))
   if (length(cli_only)) {
     message <- paste0(
       "Note: ", paste(cli_only, collapse = ", "),
