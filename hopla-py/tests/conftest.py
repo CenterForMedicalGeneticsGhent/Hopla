@@ -20,9 +20,14 @@ def family_vcf(tmp_path: Path) -> Path:
     ]
     rows = []
     for chrom in [str(index) for index in range(1, 23)] + ["X"]:
+        first_calls = (
+            "0/0:20,0:20\t0/1:10,10:20\t0/1:10,10:20"
+            if chrom == "X"
+            else "0/0:20,0:20\t1/1:0,20:20\t0/1:10,10:20"
+        )
         rows.extend(
             [
-                f"{chrom}\t100\t.\tA\tG\t.\tPASS\t.\tGT:AD:DP\t0/0:20,0:20\t1/1:0,20:20\t0/1:10,10:20",
+                f"{chrom}\t100\t.\tA\tG\t.\tPASS\t.\tGT:AD:DP\t{first_calls}",
                 f"{chrom}\t200\t.\tC\tT\t.\tPASS\t.\tGT:AD:DP\t0/1:10,10:20\t0/0:20,0:20\t0/1:10,10:20",
             ]
         )

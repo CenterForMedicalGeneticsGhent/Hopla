@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -83,7 +84,10 @@ def load_vcf(path: Path, samples: tuple[str, ...]) -> tuple[SiteTable, GenotypeM
 
 
 def mask_male_x_heterozygotes(
-    sites: SiteTable, matrix: GenotypeMatrix, sample_ids: list[str], genders: list[str | None]
+    sites: SiteTable,
+    matrix: GenotypeMatrix,
+    sample_ids: Sequence[str],
+    genders: Sequence[str | None],
 ) -> None:
     """Mark diploid heterozygous chromosome-X calls missing in male samples."""
     x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
