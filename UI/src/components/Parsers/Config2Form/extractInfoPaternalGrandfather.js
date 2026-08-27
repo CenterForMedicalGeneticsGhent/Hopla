@@ -1,7 +1,6 @@
 import determinePositionSampleID from "./determinePositionSampleID";
 import determinekeepLimitIDHardDP from "./determineKeepLimitIDHardDP";
 import determinekeepLimitIDHardAF from "./determineKeepLimitIDHardAF";
-import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
 import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 

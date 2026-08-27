@@ -1,8 +1,6 @@
 import determinePositionSampleID from "./determinePositionSampleID";
 import determinekeepLimitIDHardDP from "./determineKeepLimitIDHardDP";
 import determinekeepLimitIDHardAF from "./determineKeepLimitIDHardAF";
-import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
-import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 
 export default function extractInfoSiblings(paramsObject, config){
@@ -20,13 +18,13 @@ export default function extractInfoSiblings(paramsObject, config){
     var keepLimitIDHardAFs=sampleIDs.map(function(d){
         return determinekeepLimitIDHardAF(d,paramsObject["af.hard.limit.ids"]);
     });
-    var keepLimitIDSoftDPs=sampleIDs.map(function(d){
+    var keepLimitIDSoftDPs=sampleIDs.map(function(){
         return "hide";
     }); 
-    var keepBafIDs=sampleIDs.map(function(d){
+    var keepBafIDs=sampleIDs.map(function(){
         return "hide";
     });
-    var keepInformativeIDs=sampleIDs.map(function(d){
+    var keepInformativeIDs=sampleIDs.map(function(){
         return "hide";
     }); 
     var diseaseStati=sampleIDs.map(function(d){

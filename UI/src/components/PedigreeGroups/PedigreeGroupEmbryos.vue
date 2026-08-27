@@ -91,7 +91,7 @@ v-model="config.embryoList"
         get: function(){
           return this.modelValue;
         },
-        set: function(d){
+        set: function(){
           this.$emit('update:modelValue',this.config);
         },
       },

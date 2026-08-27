@@ -1,8 +1,5 @@
 import determinePositionSampleID from "./determinePositionSampleID";
-import determinekeepLimitIDHardDP from "./determineKeepLimitIDHardDP";
-import determinekeepLimitIDHardAF from "./determineKeepLimitIDHardAF";
 import determinekeepLimitIDSoftDP from "./determineKeepLimitIDSoftDP";
-import determineKeepInformativeIDs from "./determineKeepInformativeIDs";
 import determineDiseaseStatus from "./determineDiseaseStatus";
 import determineKeepHeteroIDs from "./determineKeepHeteroIDs";
 import determineKeepBafIDs from "./determineKeepBafIDs";
@@ -17,10 +14,10 @@ export default function extractInfoEmbryos(paramsObject, config){
     var genders=indicesOfID.map(function(i){
         return paramsObject["genders"][i];
     });
-    var keepLimitIDHardDPs=sampleIDs.map(function(d){
+    var keepLimitIDHardDPs=sampleIDs.map(function(){
         return "hide";
     }); 
-    var keepLimitIDHardAFs=sampleIDs.map(function(d){
+    var keepLimitIDHardAFs=sampleIDs.map(function(){
         return "hide";
     });
     var keepLimitIDSoftDPs=sampleIDs.map(function(d){
@@ -29,7 +26,7 @@ export default function extractInfoEmbryos(paramsObject, config){
     var keepBafIDs=sampleIDs.map(function(d){
         return determineKeepBafIDs(d,paramsObject["baf.ids"]);
     });
-    var keepInformativeIDs=sampleIDs.map(function(d){
+    var keepInformativeIDs=sampleIDs.map(function(){
         return "hide";
     });
     var keepHeteroIDs=determineKeepHeteroIDs(paramsObject["keep.hetero.ids"]);
