@@ -1,0 +1,35 @@
+name: UI CI
+
+on:
+  pull_request:
+    paths:
+      - "UI/**"
+      - ".github/workflows/ui-ci.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "UI/**"
+      - ".github/workflows/ui-ci.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: UI
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: UI/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn test:unit
+      - run: yarn build
