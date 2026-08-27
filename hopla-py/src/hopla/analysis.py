@@ -80,7 +80,7 @@ def genotype_counts(
     """Count missing, homozygous, and heterozygous calls per filter and sample."""
     del sites
     labels = {-1: "missing", 0: "0/0", 1: "0/1", 2: "1/1"}
-    rows = []
+    rows: list[dict[str, object]] = []
     for level, calls in ((0, matrix.gt), (1, filtered1.gt), (2, filtered2.gt)):
         for sample_index, sample in enumerate(matrix.samples):
             values, counts = np.unique(calls[sample_index], return_counts=True)
@@ -98,7 +98,7 @@ def genotype_counts(
 
 def variant_depth_table(matrix: GenotypeMatrix, filtered1: FilteredGenotypes) -> pl.DataFrame:
     """Build compact depth histograms for raw and filter-one calls."""
-    rows = []
+    rows: list[dict[str, object]] = []
     for level, depths in ((0, matrix.dp.astype(np.float32)), (1, filtered1.dp)):
         for sample_index, sample in enumerate(matrix.samples):
             valid = depths[sample_index][np.isfinite(depths[sample_index])]
