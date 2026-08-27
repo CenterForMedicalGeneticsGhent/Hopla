@@ -82,6 +82,9 @@ before analysis starts. The engine does not create a missing output directory.
   file](https://hgdownload.soe.ucsc.edu/downloads.html#human). When given,
   chromosome bands are shown on top of chromosome-wise figures and
   interpretability is much improved. Example: `path/to/cytoband.hg38.txt`.
+  When omitted, Hopla downloads
+  [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz),
+  decompresses it, and uses that table.
 
 If `father_ids`, `mother_ids`, or `genders` are omitted, they are filled with
 `null` for every entry in `sample_ids`.

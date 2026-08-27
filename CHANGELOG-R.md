@@ -18,6 +18,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
   Genetics Ghent as maintainer.
 - Added snake_case linting through lintr, available as the pixi `lint` task and
   enforced in CI.
+- When `cytoband_file` is omitted, download and decompress the UCSC hg38
+  `cytoBand.txt.gz` table.
 
 ### Changed
 

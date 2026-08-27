@@ -5,7 +5,7 @@ father_ids: [null, null, U1, null, DNA052960, DNA052960]
 mother_ids: [null, null, DNA052961, null, DNA052959, DNA052959]
 genders: [F, M, F, M, null, null]
 run_merlin: true
-cytoband_file: directory/to/cytoband.hg38.txt
+# Omit cytoband_file to download hg38 cytoBand.txt.gz from UCSC.
 
 dp_hard_limit_ids: [DNA052961, DNA052959, DNA052960]
 dp_hard_limit: 10

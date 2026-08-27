@@ -288,6 +288,45 @@ post_process_args <- function(args){
 # Cytobands
 # -----
 
+default_cytoband_url <- 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz'
+
+#' Download and decompress the default hg38 UCSC cytoband table.
+#' @param url Source URL for a gzip-compressed cytoband table.
+#' @return Path to the uncompressed cytoband file.
+fetch_hg38_cytoband_file <- function(url = default_cytoband_url){
+  stopifnot(is.character(url), length(url) == 1)
+  cat('No cytoband_file given; downloading hg38 cytoBand.txt.gz from UCSC ...\n')
+  compressed <- tempfile('hopla-cytoBand', fileext = '.txt.gz')
+  uncompressed <- tempfile('hopla-cytoBand', fileext = '.txt')
+  status <- tryCatch(
+    utils::download.file(url, compressed, mode = 'wb', quiet = TRUE),
+    error = function(error) {
+      cat(
+        'ERROR: Could not download the default cytoband file from UCSC: ',
+        conditionMessage(error), '\n',
+        file = stderr(), sep = ''
+      )
+      quit(status = 1)
+    }
+  )
+  if (!identical(as.integer(status), 0L) || !file.exists(compressed) ||
+      isTRUE(file.info(compressed)$size == 0)) {
+    cat('ERROR: Could not download the default cytoband file from UCSC.\n', file = stderr())
+    quit(status = 1)
+  }
+
+  input <- gzfile(compressed, open = 'rt')
+  lines <- readLines(input, warn = FALSE)
+  close(input)
+  unlink(compressed)
+  if (!length(lines)) {
+    cat('ERROR: Downloaded cytoband file is empty.\n', file = stderr())
+    quit(status = 1)
+  }
+  writeLines(lines, uncompressed)
+  uncompressed
+}
+
 #' Load chromosome cytobands.
 #' @param file Path to a tab-separated cytoband file.
 #' @return A named list of cytoband records.
@@ -2633,7 +2672,10 @@ args$out_dir <- normalizePath(args$out_dir)
 args$fam_id <- gsub("[[:punct:]]", ".", args$fam_id)
 args$out_bs <- paste0(args$out_dir, '/', args$fam_id, '-')
 args$merlin_dir <- paste0(args$out_bs, 'merlin/')
-if (length(args$cytoband_file)) cytobands <- get_cytobands(args$cytoband_file)
+if (!length(args$cytoband_file) || !nzchar(args$cytoband_file[1])) {
+  args$cytoband_file <- fetch_hg38_cytoband_file()
+}
+cytobands <- get_cytobands(args$cytoband_file)
 
 # -----
 # Vcf loading & parsing
