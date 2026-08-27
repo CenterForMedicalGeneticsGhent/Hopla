@@ -2,6 +2,8 @@
 
 These instructions apply to the repository root. Work under `UI/` is out of scope unless a task explicitly names it. Never merge a pull request unless the user explicitly requests it.
 
+Agents should also read the autodiscovered [AGENTS.md](../AGENTS.md) at the repository root. That file is the parallel copy of these rules; keep them in sync.
+
 ## Runtime and dependencies
 
 - Use the root pixi environment and committed `pixi.lock`.
