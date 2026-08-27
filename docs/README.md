@@ -1,0 +1,39 @@
+# Hopla documentation
+
+Hopla performs classic genomic single, duo, trio, and larger-family analysis from one (multisample) VCF, and writes interactive HTML visualizations. When the pedigree allows it, it also runs offline haplotyping with [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Besides post-natal work, the report is meant to support embryo selection during preimplantation genetic testing, with the aim of healthy births in affected families. The name is both a ‘haplo’ anagram and a children’s television show.
+
+This manual compiles the former root README, settings reference, contributor instructions, R changelog pointer, and UI notes. Rewording is for consistency with the current YAML/JSON CLI; the facts are the same.
+
+## Contents
+
+- [Install and dependencies](install.md)
+- [Command line](cli.md)
+- [Settings](settings.md)
+- [HTML output](output.md)
+- [Web UI](ui.md)
+- [Contributing](contributing.md)
+- [R pipeline changelog](../CHANGELOG-R.md)
+
+Install badges for the published Bioconda package:
+
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/hopla/README.html)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/hopla/badges/downloads.svg)](https://anaconda.org/bioconda/hopla)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/hopla/badges/latest_release_date.svg)](https://anaconda.org/bioconda/hopla)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/hopla/badges/version.svg)](https://anaconda.org/bioconda/hopla)
+
+## Input
+
+- A (multisample) `vcf.gz` file. In the authors’ tests this was produced with gatk-haplotype and gatk-haplotype-joint through [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/), **with a predefined target**.
+- A YAML or JSON [settings file](settings.md) describing the family and analysis options.
+- The VCF path and output directory are command-line arguments, not settings keys.
+
+## Quick start
+
+```bash
+git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
+cd hopla
+pixi install
+pixi run hopla run example/settings.yaml path/to/family.vcf.gz
+```
+
+A partial toy HTML report is `example/hopla.html`. A complete settings example is `example/settings.yaml`.

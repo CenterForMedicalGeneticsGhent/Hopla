@@ -20,6 +20,8 @@ This changelog covers the Hopla R package and command-line subtools. Changes to 
   enforced in CI.
 - When `cytoband_file` is omitted, download and decompress the UCSC hg38
   `cytoBand.txt.gz` table.
+- Compiled the former scattered markdown into the [docs/](docs/README.md)
+  manual (install, CLI, settings, output, UI, contributing).
 
 ### Changed
 

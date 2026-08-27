@@ -1,5 +1,7 @@
 # Hopla settings
 
+[Documentation home](README.md) · [CLI](cli.md) · [Output](output.md)
+
 Analysis options are supplied as a single YAML or JSON file to `hopla run`.
 The file is validated against [`inst/schema/hopla.schema.json`](../inst/schema/hopla.schema.json)
 before the VCF or analysis packages are loaded. Unknown properties, invalid
