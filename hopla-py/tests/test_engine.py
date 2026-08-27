@@ -10,7 +10,7 @@ from hopla.analysis import _duo_errors, _trio_errors
 from hopla.filters import apply_filter1, apply_filter2
 from hopla.merlin import correct_short_segments, weighted_vote
 from hopla.settings import load_settings
-from hopla.vcf import load_vcf
+from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
 
 def test_vcf_and_filters(family_vcf: Path, settings_file: Path) -> None:
@@ -19,6 +19,8 @@ def test_vcf_and_filters(family_vcf: Path, settings_file: Path) -> None:
     sites, matrix = load_vcf(family_vcf, settings.real_samples)
     assert sites.size == 46
     assert matrix.gt.shape == (3, 46)
+    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.genders)
+    assert matrix.gt[matrix.sample_index["FATHER"], -1] == -1
     filtered1 = apply_filter1(sites, matrix, settings)
     filtered2 = apply_filter2(sites, matrix, filtered1, settings)
     assert filtered1.gt.shape[1] == 46
