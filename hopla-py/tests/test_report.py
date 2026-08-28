@@ -86,7 +86,7 @@ def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
 
 
 def test_report_restores_every_original_section() -> None:
-    """Emit the R section order, one figure per panel, and an offline Plotly bundle."""
+    """Emit the documented section order, one figure per panel, and an offline Plotly bundle."""
     settings = _trio()
     samples = ("father", "mother", "child")
     tables = {

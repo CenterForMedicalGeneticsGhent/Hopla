@@ -5,37 +5,6 @@ description = "Genomic family analysis and interactive reporting"
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 
-[feature.hopla-r.dependencies]
-r-base = ">=4.4,<5"
-r-vcfr = ">=1.16"
-"r-data.table" = ">=1.17"
-r-rcolorbrewer = ">=1.1_3"
-r-kinship2 = ">=1.9"
-r-plotly = ">=4.12"
-r-htmltools = ">=0.5"
-r-base64enc = ">=0.1_3"
-r-scales = ">=1.4"
-bioconductor-genomicranges = ">=1.54"
-bioconductor-dnacopy = ">=1.76"
-r-jsonlite = ">=2.0.0,<3"
-r-yaml = ">=2.3.12,<3"
-r-jsonvalidate = ">=1.5.0,<2"
-merlin = "1.1.2.*"
-
-[feature.hopla-r.tasks]
-hopla = { cmd = "Rscript exec/hopla", cwd = "hopla-r" }
-convert = { cmd = "Rscript exec/hopla convert", cwd = "hopla-r" }
-concordance = { cmd = "Rscript exec/hopla concordance", cwd = "hopla-r" }
-transform = { cmd = "Rscript exec/hopla transform", cwd = "hopla-r" }
-
-[feature.hopla-r-dev.dependencies]
-r-testthat = ">=3.3.2,<4"
-r-lintr = ">=3.2,<4"
-
-[feature.hopla-r-dev.tasks]
-check = { cmd = "R CMD build . && R CMD check --no-manual hopla_*.tar.gz", cwd = "hopla-r" }
-lint = { cmd = "Rscript tools/lint.R", cwd = "hopla-r" }
-
 [feature.hopla-py.dependencies]
 python = ">=3.12,<3.14"
 cyvcf2 = "*"
@@ -59,12 +28,16 @@ types-pyyaml = "*"
 types-jsonschema = "*"
 
 [feature.hopla-py.tasks]
-install = { cmd = "python -m pip install --no-deps -e hopla-py" }
-hopla-py = { cmd = "python -m hopla.cli", cwd = "hopla-py", depends-on = ["install"] }
+install-py = { cmd = "python -m pip install --no-deps -e hopla-py" }
+hopla-py = { cmd = "python -m hopla.cli", cwd = "hopla-py", depends-on = ["install-py"] }
+hopla = { cmd = "hopla", depends-on = ["install-py"] }
+convert = { cmd = "hopla convert", depends-on = ["install-py"] }
+concordance = { cmd = "hopla concordance", depends-on = ["install-py"] }
+transform = { cmd = "hopla transform", depends-on = ["install-py"] }
 
 [feature.hopla-py-dev.tasks]
-lint-py = { cmd = "ruff check hopla-py && mypy hopla-py/src", depends-on = ["install"] }
-test-py = { cmd = "pytest hopla-py/tests", depends-on = ["install"] }
+lint-py = { cmd = "ruff check hopla-py && mypy hopla-py/src", depends-on = ["install-py"] }
+test-py = { cmd = "pytest hopla-py/tests", depends-on = ["install-py"] }
 
 [feature.hopla-ui.dependencies]
 nodejs = ">=22.12,<23"
@@ -77,10 +50,8 @@ build = { cmd = "corepack yarn build", cwd = "hopla-ui", depends-on = ["install"
 serve = { cmd = "corepack yarn serve", cwd = "hopla-ui", depends-on = ["install"] }
 
 [environments]
-default = ["hopla-r"]
-dev = ["hopla-r", "hopla-r-dev"]
-hopla-r = { features = ["hopla-r"], no-default-feature = true }
-hopla-r-dev = { features = ["hopla-r", "hopla-r-dev"], no-default-feature = true }
+default = ["hopla-py"]
+dev = ["hopla-py", "hopla-py-dev"]
 hopla-py = { features = ["hopla-py"], no-default-feature = true }
 hopla-py-dev = { features = ["hopla-py", "hopla-py-dev"], no-default-feature = true }
 hopla-ui = { features = ["hopla-ui"], no-default-feature = true }

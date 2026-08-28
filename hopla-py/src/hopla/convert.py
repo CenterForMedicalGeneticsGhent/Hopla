@@ -59,7 +59,10 @@ def _coerce(value: str | list[str], specification: dict[str, Any]) -> Any:
     kinds = specification.get("type", [])
     kinds = [kinds] if isinstance(kinds, str) else kinds
     if "array" in kinds:
-        allows_null = "null" in specification.get("items", {}).get("type", [])
+        item_specification = specification.get("items", {})
+        item_kinds = item_specification.get("type", [])
+        item_kinds = [item_kinds] if isinstance(item_kinds, str) else item_kinds
+        allows_null = "null" in item_kinds or None in item_specification.get("enum", [])
         return [
             None if token.strip() in {"", "NA"} and allows_null else token.strip()
             for token in value.split(",")

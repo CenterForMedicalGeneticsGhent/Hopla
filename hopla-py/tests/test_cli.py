@@ -39,11 +39,11 @@ def test_help_version_and_usage_status() -> None:
 def test_convert_concordance_and_transform(tmp_path: Path) -> None:
     """Port all legacy CLI helper behavior."""
     legacy = tmp_path / "legacy.txt"
-    legacy.write_text("sample.ids=A\nrun.merlin=FALSE\n", encoding="utf-8")
+    legacy.write_text("sample.ids=A\ngenders=NA\nrun.merlin=FALSE\n", encoding="utf-8")
     converted = runner.invoke(app, ["convert", str(legacy)])
     assert converted.exit_code == 0
     assert legacy.with_suffix(".yaml").read_text(encoding="utf-8") == (
-        "sample_ids:\n- A\nrun_merlin: false\n"
+        "sample_ids:\n- A\ngenders:\n- null\nrun_merlin: false\n"
     )
     first, second = tmp_path / "one-flow.txt", tmp_path / "two-flow.txt"
     _flow(first)

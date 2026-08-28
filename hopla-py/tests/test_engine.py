@@ -94,7 +94,7 @@ def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:
                 # One chromosome-X site mixing haploid male, diploid female, and missing calls.
                 "chrX\t100\t.\tA\tG\t.\tPASS\t.\tGT:AD:DP\t1:0,20:20\t0/1:10,10:20\t.:0,0:0",
                 "chrX\t150\t.\tA\tG\t.\tPASS\t.\tGT:AD:DP\t0:20,0:20\t0/0:20,0:20\t0/1:10,10:20",
-                # A haploid autosomal call is not a diploid homozygote, matching the R engine.
+                # A haploid autosomal call is not a diploid homozygote.
                 "chr1\t100\t.\tC\tT\t.\tPASS\t.\tGT:AD:DP\t1:0,20:20\t0/1:10,10:20\t0/1:10,10:20",
                 # Sites that omit AD/DP entirely must not abort the run.
                 "chr1\t200\t.\tC\tT\t.\tPASS\t.\tGT\t0/1\t0/0\t1/1",

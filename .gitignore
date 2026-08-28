@@ -6,7 +6,6 @@
 *.html
 .DS_Store
 tests/assets
-hopla-r/hopla_*.tar.gz
-hopla-r/hopla.Rcheck/
+dist/
 hopla-ui/node_modules/
 hopla-ui/dist/

@@ -1,7 +1,9 @@
-# R pipeline changelog
+# R pipeline changelog (archived)
 
-This changelog covers the Hopla R package and command-line subtools. Changes to
-the Vue application under `hopla-ui/` are tracked separately.
+This file is an intentional historical archive of the former Hopla R-package
+changelog. Current Python-engine changes are tracked in
+[`CHANGELOG.md`](../../CHANGELOG.md). Changes to the Vue application under
+`hopla-ui/` are tracked separately.
 
 ## [2.0.0] - 2026-08-27
 
@@ -25,8 +27,8 @@ the Vue application under `hopla-ui/` are tracked separately.
   `cytoBand.txt.gz` table.
 - Added timestamped `error` / `warn` / `info` / `debug` logging, selected with
   `-L` / `--log-level` or `HOPLA_LOG_LEVEL`.
-- Compiled the former scattered markdown into the [docs/](docs/README.md)
-  manual (install, CLI, settings, output, contributing).
+- Compiled the former scattered markdown into the package docs manual
+  (install, CLI, settings, output, contributing).
 
 ### Changed
 
