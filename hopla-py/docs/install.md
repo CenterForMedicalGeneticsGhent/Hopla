@@ -12,7 +12,7 @@ of those platforms in the `hopla-py` feature.
 ```bash
 pixi install --locked
 pixi run -e hopla-py install-py
-pixi run -e hopla-py hopla-py --help
+pixi run hopla --help
 ```
 
 Use `pixi install --locked` so the committed `pixi.lock` is respected.
@@ -22,10 +22,12 @@ environment adds pytest, ruff, mypy, and typing stubs.
 
 Pixi tasks (from the repository root):
 
-- `hopla-py` environment `install` — editable install of `hopla-py` with
+- `hopla-py` environment `install-py` — editable install of `hopla-py` with
   `python -m pip install --no-deps -e hopla-py`
 - `hopla-py` environment `hopla-py` — `python -m hopla.cli` (depends on
-  `install`)
+  `install-py`)
+- default environment `hopla`, `convert`, `concordance`, and `transform` —
+  installed Python CLI entry points (depend on `install-py`)
 - `hopla-py-dev` environment `lint-py` — `ruff check` and `mypy`
 - `hopla-py-dev` environment `test-py` — `pytest hopla-py/tests`
 
