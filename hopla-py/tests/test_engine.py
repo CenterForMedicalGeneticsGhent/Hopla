@@ -47,6 +47,68 @@ def test_haplotype_corrections() -> None:
     assert voted.tolist() == ["A"] * 5
 
 
+def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:
+    """Load sites that mix haploid and diploid calls or omit FORMAT fields."""
+    path = tmp_path / "mixed.vcf"
+    path.write_text(
+        "\n".join(
+            [
+                "##fileformat=VCFv4.2",
+                '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+                '##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allele depths">',
+                '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Depth">',
+                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSON\tMUM\tKID",
+                # One chromosome-X site mixing haploid male, diploid female, and missing calls.
+                "chrX\t100\t.\tA\tG\t.\tPASS\t.\tGT:AD:DP\t1:0,20:20\t0/1:10,10:20\t.:0,0:0",
+                "chrX\t150\t.\tA\tG\t.\tPASS\t.\tGT:AD:DP\t0:20,0:20\t0/0:20,0:20\t0/1:10,10:20",
+                # A haploid autosomal call is not a diploid homozygote, matching the R engine.
+                "chr1\t100\t.\tC\tT\t.\tPASS\t.\tGT:AD:DP\t1:0,20:20\t0/1:10,10:20\t0/1:10,10:20",
+                # Sites that omit AD/DP entirely must not abort the run.
+                "chr1\t200\t.\tC\tT\t.\tPASS\t.\tGT\t0/1\t0/0\t1/1",
+                "chr1\t300\t.\tC\tT\t.\tPASS\t.\tGT:AD:DP\t0/1:.,.:.\t0/0:20,0:20\t1/1:0,20:20",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    sites, matrix = load_vcf(path, ("SON", "MUM", "KID"))
+    assert sites.size == 5
+    # Haploid chrX alt becomes homozygous alt; haploid ref becomes homozygous ref.
+    assert matrix.gt[matrix.sample_index["SON"], 0] == 2
+    assert matrix.gt[matrix.sample_index["SON"], 1] == 0
+    assert matrix.gt[matrix.sample_index["MUM"], 0] == 1
+    assert matrix.gt[matrix.sample_index["KID"], 0] == -1
+    # Haploid autosomal calls stay uncalled.
+    assert matrix.gt[matrix.sample_index["SON"], 2] == -1
+    # Absent and missing FORMAT values normalize to zero depth.
+    assert matrix.dp[:, 3].tolist() == [0, 0, 0]
+    assert matrix.ad_ref[matrix.sample_index["SON"], 4] == 0
+    assert matrix.ad_alt[matrix.sample_index["SON"], 4] == 0
+
+
+def test_requested_sample_order_is_preserved(tmp_path: Path) -> None:
+    """Attribute calls by sample name even when settings reorder the VCF columns."""
+    path = tmp_path / "order.vcf"
+    path.write_text(
+        "\n".join(
+            [
+                "##fileformat=VCFv4.2",
+                '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+                '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Depth">',
+                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tAAA\tBBB\tCCC",
+                "chr1\t100\t.\tA\tG\t.\tPASS\t.\tGT:DP\t0/0:11\t0/1:22\t1/1:33",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _, matrix = load_vcf(path, ("CCC", "AAA"))
+    assert matrix.dp[matrix.sample_index["CCC"], 0] == 33
+    assert matrix.dp[matrix.sample_index["AAA"], 0] == 11
+    assert matrix.gt[matrix.sample_index["CCC"], 0] == 2
+    assert matrix.gt[matrix.sample_index["AAA"], 0] == 0
+
+
 def test_af_rounding_and_y_model_conflict_resolution() -> None:
     """Match three-decimal AF and prefer the Y model when X and Y disagree."""
     sites = SiteTable(
