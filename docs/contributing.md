@@ -16,9 +16,10 @@ An agent-discoverable copy of this material lives in
 - Add Python dependencies to both the root `pixi.toml` `[dependencies]` (or
   `[feature.dev.dependencies]`) and `pyproject.toml`; regenerate `pixi.lock`
   with pixi.
-- Install with `pixi install --locked`. The local package is a locked path
-  PyPI dependency (`hopla = { path = ".", editable = true }`). Do not add a
-  second unmanaged pip install for development.
+- Keep `pixi.lock` free of PyPI source dependencies. Every locked dependency
+  is a conda package; the local package itself is not locked.
+- Prefer editable installs through `pixi run install-py` rather than unmanaged
+  global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline
   `plotly.js` bundle and compresses the columnar payload itself.
 
@@ -94,9 +95,8 @@ Details: [install.md](install.md).
 ## Containers
 
 - Build `Dockerfile` from the repository-root context and `pixi.lock`.
-- Install the image with `pixi install --locked` only. Do not run `pip install`
-  in the image; conda packages, Merlin, and the local `hopla` path package
-  come from the lock file.
+- Resolve every third-party dependency through `pixi install --locked`; the
+  image then installs the local package with `pip install --no-deps .`.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification

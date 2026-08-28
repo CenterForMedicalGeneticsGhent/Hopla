@@ -13,15 +13,14 @@ subtools. Historical notes from the predecessor analysis pipeline live in
   `hopla-py/`.
 - Replaced pixi features and environments `hopla-py` / `hopla-py-dev` with
   the default environment plus `dev`.
-- Locked the local package through `[pypi-dependencies]`
-  (`hopla = { path = ".", editable = true }`). `pixi install --locked`
-  installs the CLI; Docker no longer runs a separate `pip install`.
+- Kept `pixi.lock` free of PyPI source dependencies; it resolves conda
+  packages only.
 
 ### Removed
 
-- Dropped the nested package directory, `install-py` task, and `hopla-py`
-  pixi task. Image tags remain commit SHA, `latest`, package version, and
-  `stable` (no `ui-*` tags).
+- Dropped the nested package directory and the `hopla-py` pixi task. Image
+  tags remain commit SHA, `latest`, package version, and `stable` (no `ui-*`
+  tags).
 
 ## [2.1.0] - 2026-08-28
 
