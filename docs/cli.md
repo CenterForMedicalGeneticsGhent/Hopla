@@ -93,10 +93,12 @@ hopla serve --no-open
 hopla serve --host 0.0.0.0 --port 8080
 ```
 
-The editor imports legacy `.txt` and current YAML/JSON settings, reconstructs
-the pedigree, validates changes against the packaged schema, and downloads
-YAML for `hopla run`. It does not accept VCFs or run analyses. See
-[serve.md](serve.md) for usage and network-safety details.
+The web interface imports legacy `.txt` and current YAML/JSON settings,
+reconstructs the pedigree, validates changes against the packaged schema, and
+downloads YAML for `hopla run`. It can also stream a locally selected VCF,
+run an analysis with the current configuration, and return the self-contained
+HTML report. Web analyses use temporary storage and do not write Parquet or IGV
+exports. See [serve.md](serve.md) for usage and network-safety details.
 
 ## Convert, concordance, and transform
 

@@ -34,8 +34,9 @@ This manual documents the Python package at the repository root. Start from the
 - A YAML or JSON [settings file](settings.md) describing the family and
   analysis options. Create it by hand or with the optional local
   [`hopla serve`](serve.md) editor.
-- The VCF path and output directory are command-line arguments, not settings
-  keys.
+- For CLI runs, the VCF path and output directory are command-line arguments,
+  not settings keys. The local web interface can instead upload a selected VCF
+  and return a temporary HTML report.
 
 ## Quick start
 
@@ -51,6 +52,9 @@ offline HTML report. By default it also writes portable Parquet tables and IGV
 desktop tracks under `{fam_id}-export/`. Merlin 1.1.2 remains an optional
 external dependency for haplotyping. Example settings live in
 [`example/`](../example/).
+
+Alternatively, run `pixi run hopla serve` to create or import settings, select
+a VCF in the browser, and download the generated HTML report.
 
 ## Maintainers and contact
 

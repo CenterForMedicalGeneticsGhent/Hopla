@@ -1,7 +1,8 @@
-# Local settings editor
+# Local web interface
 
-`hopla serve` starts a lightweight browser form for creating settings files.
-It is part of the Python package and requires no Node.js installation.
+`hopla serve` starts a lightweight browser interface for creating settings
+files and running analyses. It is part of the Python package and requires no
+Node.js installation.
 
 ```bash
 hopla serve
@@ -11,22 +12,42 @@ The default address is <http://127.0.0.1:8080/>. When invoked from an
 interactive terminal, Hopla opens that address in the default browser. Use
 `--no-open` to disable this behavior or `--port` to choose another port.
 
-The editor provides pedigree, analysis parameter, advanced, and validated YAML
-views. It can import:
+The interface provides pedigree, analysis parameter, advanced, validated YAML,
+and analysis views. It can import:
 
 - legacy Hopla `.txt` settings;
 - current `.yaml` and `.yml` settings;
 - current `.json` settings.
 
 Imports are limited to 1 MB. YAML downloads are validated against the packaged
-settings schema. The VCF, output-directory, and cytoband paths remain command
-line arguments and are never included in downloaded settings.
+settings schema.
+
+## Run an analysis
+
+Create a configuration in the form or import an existing configuration, then:
+
+1. Open the **Analysis** tab.
+2. Select a `.vcf`, `.vcf.gz`, or `.vcf.bgz` file from the local system.
+3. Select **Run analysis**.
+4. Wait for the status to report completion and download the HTML report.
+
+The browser streams the VCF to temporary storage on the machine running
+`hopla serve`. There is no configured upload-size limit, so available disk
+space must accommodate the input. The configuration, VCF, and generated report
+are removed when the server stops.
+
+Web analyses generate only the self-contained HTML report; they do not generate
+the Parquet or IGV sidecars written by the default `hopla run` command. Use the
+CLI when those exports, a persistent output directory, or a custom cytoband
+file are required. When the web interface needs the default hg38 cytobands, the
+server downloads them as it does for `hopla run` without `-c`.
 
 ## Network safety
 
-The server binds to loopback by default and has no authentication. It is
-intended to be started locally, used briefly, and stopped. Do not expose it to
-an untrusted network.
+The server binds to loopback by default and has no authentication. It accepts
+large genomic files and can start resource-intensive analyses. It is intended
+to be started locally, used briefly, and stopped. Do not expose it to an
+untrusted network.
 
 For a container or an explicitly managed reverse proxy, bind all interfaces:
 
