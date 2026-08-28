@@ -1,30 +1,27 @@
-# Hopla contributor instructions
+# Contributing
 
-This file is the agent-discoverable copy of the contributor rules. The same
-material lives in
-[hopla-py/docs/contributing.md](hopla-py/docs/contributing.md) for the human
-manual. Keep the two in sync.
+These instructions apply to the Python package under `hopla-py/`. Work under
+`hopla-ui/` is out of scope unless a task explicitly names it. Never merge a
+pull request unless the user explicitly requests it.
 
-The monorepo contains the Python package under `hopla-py/` and the Vue
-application under `hopla-ui/`. Keep changes scoped to the package named by the
-task. Never merge a pull request unless the user explicitly requests it.
-
-The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
-[hopla-ui/docs/README.md](hopla-ui/docs/README.md).
+An agent-discoverable copy of this material lives in the repository-root
+[`AGENTS.md`](../../AGENTS.md). Keep the two files in sync.
 
 ## Runtime and dependencies
 
-- Use the named root pixi environment for the package and the committed
+- Use the root `hopla-py` / `hopla-py-dev` pixi environments and committed
   `pixi.lock`.
 - Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
   available on each of those platforms in the `hopla-py` feature.
 - Require Python 3.12 or newer.
 - Add Python dependencies to both the root `pixi.toml` `hopla-py` feature and
-  `hopla-py/pyproject.toml`; regenerate `pixi.lock` with pixi.
+  `hopla-py/pyproject.toml`; regenerate the root `pixi.lock` with pixi.
 - Prefer editable installs through `pixi run -e hopla-py install` rather than
   unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline
   `plotly.js` bundle and compresses the columnar payload itself.
+
+Details: [install.md](install.md).
 
 ## Package structure
 
@@ -34,37 +31,34 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
 - Keep the Typer entry point in `src/hopla/cli.py` as the orchestration surface
   for `run`, `convert`, `concordance`, and `transform`.
 - Put private analysis helpers in the narrowest relevant module documented in
-  [hopla-py/docs/architecture.md](hopla-py/docs/architecture.md).
+  [architecture.md](architecture.md).
 - Keep portable Parquet and IGV exporters under `src/hopla/export/`.
 - Keep the settings schema in `src/hopla/schema/hopla.schema.json` (packaged as
   `hopla/schema/hopla.schema.json`). There is no runtime fallback to another
   package tree.
-- Keep
-  [hopla-py/docs/architecture.md](hopla-py/docs/architecture.md)
-  aligned with this structure.
+- Keep [architecture.md](architecture.md) aligned with this structure.
 - Keep the package version, CLI version, pixi version, and
-  [hopla-py/CHANGELOG.md](hopla-py/CHANGELOG.md) release entry in sync.
-  CLI-breaking changes require a major version bump.
-- Record Python pipeline changes in [hopla-py/CHANGELOG.md](hopla-py/CHANGELOG.md).
-- Keep the manual in `hopla-py/docs/` in sync with the schema, engine defaults,
-  and CLI. Keep [`hopla-py/example/`](hopla-py/example/) fixtures aligned with
-  documented settings and convert behaviour.
-- Do not overwrite [hopla-py/docs/exports.md](hopla-py/docs/exports.md) or
-  [hopla-py/docs/igvjs-evaluation.md](hopla-py/docs/igvjs-evaluation.md) when
-  updating architecture notes.
+  [CHANGELOG.md](../CHANGELOG.md) release entry in sync. CLI-breaking changes
+  require a major version bump.
+- Record Python pipeline changes in [CHANGELOG.md](../CHANGELOG.md).
+- Keep this manual in `docs/` in sync with the schema, engine defaults, and
+  CLI. Keep [`example/`](../example/) fixtures aligned with documented
+  settings and convert behaviour.
+- Do not overwrite [exports.md](exports.md) or
+  [igvjs-evaluation.md](igvjs-evaluation.md) when updating architecture notes.
 
 ## Settings and command line
 
 - Analysis configuration is accepted only as YAML or JSON.
 - Encode every supported setting, type, default, and basic constraint in
   `src/hopla/schema/hopla.schema.json`.
-- Keep [hopla-py/docs/settings.md](hopla-py/docs/settings.md) aligned with that
-  schema and with engine defaults. Document intentional schema-compatibility
-  settings that the Python engine ignores or always overrides (`color_palette`,
-  `self_contained`, `cairo`).
+- Keep [settings.md](settings.md) aligned with that schema and with engine
+  defaults. Document intentional schema-compatibility settings that the Python
+  engine ignores or always overrides (`color_palette`, `self_contained`,
+  `cairo`).
 - Validate settings against the schema before loading a VCF. Reject unknown
   properties.
-- Keep the CLI as documented in [hopla-py/docs/cli.md](hopla-py/docs/cli.md):
+- Keep the CLI as documented in [cli.md](cli.md):
   - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
@@ -74,7 +68,8 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
   current working directory; an omitted cytoband table is downloaded from UCSC.
 - Default `run` also writes `{fam_id}-export/` Parquet and IGV sidecars unless
   disabled with `--no-export-parquet` / `--no-export-bigwig`.
-- `convert` maps the legacy `key=value` settings format to schema-validated YAML.
+- `convert` maps the legacy `key=value` settings format to schema-validated
+  YAML.
 - Return zero for help, version, and successful commands; return status 2 for
   invalid usage and status 1 for runtime failures.
 - Global options are `-h`, `-V` (not `-v`), and `-L LEVEL` (`error`, `warn`,
@@ -108,8 +103,8 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
   settings.
 - Test all CLI subtools and their failure exit statuses, including the export
   toggles.
-- Confirm no task-scoped changes appear under the other package unless the task
-  named that tree.
+- Confirm no task-scoped changes appear under `hopla-ui/` unless the task named
+  that tree.
 - Build a wheel when verifying packaging:
   `pixi run -e hopla-py-dev python -m pip wheel --no-deps ./hopla-py -w dist`.
 - Build the relevant package Docker image when Docker is available.

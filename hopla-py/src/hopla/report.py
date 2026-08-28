@@ -1,4 +1,4 @@
-"""Render the self-contained Plotly report that mirrors the original R output."""
+"""Render the self-contained Plotly HTML report."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from hopla.models import CHROMOSOMES, Cytoband
 from hopla.pedigree import pedigree_svg, sample_label
 from hopla.settings import Settings
 
-# RColorBrewer "Paired", the palette the R engine used for every figure.
+# ColorBrewer "Paired", the palette used for every figure.
 PALETTE = (
     "#A6CEE3",
     "#1F78B4",
@@ -329,7 +329,7 @@ def _body(
     samples: tuple[str, ...],
     chromosomes: list[str],
 ) -> str:
-    """Assemble every report section in the order the R engine used."""
+    """Assemble every report section in documented filter order."""
     parts: list[str] = []
     if settings.info:
         parts.append("<h2>Family/disease information</h2>")

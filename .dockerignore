@@ -1,8 +1,8 @@
 .git
 .pixi
 hopla-ui
-hopla-r/example/*.vcf
-hopla-r/example/*.vcf.gz
-hopla-r/example/*.bcf
+hopla-py/example/*.vcf
+hopla-py/example/*.vcf.gz
+hopla-py/example/*.bcf
 *.html
 *-output_files

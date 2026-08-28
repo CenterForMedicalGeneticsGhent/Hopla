@@ -125,13 +125,11 @@ class Settings(BaseModel):
 
 
 def schema_path() -> Path:
-    """Locate the installed or source-tree JSON schema."""
-    installed = Path(__file__).parent / "schema" / "hopla.schema.json"
-    source = Path(__file__).parents[3] / "hopla-r" / "inst" / "schema" / "hopla.schema.json"
-    for candidate in (installed, source):
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError("Could not locate hopla.schema.json")
+    """Return the package-local JSON schema shipped with Hopla."""
+    path = Path(__file__).parent / "schema" / "hopla.schema.json"
+    if not path.is_file():
+        raise FileNotFoundError(f"Could not locate hopla.schema.json at {path}")
+    return path
 
 
 def load_settings(path: Path) -> Settings:
