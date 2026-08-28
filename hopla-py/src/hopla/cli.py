@@ -14,8 +14,8 @@ import typer
 from hopla import __version__
 from hopla.analysis import build_analysis_tables, haplotype_concordance
 from hopla.convert import convert_settings
-from hopla.cytobands import fetch_hg38, load_cytobands
-from hopla.export import export_parquet
+from hopla.cytobands import chromosome_sizes, fetch_hg38, load_cytobands
+from hopla.export import export_igv_tracks, export_parquet
 from hopla.filters import apply_filter1, apply_filter2
 from hopla.flow import concordance as compare_flows
 from hopla.flow import transform as transform_flow
@@ -106,6 +106,13 @@ def run_command(
             help="Write portable Parquet tables for visualized data.",
         ),
     ] = True,
+    export_bigwig: Annotated[
+        bool,
+        typer.Option(
+            "--export-bigwig/--no-export-bigwig",
+            help="Write BigWig, BED, SEG, and an IGV desktop session.",
+        ),
+    ] = True,
 ) -> None:
     """Run the complete family analysis and write its report."""
     if log_level is not None:
@@ -123,7 +130,7 @@ def run_command(
         filtered2 = apply_filter2(sites, matrix, filtered1, settings)
         with tempfile.TemporaryDirectory(prefix="hopla-cytobands-") as temporary:
             cytobands_file = cytoband_path or fetch_hg38(Path(temporary) / "cytoBand.txt")
-            load_cytobands(cytobands_file)
+            sizes = chromosome_sizes(load_cytobands(cytobands_file))
             logging.info("Computing analyses")
             tables = build_analysis_tables(sites, matrix, filtered1, filtered2, settings)
             if settings.run_merlin:
@@ -136,6 +143,9 @@ def run_command(
             if export_parquet_data:
                 logging.info("Writing portable Parquet exports")
                 export_parquet(out_dir / f"{settings.fam_id}-export", settings.fam_id, tables)
+            if export_bigwig:
+                logging.info("Writing IGV tracks")
+                export_igv_tracks(out_dir / f"{settings.fam_id}-export", tables, sizes)
             report = out_dir / f"{settings.fam_id}-output.html"
             render_report(report, settings, tables)
         typer.echo(report)

@@ -16,12 +16,12 @@ dependencies = [
   "polars",
   "pydantic>=2",
   "pyarrow",
+  "pybigwig",
   "pyyaml",
   "typer",
 ]
 
 [project.optional-dependencies]
-export = ["pybigwig"]
 dev = ["mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
 
 [project.scripts]
