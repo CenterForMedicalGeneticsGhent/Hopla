@@ -43,8 +43,8 @@ documentation are available from the [monorepo README](../../README.md).
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
 cd Hopla
 pixi install --locked
-pixi run -e hopla-py install
-pixi run -e hopla-py hopla-py run hopla-py/example/settings.yaml path/to/family.vcf.gz
+pixi run -e hopla-py install-py
+pixi run hopla run hopla-py/example/settings.yaml path/to/family.vcf.gz
 ```
 
 The command validates settings before reading the VCF and writes a compact,

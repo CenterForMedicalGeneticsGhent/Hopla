@@ -30,8 +30,8 @@ pixi install --locked
 Run the Python CLI and checks:
 
 ```bash
-pixi run -e hopla-py install
-pixi run -e hopla-py hopla-py run hopla-py/example/settings.yaml path/to/family.vcf.gz
+pixi run -e hopla-py install-py
+pixi run hopla run hopla-py/example/settings.yaml path/to/family.vcf.gz
 pixi run -e hopla-py-dev lint-py
 pixi run -e hopla-py-dev test-py
 ```

@@ -11,7 +11,7 @@ of those platforms in the `hopla-py` feature.
 
 ```bash
 pixi install --locked
-pixi run -e hopla-py install
+pixi run -e hopla-py install-py
 pixi run -e hopla-py hopla-py --help
 ```
 

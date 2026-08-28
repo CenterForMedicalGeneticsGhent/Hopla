@@ -21,7 +21,7 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
 - Require Python 3.12 or newer.
 - Add Python dependencies to both the root `pixi.toml` `hopla-py` feature and
   `hopla-py/pyproject.toml`; regenerate `pixi.lock` with pixi.
-- Prefer editable installs through `pixi run -e hopla-py install` rather than
+- Prefer editable installs through `pixi run -e hopla-py install-py` rather than
   unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline
   `plotly.js` bundle and compresses the columnar payload itself.

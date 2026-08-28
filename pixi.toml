@@ -28,16 +28,16 @@ types-pyyaml = "*"
 types-jsonschema = "*"
 
 [feature.hopla-py.tasks]
-install = { cmd = "python -m pip install --no-deps -e hopla-py" }
-hopla-py = { cmd = "python -m hopla.cli", cwd = "hopla-py", depends-on = ["install"] }
-hopla = { cmd = "hopla", depends-on = ["install"] }
-convert = { cmd = "hopla convert", depends-on = ["install"] }
-concordance = { cmd = "hopla concordance", depends-on = ["install"] }
-transform = { cmd = "hopla transform", depends-on = ["install"] }
+install-py = { cmd = "python -m pip install --no-deps -e hopla-py" }
+hopla-py = { cmd = "python -m hopla.cli", cwd = "hopla-py", depends-on = ["install-py"] }
+hopla = { cmd = "hopla", depends-on = ["install-py"] }
+convert = { cmd = "hopla convert", depends-on = ["install-py"] }
+concordance = { cmd = "hopla concordance", depends-on = ["install-py"] }
+transform = { cmd = "hopla transform", depends-on = ["install-py"] }
 
 [feature.hopla-py-dev.tasks]
-lint-py = { cmd = "ruff check hopla-py && mypy hopla-py/src", depends-on = ["install"] }
-test-py = { cmd = "pytest hopla-py/tests", depends-on = ["install"] }
+lint-py = { cmd = "ruff check hopla-py && mypy hopla-py/src", depends-on = ["install-py"] }
+test-py = { cmd = "pytest hopla-py/tests", depends-on = ["install-py"] }
 
 [feature.hopla-ui.dependencies]
 nodejs = ">=22.12,<23"

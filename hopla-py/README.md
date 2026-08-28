@@ -43,8 +43,8 @@ Repository-wide and UI documentation are available from the
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
 cd Hopla
 pixi install --locked
-pixi run -e hopla-py install
-pixi run -e hopla-py hopla-py run hopla-py/example/settings.yaml path/to/family.vcf.gz
+pixi run -e hopla-py install-py
+pixi run hopla run hopla-py/example/settings.yaml path/to/family.vcf.gz
 ```
 
 By default `hopla run` also writes `{fam_id}-export/` with Parquet tables and
