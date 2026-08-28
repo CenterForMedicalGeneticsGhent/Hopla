@@ -24,12 +24,12 @@ pip = "*"
 merlin = "1.1.2.*"
 
 [feature.hopla-py-dev.dependencies]
-httpx = "*"
 mypy = "*"
 pytest = "*"
 ruff = "*"
 types-pyyaml = "*"
 types-jsonschema = "*"
+httpx2 = ">=2.12.0,<3"
 
 [feature.hopla-py.tasks]
 install-py = { cmd = "python -m pip install --no-deps -e hopla-py" }

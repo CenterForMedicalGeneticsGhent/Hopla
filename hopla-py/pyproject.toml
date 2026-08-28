@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["httpx", "mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
+dev = ["httpx2", "mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
 
 [project.urls]
 Homepage = "https://github.com/CenterForMedicalGeneticsGhent/Hopla"
