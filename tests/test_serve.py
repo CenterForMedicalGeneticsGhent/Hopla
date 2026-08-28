@@ -6,9 +6,11 @@ import time
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 from starlette.testclient import TestClient
 
+from hopla.pipeline import ProgressCallback
 from hopla.serve import create_app
 from hopla.settings import Settings, validate_settings
 from hopla.ui.form import default_form, import_config, render_yaml, settings_to_form
@@ -137,7 +139,7 @@ def _wait_for_status(
 
 
 def test_stream_vcf_run_and_download_report(
-    monkeypatch: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Stream a VCF, run with editor settings, and download its report."""
 
@@ -145,13 +147,19 @@ def test_stream_vcf_run_and_download_report(
         settings: Settings,
         vcf_path: Path,
         out_dir: Path,
-        **options: Any,
+        *,
+        cytoband_path: Path | None = None,
+        export_parquet_data: bool = True,
+        export_bigwig: bool = True,
+        progress: ProgressCallback | None = None,
     ) -> Path:
+        del cytoband_path
         assert settings.sample_ids == ["FATHER"]
         assert vcf_path.read_bytes() == b"VCF data"
-        assert options["export_parquet_data"] is False
-        assert options["export_bigwig"] is False
-        options["progress"]("Computing analyses")
+        assert export_parquet_data is False
+        assert export_bigwig is False
+        assert progress is not None
+        progress("Computing analyses")
         report = out_dir / f"{settings.fam_id}-output.html"
         report.write_text("<html>report</html>", encoding="utf-8")
         return report
@@ -209,10 +217,28 @@ def test_analysis_rejects_invalid_input_and_empty_vcf() -> None:
         assert status["error"] == "The selected VCF is empty."
 
 
-def test_analysis_surfaces_pipeline_failure(monkeypatch: Any) -> None:
+def test_analysis_surfaces_pipeline_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """Expose a pipeline failure through job status without a report."""
 
-    def fail_run(*args: Any, **kwargs: Any) -> Path:
+    def fail_run(
+        settings: Settings,
+        vcf_path: Path,
+        out_dir: Path,
+        *,
+        cytoband_path: Path | None = None,
+        export_parquet_data: bool = True,
+        export_bigwig: bool = True,
+        progress: ProgressCallback | None = None,
+    ) -> Path:
+        del (
+            settings,
+            vcf_path,
+            out_dir,
+            cytoband_path,
+            export_parquet_data,
+            export_bigwig,
+            progress,
+        )
         raise ValueError("VCF does not contain sample FATHER")
 
     monkeypatch.setattr("hopla.serve.run_analysis", fail_run)

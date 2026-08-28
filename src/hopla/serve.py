@@ -6,11 +6,11 @@ import asyncio
 import re
 import tempfile
 import uuid
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
