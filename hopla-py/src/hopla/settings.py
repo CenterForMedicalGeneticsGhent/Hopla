@@ -139,6 +139,11 @@ def load_settings(path: Path) -> Settings:
     raw: Any
     with path.open(encoding="utf-8") as handle:
         raw = json.load(handle) if path.suffix.lower() == ".json" else yaml.safe_load(handle)
+    return validate_settings(raw)
+
+
+def validate_settings(raw: Any) -> Settings:
+    """Validate an in-memory settings mapping against the packaged schema."""
     if not isinstance(raw, dict):
         raise ValueError("Settings must contain a mapping at the document root.")
     schema = json.loads(schema_path().read_text(encoding="utf-8"))

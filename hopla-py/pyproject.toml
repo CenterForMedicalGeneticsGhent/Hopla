@@ -19,6 +19,7 @@ maintainers = [
 dependencies = [
   "cyvcf2",
   "jsonschema",
+  "jinja2",
   "numpy",
   "plotly",
   "polars",
@@ -26,11 +27,13 @@ dependencies = [
   "pyarrow",
   "pybigwig",
   "pyyaml",
+  "starlette",
   "typer",
+  "uvicorn",
 ]
 
 [project.optional-dependencies]
-dev = ["mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
+dev = ["httpx", "mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
 
 [project.urls]
 Homepage = "https://github.com/CenterForMedicalGeneticsGhent/Hopla"
@@ -45,6 +48,8 @@ packages = ["src/hopla"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/hopla/schema/hopla.schema.json" = "hopla/schema/hopla.schema.json"
+"src/hopla/ui/templates" = "hopla/ui/templates"
+"src/hopla/ui/static" = "hopla/ui/static"
 
 [tool.ruff]
 line-length = 100

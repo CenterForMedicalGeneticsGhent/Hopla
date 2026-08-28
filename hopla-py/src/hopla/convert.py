@@ -12,12 +12,12 @@ from jsonschema import Draft7Validator
 from hopla.settings import schema_path
 
 
-def _parse_legacy(path: Path) -> dict[str, str | list[str]]:
+def parse_legacy_text(text: str) -> dict[str, str | list[str]]:
     """Parse legacy assignments and the multiline information block."""
     result: dict[str, str | list[str]] = {}
     info: list[str] = []
     in_info = False
-    for original in path.read_text(encoding="utf-8").splitlines():
+    for original in text.splitlines():
         line = (
             original.replace("\t", "    ")
             if in_info
@@ -50,6 +50,11 @@ def _parse_legacy(path: Path) -> dict[str, str | list[str]]:
     if info:
         result["info"] = info
     return result
+
+
+def _parse_legacy(path: Path) -> dict[str, str | list[str]]:
+    """Parse a legacy settings file."""
+    return parse_legacy_text(path.read_text(encoding="utf-8"))
 
 
 def _coerce(value: str | list[str], specification: dict[str, Any]) -> Any:
@@ -96,3 +101,22 @@ def convert_settings(legacy: Path, output: Path | None = None) -> Path:
     target = output or legacy.with_suffix(".yaml")
     target.write_text(yaml.safe_dump(converted, sort_keys=False), encoding="utf-8")
     return target
+
+
+def convert_legacy_data(text: str) -> dict[str, Any]:
+    """Convert legacy settings text to a validated settings mapping."""
+    schema = json.loads(schema_path().read_text(encoding="utf-8"))
+    properties: dict[str, dict[str, Any]] = schema["properties"]
+    raw = parse_legacy_text(text)
+    for cli_key in ("vcf_file", "out_dir", "cytoband_file"):
+        raw.pop(cli_key, None)
+    unknown = set(raw) - set(properties)
+    if unknown:
+        raise ValueError(f"Unknown legacy setting(s): {', '.join(sorted(unknown))}")
+    converted = {key: _coerce(raw[key], properties[key]) for key in properties if key in raw}
+    errors = list(Draft7Validator(schema).iter_errors(converted))
+    if errors:
+        raise ValueError(
+            "Converted settings failed validation:\n" + "\n".join(error.message for error in errors)
+        )
+    return converted
