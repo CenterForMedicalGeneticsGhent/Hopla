@@ -1,9 +1,28 @@
 # Changelog
 
-This changelog covers the Hopla Python package and command-line subtools under
-`hopla-py/`. Changes to the Vue application under `hopla-ui/` are tracked
-separately. Historical notes from the predecessor analysis pipeline live in
+This changelog covers the Hopla Python package, settings editor, and command-line
+subtools under `hopla-py/`. Historical notes from the predecessor analysis pipeline live in
 [docs/archive/legacy-pipeline-changelog.md](docs/archive/legacy-pipeline-changelog.md).
+
+## [2.1.0] - 2026-08-28
+
+### Added
+
+- Added `hopla serve`, a loopback-only-by-default Starlette and Jinja settings
+  editor packaged with the Python wheel.
+- Added schema-validated YAML preview/download and legacy `.txt`, YAML, and JSON
+  imports with pedigree reconstruction.
+
+### Changed
+
+- Consolidated settings conversion and validation in Python.
+- Unified the settings editor and analysis CLI in one Python package and
+  container image.
+
+### Removed
+
+- Removed the standalone Vue/Vuetify package, Node toolchain, UI CI workflow,
+  nginx image, and `ui-*` container tags.
 
 ## [2.0.0] - 2026-08-28
 

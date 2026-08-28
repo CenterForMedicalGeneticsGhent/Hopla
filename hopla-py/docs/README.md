@@ -16,6 +16,7 @@ documentation are available from the [monorepo README](../../README.md).
 
 - [Install and dependencies](install.md)
 - [Command line](cli.md)
+- [Local settings editor](serve.md)
 - [Settings](settings.md)
 - [HTML output](output.md)
 - [Portable and IGV exports](exports.md)
@@ -33,7 +34,7 @@ documentation are available from the [monorepo README](../../README.md).
   target**.
 - A YAML or JSON [settings file](settings.md) describing the family and
   analysis options. Create it by hand or with the optional local
-  [web UI](../../hopla-ui/docs/README.md); the UI is not required to run Hopla.
+  [`hopla serve`](serve.md) editor.
 - The VCF path and output directory are command-line arguments, not settings
   keys.
 

@@ -12,6 +12,8 @@ hopla [-hV] [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND]
 hopla [-hV] [-L LEVEL] convert LEGACY [OUTPUT]
 hopla [-hV] [-L LEVEL] concordance [-r] FLOW1 FLOW2
 hopla [-hV] [-L LEVEL] transform FLOW1 FLOW2 MODE [OUTPUT]
+hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
+      [--open|--no-open]
 ```
 
 `-L` may also appear among `run` options, before the settings and VCF operands.
@@ -45,6 +47,8 @@ hopla [-hV] [-L LEVEL] transform FLOW1 FLOW2 MODE [OUTPUT]
 - `transform` rewrites a flow table relative to another. `MODE` is `1` for
   matching strands or `2` for crossed strands. `OUTPUT` defaults to
   `<flow1>-relative.txt`.
+- `serve` starts the local browser settings editor. It binds
+  `127.0.0.1:8080` by default and opens a browser when run interactively.
 
 `concordance` accepts `-r` only before its operands.
 
@@ -80,6 +84,19 @@ Successful `run` prints the HTML report path to standard output.
 
 Settings format, types, defaults, and constraints: [settings.md](settings.md).
 Complete example: [`example/settings.yaml`](../example/settings.yaml).
+
+## Settings editor
+
+```bash
+hopla serve
+hopla serve --no-open
+hopla serve --host 0.0.0.0 --port 8080
+```
+
+The editor imports legacy `.txt` and current YAML/JSON settings, reconstructs
+the pedigree, validates changes against the packaged schema, and downloads
+YAML for `hopla run`. It does not accept VCFs or run analyses. See
+[serve.md](serve.md) for usage and network-safety details.
 
 ## Convert, concordance, and transform
 

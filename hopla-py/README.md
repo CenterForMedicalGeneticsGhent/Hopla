@@ -8,14 +8,14 @@ post-natal work, the report is meant to support embryo selection during
 preimplantation genetic testing, with the aim of healthy births in affected
 families. The name is both a ‘haplo’ anagram and a children’s television show.
 
-This directory holds the typed Python package `hopla` (version 2.0.0).
-Repository-wide and UI documentation are available from the
-[monorepo README](../README.md).
+This directory holds the typed Python package `hopla` (version 2.1.0).
+Repository-wide documentation is available from the [root README](../README.md).
 
 ## Contents
 
 - [Install and dependencies](docs/install.md)
 - [Command line](docs/cli.md)
+- [Local settings editor](docs/serve.md)
 - [Settings](docs/settings.md)
 - [HTML output](docs/output.md)
 - [Portable and IGV exports](docs/exports.md)
@@ -33,7 +33,7 @@ Repository-wide and UI documentation are available from the
   target**.
 - A YAML or JSON [settings file](docs/settings.md) describing the family and
   analysis options. Create it by hand or with the optional local
-  [web UI](../hopla-ui/docs/README.md); the UI is not required to run Hopla.
+  [`hopla serve`](docs/serve.md) editor.
 - The VCF path and output directory are command-line arguments, not settings
   keys.
 
@@ -53,6 +53,7 @@ legacy conversion fixture are in [`example/`](example/).
 
 ```bash
 hopla run settings.yaml family.vcf.gz
+hopla serve
 hopla convert legacy-settings.txt
 hopla concordance family-a-flow.txt family-b-flow.txt
 hopla transform family-a-flow.txt family-b-flow.txt 1

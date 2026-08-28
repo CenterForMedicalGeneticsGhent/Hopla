@@ -18,6 +18,8 @@ src/hopla/flow.py           concordance / transform helpers
 src/hopla/convert.py        legacy key=value → YAML conversion
 src/hopla/cytobands.py      UCSC cytoband load / download
 src/hopla/report.py         self-contained HTML report assembly
+src/hopla/serve.py          Starlette settings-editor application
+src/hopla/ui/               form mapping, Jinja template, CSS, and JavaScript
 src/hopla/export/           Parquet and IGV desktop exporters
 src/hopla/models.py         shared typed tables and chromosome constants
 tests/                      pytest coverage for CLI, engine, report, export
@@ -58,6 +60,15 @@ lifetime, pipeline orchestration, and output writes. Individual modules define
 helpers only; reordering imports or calling one module in isolation is not a
 supported public API beyond the console script.
 
+## Settings editor flow
+
+`hopla serve` starts the Starlette application in `serve.py` through Uvicorn.
+The application serves package-local Jinja, CSS, and JavaScript assets from
+`ui/`. Browser form state is stateless: preview, import, and download requests
+carry the complete form model. `ui/form.py` converts that model to schema-valid
+settings and reconstructs the youngest pedigree from imported legacy,
+YAML, or JSON settings. The editor does not accept VCFs or run analyses.
+
 ## Change placement
 
 - Keep command parsing and `run` orchestration in `cli.py`.
@@ -67,6 +78,8 @@ supported public API beyond the console script.
 - Put analysis tables in `analysis.py`.
 - Put Merlin execution and haplotype correction in `merlin.py`.
 - Put report HTML assembly in `report.py`.
+- Put settings-editor HTTP routes in `serve.py` and form mapping/assets in
+  `ui/`.
 - Put portable / IGV exporters under `export/`.
 - Add behavior coverage under `tests/`.
 

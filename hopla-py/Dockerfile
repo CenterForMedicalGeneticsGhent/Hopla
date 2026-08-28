@@ -19,5 +19,6 @@ RUN printf '#!/bin/sh\nexec /app/.pixi/envs/default/bin/hopla "$@"\n' \
     > /usr/local/bin/hopla \
     && chmod 0755 /usr/local/bin/hopla
 
+EXPOSE 8080
 ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
 CMD ["hopla", "-h"]

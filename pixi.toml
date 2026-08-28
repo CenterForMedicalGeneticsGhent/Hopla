@@ -1,6 +1,6 @@
 [workspace]
 name = "hopla"
-version = "2.0.0"
+version = "2.1.0"
 description = "Genomic family analysis and interactive reporting"
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
@@ -44,19 +44,8 @@ serve = { cmd = "hopla serve", depends-on = ["install-py"] }
 lint-py = { cmd = "ruff check hopla-py && mypy hopla-py/src", depends-on = ["install-py"] }
 test-py = { cmd = "pytest hopla-py/tests", depends-on = ["install-py"] }
 
-[feature.hopla-ui.dependencies]
-nodejs = ">=22.12,<23"
-
-[feature.hopla-ui.tasks]
-install = { cmd = "corepack yarn install --frozen-lockfile", cwd = "hopla-ui" }
-lint = { cmd = "corepack yarn lint", cwd = "hopla-ui", depends-on = ["install"] }
-test = { cmd = "corepack yarn test:unit", cwd = "hopla-ui", depends-on = ["install"] }
-build = { cmd = "corepack yarn build", cwd = "hopla-ui", depends-on = ["install"] }
-serve = { cmd = "corepack yarn serve", cwd = "hopla-ui", depends-on = ["install"] }
-
 [environments]
 default = ["hopla-py"]
 dev = ["hopla-py", "hopla-py-dev"]
 hopla-py = { features = ["hopla-py"], no-default-feature = true }
 hopla-py-dev = { features = ["hopla-py", "hopla-py-dev"], no-default-feature = true }
-hopla-ui = { features = ["hopla-ui"], no-default-feature = true }

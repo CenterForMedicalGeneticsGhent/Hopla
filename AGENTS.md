@@ -5,12 +5,10 @@ material lives in
 [hopla-py/docs/contributing.md](hopla-py/docs/contributing.md) for the human
 manual. Keep the two in sync.
 
-The monorepo contains the Python package under `hopla-py/` and the Vue
-application under `hopla-ui/`. Keep changes scoped to the package named by the
-task. Never merge a pull request unless the user explicitly requests it.
+The repository contains the Python package under `hopla-py/`. Never merge a
+pull request unless the user explicitly requests it.
 
-The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
-[hopla-ui/docs/README.md](hopla-ui/docs/README.md).
+The package manual is [hopla-py/docs/README.md](hopla-py/docs/README.md).
 
 ## Runtime and dependencies
 
@@ -32,7 +30,9 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
   `src/hopla/`, `tests/`, and `docs/`).
 - Public modules and functions should remain typed and documented.
 - Keep the Typer entry point in `src/hopla/cli.py` as the orchestration surface
-  for `run`, `convert`, `concordance`, and `transform`.
+  for `run`, `serve`, `convert`, `concordance`, and `transform`.
+- Keep the lightweight settings editor under `src/hopla/ui/` and its Starlette
+  application in `src/hopla/serve.py`. Package all templates and static assets.
 - Put private analysis helpers in the narrowest relevant module documented in
   [hopla-py/docs/architecture.md](hopla-py/docs/architecture.md).
 - Keep portable Parquet and IGV exporters under `src/hopla/export/`.
@@ -69,6 +69,7 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
+  - `hopla serve [--host HOST] [--port PORT] [--no-open]`
 - `vcf_file`, `out_dir`, and `cytoband_file` are CLI paths, not settings
   properties. Validate that supplied paths exist. `OUT_DIR` defaults to the
   current working directory; an omitted cytoband table is downloaded from UCSC.
@@ -95,7 +96,6 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
 ## Containers
 
 - Build `hopla-py/Dockerfile` from the repository-root context and `pixi.lock`.
-- Do not copy `hopla-ui/` into the Python image.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification
@@ -108,19 +108,17 @@ The package manuals are [hopla-py/docs/README.md](hopla-py/docs/README.md) and
   settings.
 - Test all CLI subtools and their failure exit statuses, including the export
   toggles.
-- Confirm no task-scoped changes appear under the other package unless the task
-  named that tree.
 - Build a wheel when verifying packaging:
   `pixi run -e hopla-py-dev python -m pip wheel --no-deps ./hopla-py -w dist`.
 - Build the relevant package Docker image when Docker is available.
 
 ## Continuous integration and releases
 
-- Keep Python and UI CI in separate workflows. Build and check each package and
-  its image for relevant pull requests targeting `main`.
-- On pushes to `main` or `master`, tag the Python image with the full commit SHA
-  and `latest`; tag the UI image with `ui-<commit-sha>` and `ui-latest`.
+- Build and check the Python package and its image for relevant pull requests
+  targeting `main`.
+- On pushes to `main` or `master`, tag the image with the full commit SHA and
+  `latest`.
 - On a published release, tag the Python image with the full commit SHA, package
-  version, and `stable`; prefix every equivalent UI tag with `ui-`.
+  version, and `stable`.
 - Upload the built Python wheel and compressed Docker image artifacts from CI.
 - Attach the Python wheel and compressed Docker image to the GitHub release.
