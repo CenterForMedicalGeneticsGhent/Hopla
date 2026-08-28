@@ -26,15 +26,9 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
 
 ## Input
 
-- A (multisample) `vcf.gz` file. In the authors’ tests this was produced with
-  gatk-haplotype and gatk-haplotype-joint through
-  [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/), **with a predefined
-  target**.
-- A YAML or JSON [settings file](docs/settings.md) describing the family and
-  analysis options. Create it by hand or with the optional local
-  [`hopla serve`](docs/serve.md) editor.
-- The VCF path and output directory are command-line arguments, not settings
-  keys.
+- A (multisample) `vcf.gz` file.
+- A YAML or JSON [settings file](docs/settings.md) describing the family and analysis options. Create it by hand or with the optional local [`hopla serve`](docs/serve.md) editor.
+- The VCF path and output directory are command-line arguments, not settings keys.
 
 ## Quick start
 
@@ -79,8 +73,7 @@ docker run --rm -p 8080:8080 hopla hopla serve --host 0.0.0.0 --no-open
 ## Maintainers and contact
 
 - Matthias De Smet — package maintainer, <matthdsm@users.noreply.github.com>
-- Center for Medical Genetics Ghent — institutional maintainer and copyright
-  holder, <ict.cmgg@uzgent.be>
+- Center for Medical Genetics Ghent — institutional maintainer and copyright holder, <ict.cmgg@uzgent.be>
 - Lennart Raman — original author, <leraman@users.noreply.github.com>
 
 Bug reports: <https://github.com/CenterForMedicalGeneticsGhent/Hopla/issues>.
