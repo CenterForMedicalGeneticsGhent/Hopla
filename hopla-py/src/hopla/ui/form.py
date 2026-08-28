@@ -118,7 +118,11 @@ def _pedigree_mapping(settings: dict[str, Any]) -> dict[str, Any]:
             return 0
         item = members[sample_id]
         parents = [parent for parent in (item["father"], item["mother"]) if parent]
-        return 0 if not parents else 1 + max(depth(str(parent), visiting | {sample_id}) for parent in parents)
+        return (
+            0
+            if not parents
+            else 1 + max(depth(str(parent), visiting | {sample_id}) for parent in parents)
+        )
 
     couples: dict[tuple[Any, Any], dict[str, Any]] = {}
     for sample_id in sample_ids:

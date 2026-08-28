@@ -142,7 +142,7 @@ def load_settings(path: Path) -> Settings:
     return validate_settings(raw)
 
 
-def validate_settings(raw: Any) -> Settings:
+def validate_settings(raw: object) -> Settings:
     """Validate an in-memory settings mapping against the packaged schema."""
     if not isinstance(raw, dict):
         raise ValueError("Settings must contain a mapping at the document root.")
