@@ -15,12 +15,13 @@ dependencies = [
   "numpy",
   "polars",
   "pydantic>=2",
+  "pyarrow",
+  "pybigwig",
   "pyyaml",
   "typer",
 ]
 
 [project.optional-dependencies]
-export = ["pyarrow", "pybigwig"]
 dev = ["mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
 
 [project.scripts]
