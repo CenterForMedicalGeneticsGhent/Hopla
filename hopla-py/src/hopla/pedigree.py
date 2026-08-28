@@ -285,10 +285,11 @@ def pedigree_svg(settings: Settings) -> str:
     width = max(positions.values()) + _MARGIN
     height = _MARGIN + max(depth) * _GENERATION + _MARGIN + 20
     return (
-        f'<svg viewBox="0 0 {width:.0f} {height:.0f}" width="{width:.0f}" '
+        f'<svg class="pedigree-svg" viewBox="0 0 {width:.0f} {height:.0f}" width="{width:.0f}" '
         'role="img" aria-label="Family tree">'
         '<g stroke="#334155" stroke-width="1.6" fill="none">' + "".join(lines) + "</g>"
         '<g stroke="#334155" stroke-width="1.6">' + "".join(symbols) + "</g>"
-        "<style>text{stroke:none;fill:#0f172a;text-anchor:middle;"
+        # An inline SVG stylesheet is document-wide, so every rule stays class-scoped.
+        "<style>.pedigree-svg text{stroke:none;fill:#0f172a;text-anchor:middle;"
         "font:12px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}</style></svg>"
     )

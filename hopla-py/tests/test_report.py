@@ -55,6 +55,18 @@ def test_pedigree_places_children_below_and_between_their_parents() -> None:
     assert "mother (C)" in svg
 
 
+def test_pedigree_styles_never_reach_the_plotly_figures() -> None:
+    """An inline SVG stylesheet is document-wide, so a bare rule would move every axis label."""
+    svg = pedigree_svg(_trio())
+    assert 'class="pedigree-svg"' in svg
+    style = re.search(r"<style>(.*?)</style>", svg)
+    assert style is not None
+    selectors = re.findall(r"(?:^|\})([^{}]+)\{", style.group(1))
+    assert selectors
+    for selector in selectors:
+        assert selector.strip().startswith(".pedigree-svg"), selector
+
+
 def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
     """Keep couples on one row so their relationship line never spans generations."""
     settings = Settings(
