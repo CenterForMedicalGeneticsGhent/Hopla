@@ -130,7 +130,8 @@ def run_command(
         filtered2 = apply_filter2(sites, matrix, filtered1, settings)
         with tempfile.TemporaryDirectory(prefix="hopla-cytobands-") as temporary:
             cytobands_file = cytoband_path or fetch_hg38(Path(temporary) / "cytoBand.txt")
-            sizes = chromosome_sizes(load_cytobands(cytobands_file))
+            cytobands = load_cytobands(cytobands_file)
+            sizes = chromosome_sizes(cytobands)
             logging.info("Computing analyses")
             tables = build_analysis_tables(sites, matrix, filtered1, filtered2, settings)
             if settings.run_merlin:
@@ -147,7 +148,7 @@ def run_command(
                 logging.info("Writing IGV tracks")
                 export_igv_tracks(out_dir / f"{settings.fam_id}-export", tables, sizes)
             report = out_dir / f"{settings.fam_id}-output.html"
-            render_report(report, settings, tables)
+            render_report(report, settings, tables, matrix.samples, cytobands)
         typer.echo(report)
     except (OSError, ValueError, RuntimeError, pl.exceptions.PolarsError) as error:
         _runtime_error(error)

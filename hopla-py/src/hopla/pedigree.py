@@ -100,46 +100,195 @@ def add_ghosts(settings: Settings) -> Settings:
     return settings
 
 
-def pedigree_svg(settings: Settings) -> str:
-    """Render samples and parent links as a dependency-free SVG."""
-    width = max(520, len(settings.sample_ids) * 110)
-    nodes: list[str] = []
-    links: list[str] = []
-    locations = {
-        sample: (60 + index * 105, 80 + (index % 2) * 90)
-        for index, sample in enumerate(settings.sample_ids)
+_SYMBOL = 34.0
+_COLUMN = 74.0
+_GENERATION = 122.0
+_MARGIN = 46.0
+
+
+def sample_label(settings: Settings, sample: str) -> str:
+    """Append the legacy status letter to a sample identifier."""
+    for letter, members in (
+        ("R", settings.reference_ids),
+        ("C", settings.carrier_ids),
+        ("A", settings.affected_ids),
+        ("N", settings.nonaffected_ids),
+    ):
+        if sample in members:
+            return f"{sample} ({letter})"
+    return sample
+
+
+def _generations(settings: Settings) -> list[int]:
+    """Place samples one row below their deepest parent and partners on a shared row."""
+    index = {sample: position for position, sample in enumerate(settings.sample_ids)}
+    depth = [0] * len(settings.sample_ids)
+    couples = [
+        (index[father], index[mother])
+        for father, mother in _sibships(settings)
+        if father and mother
+    ]
+    for _ in range(2 * len(depth) + 2):
+        changed = False
+        for position in range(len(depth)):
+            for parent in (settings.father_ids[position], settings.mother_ids[position]):
+                if parent in index and depth[position] <= depth[index[parent]]:
+                    depth[position] = depth[index[parent]] + 1
+                    changed = True
+        for first, second in couples:
+            shared = max(depth[first], depth[second])
+            if depth[first] != shared or depth[second] != shared:
+                depth[first] = depth[second] = shared
+                changed = True
+        if not changed:
+            break
+    return depth
+
+
+def _sibships(settings: Settings) -> dict[tuple[str, str], list[str]]:
+    """Group samples by the parent pair that produced them."""
+    known = set(settings.sample_ids)
+    families: dict[tuple[str, str], list[str]] = {}
+    for position, sample in enumerate(settings.sample_ids):
+        father = settings.father_ids[position]
+        mother = settings.mother_ids[position]
+        pair = (father if father in known else "", mother if mother in known else "")
+        if any(pair):
+            families.setdefault(pair, []).append(sample)
+    return families
+
+
+def _separate(positions: dict[str, float], members: list[str], column: float) -> None:
+    """Push one generation apart so no two symbols overlap, keeping their order."""
+    for left, right in zip(members, members[1:], strict=False):
+        positions[right] = max(positions[right], positions[left] + column)
+
+
+def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
+    """Place every sample on a generation row with children centred under parents."""
+    depth = _generations(settings)
+    families = _sibships(settings)
+    partners = {
+        member: other
+        for father, mother in families
+        if father and mother
+        for member, other in ((father, mother), (mother, father))
     }
-    for sample, (x, y) in locations.items():
-        index = settings.sample_ids.index(sample)
-        for parent in (settings.father_ids[index], settings.mother_ids[index]):
-            if parent in locations:
-                px, py = locations[parent]
-                links.append(f'<line x1="{px}" y1="{py + 18}" x2="{x}" y2="{y - 18}"/>')
-        annotation = (
-            "R"
-            if sample in settings.reference_ids
-            else "C"
-            if sample in settings.carrier_ids
-            else "A"
-            if sample in settings.affected_ids
-            else "N"
-            if sample in settings.nonaffected_ids
-            else ""
+    # Columns are wide enough that neighbouring labels never touch.
+    widest = max(len(sample_label(settings, sample)) for sample in settings.sample_ids)
+    column = max(_COLUMN, 7.4 * widest + 18)
+    rows: dict[int, list[str]] = {}
+    positions: dict[str, float] = {}
+    for generation in sorted(set(depth)):
+        members = [
+            sample
+            for position, sample in enumerate(settings.sample_ids)
+            if depth[position] == generation
+        ]
+        ordered: list[str] = []
+        for sample in members:
+            if sample in ordered:
+                continue
+            ordered.append(sample)
+            partner = partners.get(sample)
+            if partner in members and partner not in ordered:
+                ordered.append(partner)
+        rows[generation] = ordered
+        for slot, sample in enumerate(ordered):
+            positions[sample] = slot * column
+
+    def centre(samples: list[str]) -> float:
+        """Return the midpoint of the samples that are already placed."""
+        placed = [positions[sample] for sample in samples]
+        return (min(placed) + max(placed)) / 2
+
+    index = {sample: position for position, sample in enumerate(settings.sample_ids)}
+    for _ in range(6):
+        for (father, mother), children in families.items():
+            parents = [parent for parent in (father, mother) if parent]
+            shift = centre(parents) - centre(children)
+            for child in children:
+                positions[child] += shift
+            _separate(positions, rows[depth[index[children[0]]]], column)
+        for (father, mother), children in families.items():
+            parents = [parent for parent in (father, mother) if parent]
+            if any(
+                settings.father_ids[index[parent]] in index
+                or settings.mother_ids[index[parent]] in index
+                for parent in parents
+            ):
+                continue
+            shift = centre(children) - centre(parents)
+            for parent in parents:
+                positions[parent] += shift
+            _separate(positions, rows[depth[index[parents[0]]]], column)
+    offset = _MARGIN - min(positions.values())
+    return {sample: value + offset for sample, value in positions.items()}, depth
+
+
+def pedigree_svg(settings: Settings) -> str:
+    """Render the family as a conventional pedigree chart."""
+    positions, depth = _layout(settings)
+    families = _sibships(settings)
+    index = {sample: position for position, sample in enumerate(settings.sample_ids)}
+    rows = {sample: _MARGIN + depth[index[sample]] * _GENERATION for sample in positions}
+    half = _SYMBOL / 2
+
+    lines: list[str] = []
+    for (father, mother), children in families.items():
+        parents = [parent for parent in (father, mother) if parent]
+        parent_y = rows[parents[0]]
+        if len(parents) == 2:
+            left, right = sorted(positions[parent] for parent in parents)
+            lines.append(f'<path d="M{left:.1f} {parent_y:.1f}H{right:.1f}"/>')
+            anchor = (left + right) / 2
+        else:
+            anchor = positions[parents[0]]
+            parent_y += half
+        sibship_y = rows[children[0]] - _GENERATION / 2 + half
+        lines.append(f'<path d="M{anchor:.1f} {parent_y:.1f}V{sibship_y:.1f}"/>')
+        first, last = min(positions[child] for child in children), max(
+            positions[child] for child in children
         )
-        fill = "#fecaca" if annotation == "A" else "#e2e8f0"
-        shape = (
-            f'<rect x="{x - 18}" y="{y - 18}" width="36" height="36" fill="{fill}"/>'
-            if settings.genders[index] == "M"
-            else f'<circle cx="{x}" cy="{y}" r="18" fill="{fill}"/>'
+        lines.append(f'<path d="M{first:.1f} {sibship_y:.1f}H{last:.1f}"/>')
+        lines.extend(
+            f'<path d="M{positions[child]:.1f} {sibship_y:.1f}'
+            f'V{rows[child] - half:.1f}"/>'
+            for child in children
         )
-        label = f"{sample} ({annotation})" if annotation else sample
-        nodes.append(shape + f'<text x="{x}" y="{y + 38}">{escape(label)}</text>')
+
+    symbols: list[str] = []
+    for sample, x in positions.items():
+        y = rows[sample]
+        gender = settings.genders[index[sample]]
+        affected = sample in settings.affected_ids
+        fill = "#334155" if affected else "#ffffff"
+        if gender == "M":
+            symbols.append(
+                f'<rect x="{x - half:.1f}" y="{y - half:.1f}" '
+                f'width="{_SYMBOL}" height="{_SYMBOL}" fill="{fill}"/>'
+            )
+        elif gender == "F":
+            symbols.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{half}" fill="{fill}"/>')
+        else:
+            symbols.append(
+                f'<path d="M{x:.1f} {y - half:.1f}L{x + half:.1f} {y:.1f}'
+                f'L{x:.1f} {y + half:.1f}L{x - half:.1f} {y:.1f}Z" fill="{fill}"/>'
+            )
+        if sample in settings.carrier_ids and not affected:
+            symbols.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="#334155"/>')
+        symbols.append(
+            f'<text x="{x:.1f}" y="{y + half + 16:.1f}">'
+            f"{escape(sample_label(settings, sample))}</text>"
+        )
+
+    width = max(positions.values()) + _MARGIN
+    height = _MARGIN + max(depth) * _GENERATION + _MARGIN + 20
     return (
-        f'<svg viewBox="0 0 {width} 300" role="img" aria-label="Family tree">'
-        '<g stroke="#334155" fill="#e2e8f0" stroke-width="2">'
-        + "".join(links + nodes)
-        + (
-            "</g><style>text{stroke:none;fill:#0f172a;text-anchor:middle;"
-            "font:13px system-ui}</style></svg>"
-        )
+        f'<svg viewBox="0 0 {width:.0f} {height:.0f}" width="{width:.0f}" '
+        'role="img" aria-label="Family tree">'
+        '<g stroke="#334155" stroke-width="1.6" fill="none">' + "".join(lines) + "</g>"
+        '<g stroke="#334155" stroke-width="1.6">' + "".join(symbols) + "</g>"
+        "<style>text{stroke:none;fill:#0f172a;text-anchor:middle;"
+        "font:12px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}</style></svg>"
     )

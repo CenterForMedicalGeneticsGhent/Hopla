@@ -51,22 +51,62 @@ def variant_statistics(
             )
             selected_positions = sites.pos[site_mask]
             selected_chrom = _chrom_names(sites.chrom[site_mask])
+            called = gt[sample_index] >= 0
             for region in settings.regions:
                 chrom, interval = region.split(":")
                 start, end = (int(value) for value in interval.split("-"))
-                region_mask = (
-                    (selected_chrom == chrom)
-                    & (selected_positions >= start)
-                    & (selected_positions <= end)
+                flank = settings.regions_flanking_size
+                on_chromosome = selected_chrom == chrom
+                spans = (
+                    (region, start, end),
+                    (f"{region} (left flank)", start - flank, start),
+                    (f"{region} (right flank)", end, end + flank),
                 )
-                rows.append(
+                for label, span_start, span_end in spans:
+                    span_mask = (
+                        on_chromosome
+                        & (selected_positions >= span_start)
+                        & (selected_positions <= span_end)
+                    )
+                    rows.append(
+                        {
+                            "filter_level": level,
+                            "sample": sample,
+                            "region": label,
+                            "metric": "variants",
+                            "value": float(np.count_nonzero(called & span_mask)),
+                        }
+                    )
+    return pl.DataFrame(rows)
+
+
+def genotype_pair_counts(
+    matrix: GenotypeMatrix,
+    filtered1: FilteredGenotypes,
+    filtered2: FilteredGenotypes,
+) -> pl.DataFrame:
+    """Count shared genotype states for every ordered sample pair and filter stage."""
+    states = ("0/0", "0/1", "1/1")
+    rows: list[dict[str, object]] = []
+    for level, calls in ((0, matrix.gt), (1, filtered1.gt), (2, filtered2.gt)):
+        for first_index, first in enumerate(matrix.samples):
+            for second_index, second in enumerate(matrix.samples[: first_index + 1]):
+                left = calls[first_index]
+                right = calls[second_index]
+                both = (left >= 0) & (right >= 0)
+                counts = np.bincount(
+                    left[both].astype(np.int64) * 3 + right[both].astype(np.int64), minlength=9
+                )
+                rows.extend(
                     {
                         "filter_level": level,
-                        "sample": sample,
-                        "region": region,
-                        "metric": "variants",
-                        "value": float(np.count_nonzero((gt[sample_index] >= 0) & region_mask)),
+                        "sample_a": first,
+                        "sample_b": second,
+                        "genotype_a": states[position // 3],
+                        "genotype_b": states[position % 3],
+                        "count": int(counts[position]),
                     }
+                    for position in range(9)
                 )
     return pl.DataFrame(rows)
 
@@ -473,6 +513,7 @@ def build_analysis_tables(
     return {
         "variant_stats": variant_statistics(sites, matrix, filtered1, filtered2, settings),
         "genotype_counts": genotype_counts(sites, matrix, filtered1, filtered2),
+        "genotype_pairs": genotype_pair_counts(matrix, filtered1, filtered2),
         "variant_depth": variant_depth_table(matrix, filtered1, filtered2),
         "variant_density": variant_density_table(
             sites, matrix, filtered1, filtered2, settings.window_size

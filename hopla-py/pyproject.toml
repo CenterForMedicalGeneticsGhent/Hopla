@@ -13,6 +13,7 @@ dependencies = [
   "cyvcf2",
   "jsonschema",
   "numpy",
+  "plotly",
   "polars",
   "pydantic>=2",
   "pyarrow",

@@ -8,7 +8,7 @@ import numpy as np
 
 from hopla.analysis import _duo_errors, _trio_errors
 from hopla.filters import apply_filter1, apply_filter2
-from hopla.merlin import correct_short_segments, weighted_vote
+from hopla.merlin import _marker_indices, _parse_blocks, correct_short_segments, weighted_vote
 from hopla.models import GenotypeMatrix, SiteTable
 from hopla.pedigree import predict_genders
 from hopla.settings import Settings, load_settings
@@ -45,6 +45,39 @@ def test_haplotype_corrections() -> None:
     assert correct_short_segments(flow, genotype, 1).tolist() == ["A"] * 5
     voted = weighted_vote(flow, np.asarray([0, 10, 20, 30, 40], dtype=np.uint32), max_distance=25)
     assert voted.tolist() == ["A"] * 5
+
+
+def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
+    """Preserve both strands when Merlin prints samples in separate column groups."""
+    path = tmp_path / "merlin.flow"
+    path.write_text(
+        "\n".join(
+            [
+                "FAMILY 1 [Most Likely]",
+                "          FATHER (F)                 MOTHER (F)",
+                "             A : B                     C : D",
+                "             A : B                     C : D",
+                "             A : B                     C : D",
+                "          U1 (F)                      CHILD (FATHER,U1)",
+                "             E : F                       A | C",
+                "             E / F                       B \\ D",
+                "             E : F                       A + D",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    parsed = _parse_blocks(path, ("CHILD", "FATHER", "MOTHER"))
+    assert parsed["chr1"].tolist() == [
+        ["A|C", "A|B", "C|D"],
+        ["B|D", "A|B", "C|D"],
+        ["A|D", "A|B", "C|D"],
+    ]
+    assert list(_parse_blocks(path, ("CHILD", "FATHER", "MOTHER"), ("chrX",))) == ["chrX"]
+    map_path = tmp_path / "merlin.map"
+    map_path.write_text("1\tid9\t1.0\nX\tid21\t2.0\n", encoding="utf-8")
+    assert _marker_indices(map_path)["chr1"].tolist() == [8]
+    assert _marker_indices(map_path)["chrX"].tolist() == [20]
 
 
 def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:

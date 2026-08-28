@@ -23,7 +23,9 @@ def _write_bigwig(
 ) -> None:
     """Write sorted, de-duplicated one-based intervals to BigWig."""
     grouped = (
-        frame.filter(pl.col("chrom").is_in(chromosome_sizes))
+        frame.filter(
+            pl.col("chrom").is_in(chromosome_sizes) & pl.col(value_column).is_finite()
+        )
         .group_by("chrom", "start", "end")
         .agg(pl.col(value_column).mean())
     )

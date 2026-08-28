@@ -47,6 +47,16 @@ def test_igv_tracks_match_portable_tables(tmp_path: Path) -> None:
                 "af": [0.25, 0.75],
             }
         ),
+        "copy_number": pl.DataFrame(
+            {
+                "chrom": ["chr1", "chr1"],
+                "start": [1, 101],
+                "end": [100, 200],
+                "sample": ["A", "A"],
+                "log2_ratio": [float("-inf"), 0.5],
+                "mask": [True, True],
+            }
+        ),
         "cn_segments": pl.DataFrame(
             {
                 "chrom": ["chr1"],
@@ -68,7 +78,13 @@ def test_igv_tracks_match_portable_tables(tmp_path: Path) -> None:
     }
     outputs = export_igv_tracks(tmp_path, tables, {"chr1": 1_000})
     names = {path.name for path in outputs}
-    assert {"A-baf.bw", "copy-number.seg", "parent-mapping.bed", "igv-session.xml"} <= names
+    assert {
+        "A-baf.bw",
+        "A-copy-number.bw",
+        "copy-number.seg",
+        "parent-mapping.bed",
+        "igv-session.xml",
+    } <= names
     reader = pyBigWig.open(str(tmp_path / "A-baf.bw"))
     try:
         values = reader.values("chr1", 9, 20)
@@ -77,3 +93,9 @@ def test_igv_tracks_match_portable_tables(tmp_path: Path) -> None:
         assert values[10] == 0.75
     finally:
         reader.close()
+    copy_number_reader = pyBigWig.open(str(tmp_path / "A-copy-number.bw"))
+    try:
+        assert np.all(np.isnan(copy_number_reader.values("chr1", 0, 100)))
+        assert copy_number_reader.values("chr1", 100, 101) == [0.5]
+    finally:
+        copy_number_reader.close()

@@ -175,7 +175,9 @@ def _remove_rejected_markers(prefix: Path, rejected: set[str]) -> None:
     ped_path.write_text("\n".join(pedigree_lines) + "\n", encoding="utf-8")
 
 
-def _parse_blocks(path: Path, samples: tuple[str, ...]) -> dict[str, np.ndarray]:
+def _parse_blocks(
+    path: Path, samples: tuple[str, ...], chromosomes: tuple[str, ...] = CHROMOSOMES
+) -> dict[str, np.ndarray]:
     """Parse Merlin FAMILY blocks into chromosome-indexed strand strings."""
     text = path.read_text(encoding="utf-8")
     blocks = re.split(r"(?=^FAMILY)", text, flags=re.MULTILINE)[1:]
@@ -186,22 +188,33 @@ def _parse_blocks(path: Path, samples: tuple[str, ...]) -> dict[str, np.ndarray]
         active: list[str] = []
         for line in lines:
             if "(" in line:
-                active = [
-                    token
-                    for token in re.sub(r"\([^)]*\)", "", line).split()
-                    if token in sample_values
-                ]
+                active = re.sub(r"\([^)]*\)", "", line).split()
                 continue
-            tokens = line.replace("?", "NA").split()
-            if active and len(tokens) >= len(active):
-                for sample, token in zip(active, tokens[-len(active) :], strict=True):
-                    sample_values[sample].append(token.replace(",", "|"))
+            pairs = re.findall(r"(\S+)\s+[^\w\s,]\s+(\S+)", line)
+            if active and len(pairs) == len(active):
+                for sample, (first, second) in zip(active, pairs, strict=True):
+                    if sample in sample_values:
+                        sample_values[sample].append(
+                            f"{first}|{second}".replace("?", "NA")
+                        )
         length = min((len(value) for value in sample_values.values()), default=0)
         if length:
-            parsed[CHROMOSOMES[min(block_index, len(CHROMOSOMES) - 1)]] = np.column_stack(
+            parsed[chromosomes[min(block_index, len(chromosomes) - 1)]] = np.column_stack(
                 [sample_values[sample][:length] for sample in samples]
             )
     return parsed
+
+
+def _marker_indices(path: Path) -> dict[str, np.ndarray]:
+    """Read retained source-site indices from a Merlin map file."""
+    indices: dict[str, list[int]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        columns = line.split()
+        if len(columns) < 2 or (match := re.fullmatch(r"id(\d+)", columns[1])) is None:
+            raise ValueError(f"Invalid Merlin map row: {line}")
+        chrom = columns[0] if columns[0].startswith("chr") else f"chr{columns[0]}"
+        indices.setdefault(chrom, []).append(int(match.group(1)) - 1)
+    return {chrom: np.asarray(values, dtype=np.int64) for chrom, values in indices.items()}
 
 
 def run_merlin(
@@ -217,17 +230,28 @@ def run_merlin(
     _run_one(output_directory, "merlin", "", settings.merlin_model)
     _run_one(output_directory, "minx", "X", settings.merlin_model)
     flow = _parse_blocks(output_directory / "merlin.flow", matrix.samples)
-    flow.update(_parse_blocks(output_directory / "merlinX.flow", matrix.samples))
+    flow.update(_parse_blocks(output_directory / "merlinX.flow", matrix.samples, ("chrX",)))
     geno = _parse_blocks(output_directory / "merlin.chr", matrix.samples)
-    geno.update(_parse_blocks(output_directory / "merlinX.chr", matrix.samples))
+    geno.update(_parse_blocks(output_directory / "merlinX.chr", matrix.samples, ("chrX",)))
+    marker_indices = _marker_indices(output_directory / "merlin.map")
+    marker_indices.update(_marker_indices(output_directory / "merlinX.map"))
     rows: list[dict[str, object]] = []
-    source = np.flatnonzero(filtered.site_mask)
     for chrom, flow_matrix in flow.items():
-        code = CHROMOSOMES.index(chrom) + 1
-        positions = sites.pos[source][sites.chrom[source] == code][: flow_matrix.shape[0]]
+        genotype_values = geno.get(chrom)
+        source_indices = marker_indices.get(chrom)
+        if (
+            genotype_values is None
+            or source_indices is None
+            or genotype_values.shape != flow_matrix.shape
+            or source_indices.size != flow_matrix.shape[0]
+        ):
+            raise ValueError(f"Merlin output rows do not match retained markers for {chrom}")
+        keep = ~np.all(np.char.find(genotype_values.astype(str), "NA") >= 0, axis=1)
+        flow_matrix = flow_matrix[keep]
+        genotype_values = genotype_values[keep]
+        positions = sites.pos[source_indices[keep]]
         for sample_index, sample in enumerate(matrix.samples):
             strands = np.asarray([value.split("|", 1) for value in flow_matrix[:, sample_index]])
-            genotype_values = geno.get(chrom, flow_matrix)
             genotype_strands = np.asarray(
                 [value.split("|", 1) for value in genotype_values[:, sample_index]]
             )
@@ -247,6 +271,7 @@ def run_merlin(
                             "sample": sample,
                             "strand": strand + 1,
                             "letter": str(corrected[marker, strand]),
+                            "genotype": str(genotype_strands[marker, strand]),
                             "is_corrected": bool(changed[marker, strand]),
                         }
                     )
