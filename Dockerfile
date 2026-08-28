@@ -1,11 +1,9 @@
 FROM ghcr.io/prefix-dev/pixi:0.77.1 AS build
 
 WORKDIR /app
-COPY pixi.toml pixi.lock ./
-COPY hopla-py/pyproject.toml hopla-py/LICENSE hopla-py/README.md ./hopla-py/
-COPY hopla-py/src ./hopla-py/src
+COPY pixi.toml pixi.lock pyproject.toml LICENSE README.md ./
+COPY src ./src
 RUN pixi install --locked \
-    && pixi run python -m pip install --no-deps ./hopla-py \
     && pixi shell-hook -s bash > /app/entrypoint.sh \
     && printf '\nexec "$@"\n' >> /app/entrypoint.sh \
     && chmod 0755 /app/entrypoint.sh

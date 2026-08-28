@@ -1,6 +1,6 @@
 # Python engine architecture
 
-`hopla-py/` is an installable Python package within the Hopla monorepo. Public
+Hopla is an installable Python package at the repository root. Public
 modules live under `src/hopla/`, tests under `tests/`, and the user/contributor
 manual under `docs/`.
 

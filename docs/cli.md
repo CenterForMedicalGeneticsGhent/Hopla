@@ -68,10 +68,10 @@ IGV sidecar output.
 With pixi:
 
 ```bash
-pixi run -e hopla-py hopla-py run path/to/settings.yaml path/to/family.vcf.gz
-pixi run -e hopla-py hopla-py run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
-pixi run -e hopla-py hopla-py run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
-pixi run -e hopla-py hopla-py run --no-export-parquet --no-export-bigwig path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run --no-export-parquet --no-export-bigwig path/to/settings.yaml path/to/family.vcf.gz
 ```
 
 With an editable install on `PATH`:
@@ -101,11 +101,11 @@ YAML for `hopla run`. It does not accept VCFs or run analyses. See
 ## Convert, concordance, and transform
 
 ```bash
-pixi run -e hopla-py hopla-py convert path/to/legacy-settings.txt
-pixi run -e hopla-py hopla-py convert path/to/legacy-settings.txt path/to/settings.yaml
-pixi run -e hopla-py hopla-py concordance family-a-flow.txt family-b-flow.txt
-pixi run -e hopla-py hopla-py concordance -r family-a-flow.txt family-b-flow.txt
-pixi run -e hopla-py hopla-py transform family-a-flow.txt family-b-flow.txt 1
+pixi run hopla convert path/to/legacy-settings.txt
+pixi run hopla convert path/to/legacy-settings.txt path/to/settings.yaml
+pixi run hopla concordance family-a-flow.txt family-b-flow.txt
+pixi run hopla concordance -r family-a-flow.txt family-b-flow.txt
+pixi run hopla transform family-a-flow.txt family-b-flow.txt 1
 ```
 
 Legacy conversion rules and the dotted-key mapping are in
@@ -118,6 +118,5 @@ Legacy conversion rules and the dotted-key mapping are in
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
 cd Hopla
 pixi install --locked
-pixi run -e hopla-py install-py
-pixi run hopla run hopla-py/example/settings.yaml path/to/family.vcf.gz
+pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```

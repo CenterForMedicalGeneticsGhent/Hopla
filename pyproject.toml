@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hopla"
-version = "2.1.0"
+version = "3.0.0"
 description = "Genomic family analysis and interactive reporting"
 readme = "README.md"
 requires-python = ">=3.12"

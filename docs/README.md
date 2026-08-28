@@ -8,9 +8,8 @@ post-natal work, the report is meant to support embryo selection during
 preimplantation genetic testing, with the aim of healthy births in affected
 families. The name is both a ‘haplo’ anagram and a children’s television show.
 
-This manual documents the Python package under `hopla-py/`. Start from the
-package [README](../README.md) for a short overview. Repository-wide and UI
-documentation are available from the [monorepo README](../../README.md).
+This manual documents the Python package at the repository root. Start from the
+[README](../README.md) for a short overview.
 
 ## Contents
 
@@ -44,8 +43,7 @@ documentation are available from the [monorepo README](../../README.md).
 git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
 cd Hopla
 pixi install --locked
-pixi run -e hopla-py install-py
-pixi run hopla run hopla-py/example/settings.yaml path/to/family.vcf.gz
+pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
 The command validates settings before reading the VCF and writes a compact,

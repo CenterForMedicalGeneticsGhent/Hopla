@@ -1,22 +1,24 @@
 # Contributing
 
-These instructions apply to the Python package under `hopla-py/`. Never merge
-a pull request unless the user explicitly requests it.
+These instructions apply to the Hopla Python package at the repository root.
+Never merge a pull request unless the user explicitly requests it.
 
-An agent-discoverable copy of this material lives in the repository-root
-[`AGENTS.md`](../../AGENTS.md). Keep the two files in sync.
+An agent-discoverable copy of this material lives in
+[`AGENTS.md`](../AGENTS.md). Keep the two files in sync.
 
 ## Runtime and dependencies
 
-- Use the root `hopla-py` / `hopla-py-dev` pixi environments and committed
+- Use the root pixi environments (`default` and `dev`) and the committed
   `pixi.lock`.
 - Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
-  available on each of those platforms in the `hopla-py` feature.
+  available on each of those platforms in the default environment.
 - Require Python 3.12 or newer.
-- Add Python dependencies to both the root `pixi.toml` `hopla-py` feature and
-  `hopla-py/pyproject.toml`; regenerate the root `pixi.lock` with pixi.
-- Prefer editable installs through `pixi run -e hopla-py install-py` rather than
-  unmanaged global pip installs.
+- Add Python dependencies to both the root `pixi.toml` `[dependencies]` (or
+  `[feature.dev.dependencies]`) and `pyproject.toml`; regenerate `pixi.lock`
+  with pixi.
+- Install with `pixi install --locked`. The local package is a locked path
+  PyPI dependency (`hopla = { path = ".", editable = true }`). Do not add a
+  second unmanaged pip install for development.
 - Hopla must not invoke Pandoc. The report always inlines the offline
   `plotly.js` bundle and compresses the columnar payload itself.
 
@@ -24,8 +26,8 @@ Details: [install.md](install.md).
 
 ## Package structure
 
-- Maintain an installable Python package under `hopla-py/` (`pyproject.toml`,
-  `src/hopla/`, `tests/`, and `docs/`).
+- Maintain an installable Python package at the repository root
+  (`pyproject.toml`, `src/hopla/`, `tests/`, and `docs/`).
 - Public modules and functions should remain typed and documented.
 - Keep the Typer entry point in `src/hopla/cli.py` as the orchestration surface
   for `run`, `serve`, `convert`, `concordance`, and `transform`.
@@ -91,22 +93,25 @@ Details: [install.md](install.md).
 
 ## Containers
 
-- Build `hopla-py/Dockerfile` from the repository-root context and `pixi.lock`.
+- Build `Dockerfile` from the repository-root context and `pixi.lock`.
+- Install the image with `pixi install --locked` only. Do not run `pip install`
+  in the image; conda packages, Merlin, and the local `hopla` path package
+  come from the lock file.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification
 
 - Run `pixi install --locked`.
-- Run `pixi run -e hopla-py-dev lint-py`; CI lint and type-check failures must
-  be fixed, not suppressed globally.
-- Run `pixi run -e hopla-py-dev test-py`.
+- Run `pixi run -e dev lint-py`; CI lint and type-check failures must be
+  fixed, not suppressed globally.
+- Run `pixi run -e dev test-py`.
 - Test YAML and JSON validation, including rejection of unknown or mistyped
   settings.
 - Test all CLI subtools and their failure exit statuses, including the export
   toggles.
 - Build a wheel when verifying packaging:
-  `pixi run -e hopla-py-dev python -m pip wheel --no-deps ./hopla-py -w dist`.
-- Build the relevant package Docker image when Docker is available.
+  `pixi run -e dev python -m pip wheel --no-deps . -w dist`.
+- Build the Docker image when Docker is available.
 
 ## Continuous integration and releases
 
@@ -114,7 +119,8 @@ Details: [install.md](install.md).
   targeting `main`.
 - On pushes to `main` or `master`, tag the image with the full commit SHA and
   `latest`.
-- On a published release, tag the Python image with the full commit SHA, package
+- On a published release, tag the image with the full commit SHA, package
   version, and `stable`.
+- Do not publish `ui-*` tags.
 - Upload the built Python wheel and compressed Docker image artifacts from CI.
 - Attach the Python wheel and compressed Docker image to the GitHub release.
