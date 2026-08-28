@@ -31,8 +31,8 @@ def test_pyproject_ships_local_schema() -> None:
     assert force_include["src/hopla/schema/hopla.schema.json"] == (
         "hopla/schema/hopla.schema.json"
     )
-    assert force_include["src/hopla/ui/templates"] == "hopla/ui/templates"
-    assert force_include["src/hopla/ui/static"] == "hopla/ui/static"
     assert LOCAL_SCHEMA.is_file()
+    assert (PACKAGE_ROOT / "src/hopla/ui/templates/index.html").is_file()
+    assert (PACKAGE_ROOT / "src/hopla/ui/static/app.js").is_file()
     serialized = (PACKAGE_ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert "hopla/schema/hopla.schema.json" in serialized
