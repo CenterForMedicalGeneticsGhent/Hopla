@@ -28,9 +28,11 @@ def test_pyproject_ships_local_schema() -> None:
     """Wheel packaging must embed the packaged schema path."""
     config = tomllib.loads((PACKAGE_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     force_include = config["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
-    assert force_include == {
-        "src/hopla/schema/hopla.schema.json": "hopla/schema/hopla.schema.json",
-    }
+    assert force_include["src/hopla/schema/hopla.schema.json"] == (
+        "hopla/schema/hopla.schema.json"
+    )
+    assert force_include["src/hopla/ui/templates"] == "hopla/ui/templates"
+    assert force_include["src/hopla/ui/static"] == "hopla/ui/static"
     assert LOCAL_SCHEMA.is_file()
     serialized = (PACKAGE_ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert "hopla/schema/hopla.schema.json" in serialized

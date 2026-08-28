@@ -64,7 +64,7 @@ def test_add_sibling_state_and_validation_error() -> None:
     with TestClient(create_app()) as client:
         response = client.post("/api/preview", json={"form": state})
     assert response.status_code == 422
-    assert "less than 1" in response.json()["error"]
+    assert "maximum of 1" in response.json()["error"]
 
 
 def test_import_yaml_and_reconstruct_pedigree() -> None:
