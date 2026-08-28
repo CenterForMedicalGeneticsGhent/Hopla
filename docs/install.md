@@ -82,7 +82,8 @@ Hopla must not invoke Pandoc. The HTML report always inlines the offline
 columnar analysis payload for the browser to expand with
 `DecompressionStream`.
 
-Prefer adding Python dependencies through `pixi.toml` and `pyproject.toml`,
+Prefer adding Python dependencies in `pyproject.toml` under both `[project]`
+and `[tool.pixi.dependencies]` (or the `dev` extra / `[tool.pixi.feature.dev]`),
 then regenerate `pixi.lock` with pixi. Keep those dependencies available as
 conda packages so the lock stays free of PyPI source builds.
 

@@ -69,3 +69,49 @@ packages = ["hopla"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+conda-pypi-map = { bioconda = { mapping = { pybigwig = "pybigwig" } } }
+
+[tool.pixi.dependencies]
+python = ">=3.12,<3.14"
+cyvcf2 = "*"
+jinja2 = "*"
+jsonschema = "*"
+numpy = "*"
+polars = "*"
+pydantic = ">=2"
+plotly = "*"
+pyarrow = "*"
+pybigwig = "*"
+pyyaml = "*"
+starlette = "*"
+typer = "*"
+uvicorn = "*"
+pip = "*"
+merlin = "1.1.2.*"
+
+[tool.pixi.feature.dev.dependencies]
+mypy = "*"
+pytest = "*"
+ruff = "*"
+types-pyyaml = "*"
+types-jsonschema = "*"
+httpx2 = ">=2.12.0,<3"
+
+[tool.pixi.tasks]
+install-py = { cmd = "python -m pip install --no-deps -e ." }
+hopla = { cmd = "hopla", depends-on = ["install-py"] }
+convert = { cmd = "hopla convert", depends-on = ["install-py"] }
+concordance = { cmd = "hopla concordance", depends-on = ["install-py"] }
+transform = { cmd = "hopla transform", depends-on = ["install-py"] }
+serve = { cmd = "hopla serve", depends-on = ["install-py"] }
+
+[tool.pixi.feature.dev.tasks]
+lint-py = { cmd = "ruff check src tests && mypy src", depends-on = ["install-py"] }
+test-py = { cmd = "pytest tests", depends-on = ["install-py"] }
+
+[tool.pixi.environments]
+dev = ["dev"]

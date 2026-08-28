@@ -13,9 +13,12 @@ An agent-discoverable copy of this material lives in
 - Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
   available on each of those platforms in the default environment.
 - Require Python 3.12 or newer.
-- Add Python dependencies to both the root `pixi.toml` `[dependencies]` (or
-  `[feature.dev.dependencies]`) and `pyproject.toml`; regenerate `pixi.lock`
-  with pixi.
+- Add Python dependencies to both `[project]` / `[project.optional-dependencies]`
+  and `[tool.pixi.dependencies]` / `[tool.pixi.feature.dev.dependencies]` in
+  `pyproject.toml`; regenerate `pixi.lock` with pixi. Conda entries override
+  the same-named PyPI requirements from `[project]`. Keep the bioconda
+  `conda-pypi-map` entry for `pybigwig` so osx-arm64 does not pull a PyPI
+  source build.
 - Keep `pixi.lock` free of PyPI source dependencies. Every locked dependency
   is a conda package; the local package itself is not locked.
 - Prefer editable installs through `pixi run install-py` rather than unmanaged

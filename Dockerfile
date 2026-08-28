@@ -1,7 +1,7 @@
 FROM ghcr.io/prefix-dev/pixi:0.77.1 AS build
 
 WORKDIR /app
-COPY pixi.toml pixi.lock pyproject.toml LICENSE README.md ./
+COPY pixi.lock pyproject.toml LICENSE README.md ./
 COPY src ./src
 RUN pixi install --locked \
     && pixi run python -m pip install --no-deps . \
