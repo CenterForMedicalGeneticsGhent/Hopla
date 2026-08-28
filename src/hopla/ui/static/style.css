@@ -25,6 +25,7 @@ button, .button {
   padding: .55rem .8rem;
 }
 button:hover, .button:hover { filter: brightness(1.12); }
+button:disabled { cursor: wait; opacity: .6; }
 .upload { display: inline-block; }
 .upload input { display: none; }
 .tabs { display: flex; gap: .25rem; border-bottom: 2px solid var(--accent); }
@@ -45,9 +46,14 @@ input[type=checkbox] { width: auto; }
 .section-heading h2, .section-heading h3 { margin: 0; }
 .danger { background: #a12828; padding: .3rem .55rem; }
 pre { min-height: 20rem; overflow: auto; border: 1px solid var(--border); padding: 1rem; background: var(--surface); }
-#message.error { color: #c22; font-weight: 600; }
+.error { color: #c22; font-weight: 600; }
 .hint { border-left: .25rem solid var(--accent); padding-left: .75rem; }
+.analysis-controls { display: flex; align-items: end; gap: 1rem; }
+.analysis-controls label { flex: 1; }
+[hidden] { display: none !important; }
 @media (max-width: 650px) {
   .fields { grid-template-columns: 1fr; }
   .wide { grid-column: auto; }
+  .tabs { flex-wrap: wrap; }
+  .analysis-controls { align-items: stretch; flex-direction: column; }
 }

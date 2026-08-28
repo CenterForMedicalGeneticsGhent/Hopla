@@ -27,6 +27,7 @@ const placeholders = {
   mother: "U2",
 };
 let previewTimer;
+let analysisTimer;
 
 function message(text, error = false) {
   const node = document.querySelector("#message");
@@ -143,6 +144,15 @@ async function api(path, payload) {
   return response;
 }
 
+async function responseError(response) {
+  try {
+    const result = await response.json();
+    return result.error || "The server could not process this request.";
+  } catch {
+    return "The server could not process this request.";
+  }
+}
+
 async function updatePreview() {
   readFields();
   try {
@@ -221,8 +231,84 @@ document.querySelector("#download").addEventListener("click", async () => {
   }
 });
 
+function analysisState(text, error = false) {
+  const node = document.querySelector("#analysis-status");
+  node.textContent = text;
+  node.classList.toggle("error", error);
+}
+
+function finishAnalysis() {
+  clearTimeout(analysisTimer);
+  document.querySelector("#run-analysis").disabled = false;
+  document.querySelector("#vcf-upload").disabled = false;
+}
+
+async function pollAnalysis(identifier) {
+  try {
+    const response = await fetch(`/api/analyses/${identifier}`);
+    if (!response.ok) throw new Error(await responseError(response));
+    const result = await response.json();
+    if (result.status === "completed") {
+      analysisState("Analysis complete. Download the HTML report below.");
+      const link = document.querySelector("#report-download");
+      link.href = result.report_url;
+      link.hidden = false;
+      finishAnalysis();
+      return;
+    }
+    if (result.status === "failed") {
+      analysisState(result.error || "Analysis failed.", true);
+      finishAnalysis();
+      return;
+    }
+    analysisState(result.message || "Analysis is running.");
+    analysisTimer = setTimeout(() => pollAnalysis(identifier), 1000);
+  } catch (error) {
+    analysisState(error.message, true);
+    finishAnalysis();
+  }
+}
+
+document.querySelector("#vcf-upload").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  analysisState(file ? `Selected ${file.name}.` : "Select a VCF to begin.");
+});
+
+document.querySelector("#run-analysis").addEventListener("click", async () => {
+  const picker = document.querySelector("#vcf-upload");
+  const button = document.querySelector("#run-analysis");
+  const file = picker.files[0];
+  if (!file) {
+    analysisState("Choose a VCF before running the analysis.", true);
+    return;
+  }
+  readFields();
+  clearTimeout(analysisTimer);
+  button.disabled = true;
+  picker.disabled = true;
+  document.querySelector("#report-download").hidden = true;
+  try {
+    analysisState("Validating configuration.");
+    const created = await api("/api/analyses", {form: state, vcf_name: file.name});
+    const job = await created.json();
+    analysisState(`Uploading ${file.name}.`);
+    const compressed = file.name.toLowerCase().endsWith(".gz")
+      || file.name.toLowerCase().endsWith(".bgz");
+    const uploaded = await fetch(
+      `/api/analyses/${job.id}/vcf?compressed=${compressed}`,
+      {method: "PUT", headers: {"Content-Type": "application/octet-stream"}, body: file},
+    );
+    if (!uploaded.ok) throw new Error(await responseError(uploaded));
+    analysisState("Analysis is starting.");
+    await pollAnalysis(job.id);
+  } catch (error) {
+    analysisState(error.message, true);
+    finishAnalysis();
+  }
+});
+
 document.querySelectorAll("input, select, textarea").forEach((input) => {
-  if (input.id !== "config-upload") input.addEventListener("input", schedulePreview);
+  if (input.type !== "file") input.addEventListener("input", schedulePreview);
 });
 fillFields();
 renderMembers();
