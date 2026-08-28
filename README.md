@@ -1,23 +1,20 @@
 # Hopla
 
-Hopla is a monorepo for genomic family analysis and its browser-based
-configuration editor.
+Hopla is a Python package for genomic family analysis, interactive reporting,
+and browser-assisted configuration.
 
 ## Packages
 
 | Package | Description | Documentation |
 |---------|-------------|---------------|
-| [`hopla-py/`](hopla-py/) | Python package, CLI, analysis engine, and interactive report generator. | [Python package manual](hopla-py/docs/README.md) |
-| [`hopla-ui/`](hopla-ui/) | Optional local helper for creating Hopla configuration files in the browser. | [UI README](hopla-ui/README.md) and [UI docs](hopla-ui/docs/README.md) |
+| [`hopla-py/`](hopla-py/) | Python CLI, settings editor, analysis engine, and interactive report generator. | [Package manual](hopla-py/docs/README.md) |
 
-The UI is not required to run Hopla. Analysis takes a YAML or JSON settings
-file that can be created and edited by hand; the UI only helps write that file.
-It is meant to run locally as a short-lived application, not as a standing
-service.
+Analysis takes a YAML or JSON settings file that can be created by hand or with
+the optional `hopla serve` local browser editor.
 
-The repository root owns the shared `pixi.toml`, `pixi.lock`, CI workflows, and
-contributor guidance. Each package keeps its source, tests, Dockerfile,
-changelog, and detailed documentation in its own directory.
+The repository root owns `pixi.toml`, `pixi.lock`, CI workflows, and contributor
+guidance. Package source, tests, the Dockerfile, changelog, and detailed
+documentation live under `hopla-py/`.
 
 ## Development with Pixi
 
@@ -36,25 +33,20 @@ pixi run -e hopla-py-dev lint-py
 pixi run -e hopla-py-dev test-py
 ```
 
-Run the UI:
+Run the settings editor:
 
 ```bash
-pixi run -e hopla-ui serve
-pixi run -e hopla-ui lint
-pixi run -e hopla-ui test
-pixi run -e hopla-ui build
+pixi run hopla serve
 ```
 
 ## Container images
 
-Both packages use `quay.io/cmgg/hopla`; tags identify the package:
+The package image is published as `quay.io/cmgg/hopla` with `latest`, `stable`,
+a package version such as `2.1.0`, or a commit SHA.
 
-- Python package: `latest`, `stable`, a package version such as `2.0.0`, or a commit SHA.
-- UI package: `ui-latest`, `ui-stable`, a UI version such as `ui-0.2.0`, or `ui-<commit-sha>`.
-
-Build either image locally from the repository root:
+Build and run the image locally from the repository root:
 
 ```bash
 docker build -f hopla-py/Dockerfile -t hopla .
-docker build -f hopla-ui/Dockerfile -t hopla:ui-local hopla-ui
+docker run --rm -p 8080:8080 hopla hopla serve --host 0.0.0.0 --no-open
 ```

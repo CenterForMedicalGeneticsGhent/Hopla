@@ -1,8 +1,7 @@
 # Contributing
 
-These instructions apply to the Python package under `hopla-py/`. Work under
-`hopla-ui/` is out of scope unless a task explicitly names it. Never merge a
-pull request unless the user explicitly requests it.
+These instructions apply to the Python package under `hopla-py/`. Never merge
+a pull request unless the user explicitly requests it.
 
 An agent-discoverable copy of this material lives in the repository-root
 [`AGENTS.md`](../../AGENTS.md). Keep the two files in sync.
@@ -29,7 +28,9 @@ Details: [install.md](install.md).
   `src/hopla/`, `tests/`, and `docs/`).
 - Public modules and functions should remain typed and documented.
 - Keep the Typer entry point in `src/hopla/cli.py` as the orchestration surface
-  for `run`, `convert`, `concordance`, and `transform`.
+  for `run`, `serve`, `convert`, `concordance`, and `transform`.
+- Keep the lightweight settings editor under `src/hopla/ui/` and its Starlette
+  application in `src/hopla/serve.py`. Package all templates and static assets.
 - Put private analysis helpers in the narrowest relevant module documented in
   [architecture.md](architecture.md).
 - Keep portable Parquet and IGV exporters under `src/hopla/export/`.
@@ -63,6 +64,7 @@ Details: [install.md](install.md).
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
+  - `hopla serve [--host HOST] [--port PORT] [--no-open]`
 - `vcf_file`, `out_dir`, and `cytoband_file` are CLI paths, not settings
   properties. Validate that supplied paths exist. `OUT_DIR` defaults to the
   current working directory; an omitted cytoband table is downloaded from UCSC.
@@ -90,7 +92,6 @@ Details: [install.md](install.md).
 ## Containers
 
 - Build `hopla-py/Dockerfile` from the repository-root context and `pixi.lock`.
-- Do not copy `hopla-ui/` into the Python image.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification
@@ -103,19 +104,17 @@ Details: [install.md](install.md).
   settings.
 - Test all CLI subtools and their failure exit statuses, including the export
   toggles.
-- Confirm no task-scoped changes appear under `hopla-ui/` unless the task named
-  that tree.
 - Build a wheel when verifying packaging:
   `pixi run -e hopla-py-dev python -m pip wheel --no-deps ./hopla-py -w dist`.
 - Build the relevant package Docker image when Docker is available.
 
 ## Continuous integration and releases
 
-- Keep Python and UI CI in separate workflows. Build and check each package and
-  its image for relevant pull requests targeting `main`.
-- On pushes to `main` or `master`, tag the Python image with the full commit SHA
-  and `latest`; tag the UI image with `ui-<commit-sha>` and `ui-latest`.
+- Build and check the Python package and its image for relevant pull requests
+  targeting `main`.
+- On pushes to `main` or `master`, tag the image with the full commit SHA and
+  `latest`.
 - On a published release, tag the Python image with the full commit SHA, package
-  version, and `stable`; prefix every equivalent UI tag with `ui-`.
+  version, and `stable`.
 - Upload the built Python wheel and compressed Docker image artifacts from CI.
 - Attach the Python wheel and compressed Docker image to the GitHub release.

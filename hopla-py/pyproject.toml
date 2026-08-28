@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hopla"
-version = "2.0.0"
+version = "2.1.0"
 description = "Genomic family analysis and interactive reporting"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -19,6 +19,7 @@ maintainers = [
 dependencies = [
   "cyvcf2",
   "jsonschema",
+  "jinja2",
   "numpy",
   "plotly",
   "polars",
@@ -26,11 +27,13 @@ dependencies = [
   "pyarrow",
   "pybigwig",
   "pyyaml",
+  "starlette",
   "typer",
+  "uvicorn",
 ]
 
 [project.optional-dependencies]
-dev = ["mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
+dev = ["httpx2", "mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml"]
 
 [project.urls]
 Homepage = "https://github.com/CenterForMedicalGeneticsGhent/Hopla"

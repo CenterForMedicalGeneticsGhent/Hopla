@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import logging
+import sys
 import tempfile
+import webbrowser
 from enum import StrEnum
 from pathlib import Path
+from threading import Timer
 from typing import Annotated
 
 import polars as pl
 import typer
+import uvicorn
 
 from hopla import __version__
 from hopla.analysis import build_analysis_tables, haplotype_concordance
@@ -22,6 +26,7 @@ from hopla.flow import transform as transform_flow
 from hopla.merlin import run_merlin
 from hopla.pedigree import add_ghosts, predict_genders
 from hopla.report import render_report
+from hopla.serve import create_app
 from hopla.settings import load_settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
@@ -164,6 +169,22 @@ def convert_command(
         typer.echo(convert_settings(legacy, output))
     except (OSError, ValueError) as error:
         _runtime_error(error)
+
+
+@app.command("serve")
+def serve_command(
+    host: Annotated[str, typer.Option("--host", help="Interface to bind.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", min=1, max=65535, help="Port to bind.")] = 8080,
+    open_browser: Annotated[
+        bool, typer.Option("--open/--no-open", help="Open the editor in a local browser.")
+    ] = True,
+) -> None:
+    """Serve the local Hopla settings editor."""
+    url = f"http://{host}:{port}/"
+    if open_browser and sys.stdout.isatty() and host in {"127.0.0.1", "localhost", "::1"}:
+        Timer(0.5, webbrowser.open, args=(url,)).start()
+    logging.info("Serving the settings editor at %s", url)
+    uvicorn.run(create_app(), host=host, port=port, log_level="warning")
 
 
 @app.command("concordance")

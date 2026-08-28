@@ -26,7 +26,7 @@ Pixi tasks (from the repository root):
   `python -m pip install --no-deps -e hopla-py`
 - `hopla-py` environment `hopla-py` — `python -m hopla.cli` (depends on
   `install-py`)
-- default environment `hopla`, `convert`, `concordance`, and `transform` —
+- default environment `hopla`, `serve`, `convert`, `concordance`, and `transform` —
   installed Python CLI entry points (depend on `install-py`)
 - `hopla-py-dev` environment `lint-py` — `ruff check` and `mypy`
 - `hopla-py-dev` environment `test-py` — `pytest hopla-py/tests`
@@ -55,6 +55,7 @@ editable pip install:
 - Python (v3.12 or newer)
 - Python packages
   - cyvcf2
+  - Jinja2
   - jsonschema
   - numpy
   - plotly
@@ -63,7 +64,9 @@ editable pip install:
   - pyarrow
   - pybigwig
   - PyYAML
+  - Starlette
   - typer
+  - Uvicorn
 - Standalone tools
   - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2),
     including the `merlin` and `minx` executables on `$PATH` when
