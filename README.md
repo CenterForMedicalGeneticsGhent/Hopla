@@ -1,52 +1,86 @@
 # Hopla
 
-Hopla is a Python package for genomic family analysis, interactive reporting,
-and browser-assisted configuration.
+Hopla performs classic genomic single, duo, trio, and larger-family analysis
+from one (multisample) VCF, and writes interactive HTML visualizations. When
+the pedigree allows it, it also runs offline haplotyping with
+[Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Besides
+post-natal work, the report is meant to support embryo selection during
+preimplantation genetic testing, with the aim of healthy births in affected
+families. The name is both a ‘haplo’ anagram and a children’s television show.
 
-## Packages
+This repository holds the typed Python package `hopla` (version 3.0.0).
 
-| Package | Description | Documentation |
-|---------|-------------|---------------|
-| [`hopla-py/`](hopla-py/) | Python CLI, settings editor, analysis engine, and interactive report generator. | [Package manual](hopla-py/docs/README.md) |
+## Contents
 
-Analysis takes a YAML or JSON settings file that can be created by hand or with
-the optional `hopla serve` local browser editor.
+- [Install and dependencies](docs/install.md)
+- [Command line](docs/cli.md)
+- [Local settings editor](docs/serve.md)
+- [Settings](docs/settings.md)
+- [HTML output](docs/output.md)
+- [Portable and IGV exports](docs/exports.md)
+- [Package and engine structure](docs/architecture.md)
+- [igv.js feasibility evaluation](docs/igvjs-evaluation.md)
+- [Contributing](docs/contributing.md)
+- [Changelog](CHANGELOG.md)
+- [Archived legacy pipeline changelog](docs/archive/legacy-pipeline-changelog.md)
 
-The repository root owns `pixi.toml`, `pixi.lock`, CI workflows, and contributor
-guidance. Package source, tests, the Dockerfile, changelog, and detailed
-documentation live under `hopla-py/`.
+## Input
+
+- A (multisample) `vcf.gz` file. In the authors’ tests this was produced with
+  gatk-haplotype and gatk-haplotype-joint through
+  [bcbio](https://bcbio-nextgen.readthedocs.io/en/latest/), **with a predefined
+  target**.
+- A YAML or JSON [settings file](docs/settings.md) describing the family and
+  analysis options. Create it by hand or with the optional local
+  [`hopla serve`](docs/serve.md) editor.
+- The VCF path and output directory are command-line arguments, not settings
+  keys.
+
+## Quick start
+
+```bash
+git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
+cd Hopla
+pixi install --locked
+pixi run hopla run example/settings.yaml path/to/family.vcf.gz
+```
+
+By default `hopla run` also writes `{fam_id}-export/` with Parquet tables and
+IGV desktop tracks. See [exports.md](docs/exports.md). Example settings and a
+legacy conversion fixture are in [`example/`](example/).
+
+```bash
+hopla run settings.yaml family.vcf.gz
+hopla serve
+hopla convert legacy-settings.txt
+hopla concordance family-a-flow.txt family-b-flow.txt
+hopla transform family-a-flow.txt family-b-flow.txt 1
+```
 
 ## Development with Pixi
 
-Install the locked environments from the repository root:
-
 ```bash
 pixi install --locked
-```
-
-Run the Python CLI and checks:
-
-```bash
-pixi run -e hopla-py install-py
-pixi run hopla run hopla-py/example/settings.yaml path/to/family.vcf.gz
-pixi run -e hopla-py-dev lint-py
-pixi run -e hopla-py-dev test-py
-```
-
-Run the settings editor:
-
-```bash
+pixi run -e dev lint-py
+pixi run -e dev test-py
 pixi run hopla serve
 ```
 
 ## Container images
 
-The package image is published as `quay.io/cmgg/hopla` with `latest`, `stable`,
-a package version such as `2.1.0`, or a commit SHA.
-
-Build and run the image locally from the repository root:
+The image is published as `quay.io/cmgg/hopla` with `latest`, `stable`, a
+package version such as `3.0.0`, or a commit SHA.
 
 ```bash
-docker build -f hopla-py/Dockerfile -t hopla .
+docker build -t hopla .
 docker run --rm -p 8080:8080 hopla hopla serve --host 0.0.0.0 --no-open
 ```
+
+## Maintainers and contact
+
+- Matthias De Smet — package maintainer, <matthdsm@users.noreply.github.com>
+- Center for Medical Genetics Ghent — institutional maintainer and copyright
+  holder, <ict.cmgg@uzgent.be>
+- Lennart Raman — original author, <leraman@users.noreply.github.com>
+
+Bug reports: <https://github.com/CenterForMedicalGeneticsGhent/Hopla/issues>.

@@ -19,9 +19,9 @@ properties. Portable Parquet and IGV exports are controlled by CLI flags; see
 [cli.md](cli.md) and [exports.md](exports.md).
 
 ```bash
-pixi run -e hopla-py hopla-py run path/to/settings.yaml path/to/family.vcf.gz
-pixi run -e hopla-py hopla-py run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
-pixi run -e hopla-py hopla-py run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
 hopla run path/to/settings.json path/to/family.vcf.gz
 ```
 
@@ -92,7 +92,7 @@ When more than one sample is listed, at least one of `father_ids` or
   `y_cutoff`). Order matches `sample_ids`. Example: `[M, F, null]`.
 - **`run_merlin`** (`boolean`, default `true`) Whether Merlin haplotyping should
   run. The Merlin executables directory (`path/to/merlin-1.1.2/executables`)
-  must be on `$PATH`, which is automatic with the pixi `hopla-py` environment.
+  must be on `$PATH`, which is automatic with the pixi default environment.
   The engine forces `run_merlin` to `false` when only one real (non-ghost)
   sample is present, or when `merlin` or `minx` is not found on `$PATH`.
 
@@ -248,8 +248,8 @@ The historical settings format (`argument=value`, `#` comments, and a
 it to validated YAML:
 
 ```bash
-pixi run -e hopla-py hopla-py convert path/to/legacy-settings.txt
-pixi run -e hopla-py hopla-py convert path/to/legacy-settings.txt path/to/settings.yaml
+pixi run hopla convert path/to/legacy-settings.txt
+pixi run hopla convert path/to/legacy-settings.txt path/to/settings.yaml
 ```
 
 An example legacy file is

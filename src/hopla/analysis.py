@@ -14,7 +14,7 @@ from hopla.settings import Settings
 def _chrom_names(codes: np.ndarray) -> np.ndarray:
     """Map compact chromosome codes to canonical names."""
     labels = np.asarray([""] + list(CHROMOSOMES) + ["chrY"], dtype=np.str_)
-    return labels[codes]
+    return np.asarray(labels[codes], dtype=np.str_)
 
 
 def _window_ids(sites: SiteTable, mask: np.ndarray, size: int) -> tuple[np.ndarray, np.ndarray]:

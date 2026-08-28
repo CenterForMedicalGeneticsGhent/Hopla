@@ -5,31 +5,31 @@ environment).
 
 ## Pixi (Linux and macOS)
 
-The monorepo root includes a locked [pixi](https://pixi.sh) environment for
+The repository includes a locked [pixi](https://pixi.sh) environment for
 `linux-64`, `linux-aarch64`, and `osx-arm64`. Merlin 1.1.2 is included on each
-of those platforms in the `hopla-py` feature.
+of those platforms in the default environment.
 
 ```bash
 pixi install --locked
-pixi run -e hopla-py install-py
+pixi run install-py
 pixi run hopla --help
 ```
 
-Use `pixi install --locked` so the committed `pixi.lock` is respected.
+Use `pixi install --locked` so the committed `pixi.lock` is respected. The lock
+holds conda packages only; the local package is installed on top of it with an
+editable pip install.
 
-The `hopla-py` environment holds analysis dependencies. The `hopla-py-dev`
+The default environment holds analysis dependencies and Merlin. The `dev`
 environment adds pytest, ruff, mypy, and typing stubs.
 
 Pixi tasks (from the repository root):
 
-- `hopla-py` environment `install-py` — editable install of `hopla-py` with
-  `python -m pip install --no-deps -e hopla-py`
-- `hopla-py` environment `hopla-py` — `python -m hopla.cli` (depends on
-  `install-py`)
-- default environment `hopla`, `serve`, `convert`, `concordance`, and `transform` —
-  installed Python CLI entry points (depend on `install-py`)
-- `hopla-py-dev` environment `lint-py` — `ruff check` and `mypy`
-- `hopla-py-dev` environment `test-py` — `pytest hopla-py/tests`
+- default environment `install-py` — editable install with
+  `python -m pip install --no-deps -e .`
+- default environment `hopla`, `serve`, `convert`, `concordance`, and
+  `transform` — installed Python CLI entry points (depend on `install-py`)
+- `dev` environment `lint-py` — `ruff check` and `mypy`
+- `dev` environment `test-py` — `pytest tests`
 
 After the editable install, the `hopla` console script is also available on the
 environment `PATH`.
@@ -40,16 +40,16 @@ From the repository root, with a Python 3.12+ environment that already provides
 Merlin on `$PATH` when haplotyping is needed:
 
 ```bash
-python -m pip install -e 'hopla-py[dev]'
+python -m pip install -e '.[dev]'
 hopla --help
 ```
 
-Runtime dependencies are declared in `hopla-py/pyproject.toml`. Optional `dev`
-extras install mypy, pytest, ruff, and typing stubs.
+Runtime dependencies are declared in `pyproject.toml`. Optional `dev` extras
+install mypy, pytest, ruff, and typing stubs.
 
 ## Dependencies
 
-These are installed automatically with the pixi `hopla-py` environment or an
+These are installed automatically with the pixi default environment or an
 editable pip install:
 
 - Python (v3.12 or newer)
@@ -74,7 +74,7 @@ editable pip install:
 
 Merlin’s version should be exactly as given. The Merlin executables folder
 (`path/to/merlin-1.1.2/executables`) must be on `$PATH`, which is automatic
-with the pixi `hopla-py` environment. If `merlin` or `minx` is missing, or only
+with the pixi default environment. If `merlin` or `minx` is missing, or only
 one real sample is analyzed, the engine sets `run_merlin` to `false`.
 
 Hopla must not invoke Pandoc. The HTML report always inlines the offline
@@ -82,8 +82,9 @@ Hopla must not invoke Pandoc. The HTML report always inlines the offline
 columnar analysis payload for the browser to expand with
 `DecompressionStream`.
 
-Prefer adding Python dependencies through the root `pixi.toml` `hopla-py`
-feature and `hopla-py/pyproject.toml`, then regenerate the root `pixi.lock`
-with pixi.
+Prefer adding Python dependencies in `pyproject.toml` under both `[project]`
+and `[tool.pixi.dependencies]` (or the `dev` extra / `[tool.pixi.feature.dev]`),
+then regenerate `pixi.lock` with pixi. Keep those dependencies available as
+conda packages so the lock stays free of PyPI source builds.
 
 See [CHANGELOG.md](../CHANGELOG.md) for changes to the Python engine.

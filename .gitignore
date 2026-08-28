@@ -4,8 +4,13 @@
 .pixi/
 *merlin
 *.html
+!src/hopla/ui/templates/index.html
 .DS_Store
 tests/assets
 dist/
-hopla-ui/node_modules/
-hopla-ui/dist/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/

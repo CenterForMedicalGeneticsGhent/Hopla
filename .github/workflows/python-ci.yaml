@@ -2,18 +2,24 @@ name: Python package CI
 
 on:
   pull_request:
-    branches: [main, 2.0.0]
+    branches: [main, 3.0.0]
     paths:
-      - "hopla-py/**"
-      - "pixi.toml"
+      - "src/**"
+      - "tests/**"
+      - "example/**"
+      - "pyproject.toml"
       - "pixi.lock"
+      - "Dockerfile"
       - ".github/workflows/python-ci.yaml"
   push:
     branches: [main, master]
     paths:
-      - "hopla-py/**"
-      - "pixi.toml"
+      - "src/**"
+      - "tests/**"
+      - "example/**"
+      - "pyproject.toml"
       - "pixi.lock"
+      - "Dockerfile"
       - ".github/workflows/python-ci.yaml"
   release:
     types: [published]
@@ -33,16 +39,16 @@ jobs:
           pixi-version: v0.77.1
           cache: true
           locked: true
-          environments: hopla-py-dev
+          environments: dev
 
       - name: Lint and type-check
-        run: pixi run -e hopla-py-dev lint-py
+        run: pixi run -e dev lint-py
 
       - name: Test
-        run: pixi run -e hopla-py-dev test-py
+        run: pixi run -e dev test-py
 
       - name: Build wheel
-        run: pixi run -e hopla-py-dev python -m pip wheel --no-deps ./hopla-py -w dist
+        run: pixi run -e dev python -m pip wheel --no-deps . -w dist
 
       - name: Upload Python wheel artifact
         uses: actions/upload-artifact@v4
@@ -68,7 +74,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: "."
-          file: hopla-py/Dockerfile
+          file: Dockerfile
           load: true
           tags: hopla:${{ github.sha }}
           cache-from: type=gha
@@ -103,7 +109,7 @@ jobs:
         run: |
           tags=("$IMAGE:${GITHUB_SHA}")
           if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
-            package_version="$(sed -n 's/^version = "\(.*\)"/\1/p' hopla-py/pyproject.toml | head -n1)"
+            package_version="$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -n1)"
             tags+=("$IMAGE:${package_version}" "$IMAGE:stable")
           else
             tags+=("$IMAGE:latest")
