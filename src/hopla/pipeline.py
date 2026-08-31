@@ -27,6 +27,7 @@ def run_analysis(
     cytoband_path: Path | None = None,
     export_parquet_data: bool = False,
     export_bigwig: bool = False,
+    threads: int | None = None,
     progress: ProgressCallback | None = None,
 ) -> Path:
     """Run an analysis and return the generated HTML report path."""
@@ -36,7 +37,7 @@ def run_analysis(
             progress(message)
 
     update("Loading VCF")
-    sites, matrix = load_vcf(vcf_path, settings.real_samples)
+    sites, matrix = load_vcf(vcf_path, settings.real_samples, threads=threads)
     predict_sexes(settings, sites, matrix)
     mask_male_x_heterozygotes(sites, matrix, settings)
     add_ghosts(settings)

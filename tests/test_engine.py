@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import shutil
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -142,6 +144,66 @@ def test_requested_sample_order_is_preserved(tmp_path: Path) -> None:
     assert matrix.dp[matrix.sample_index["AAA"], 0] == 11
     assert matrix.gt[matrix.sample_index["CCC"], 0] == 2
     assert matrix.gt[matrix.sample_index["AAA"], 0] == 0
+
+
+def test_unindexed_vcf_warns_when_threads_exceed_one(
+    family_vcf: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Fall back to a sequential scan and warn when the VCF has no index."""
+    samples = ("FATHER", "MOTHER", "CHILD")
+    with caplog.at_level(logging.WARNING):
+        sequential, sequential_matrix = load_vcf(family_vcf, samples, threads=1)
+    assert "single-threaded" not in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        parallel, parallel_matrix = load_vcf(family_vcf, samples, threads=4)
+    assert "No tabix/CSI index found" in caplog.text
+    assert sequential.pos.tolist() == parallel.pos.tolist()
+    assert np.array_equal(sequential_matrix.gt, parallel_matrix.gt)
+    assert np.array_equal(sequential_matrix.dp, parallel_matrix.dp)
+
+
+def _compress_and_index_vcf(plain: Path) -> Path:
+    """Bgzip and tabix-index a VCF, skipping when htslib tools are absent."""
+    bgzip = shutil.which("bgzip")
+    tabix = shutil.which("tabix")
+    if bgzip is None or tabix is None:
+        pytest.skip("bgzip and tabix are required to index a test VCF")
+    compressed = Path(f"{plain}.gz")
+    with compressed.open("wb") as handle:
+        subprocess.run([bgzip, "-c", str(plain)], check=True, stdout=handle)
+    subprocess.run([tabix, "-p", "vcf", str(compressed)], check=True)
+    return compressed
+
+
+def test_indexed_vcf_parallel_matches_sequential(tmp_path: Path) -> None:
+    """Read an indexed VCF by contig without changing retained sites or sample order."""
+    plain = tmp_path / "sites.vcf"
+    plain.write_text(
+        "\n".join(
+            [
+                "##fileformat=VCFv4.2",
+                "##contig=<ID=chr1,length=1000>",
+                "##contig=<ID=chr2,length=1000>",
+                '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+                '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Depth">',
+                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tAAA\tBBB",
+                "chr1\t100\t.\tA\tG\t.\tPASS\t.\tGT:DP\t0/0:11\t1/1:22",
+                "chr1\t200\t.\tC\tT\t.\tPASS\t.\tGT:DP\t0/1:12\t0/0:21",
+                "chr2\t150\t.\tG\tA\t.\tPASS\t.\tGT:DP\t1/1:33\t0/1:44",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    compressed = _compress_and_index_vcf(plain)
+    samples = ("BBB", "AAA")
+    sequential, sequential_matrix = load_vcf(compressed, samples, threads=1)
+    parallel, parallel_matrix = load_vcf(compressed, samples, threads=4)
+    assert sequential.chrom.tolist() == parallel.chrom.tolist()
+    assert sequential.pos.tolist() == parallel.pos.tolist()
+    assert np.array_equal(sequential_matrix.gt, parallel_matrix.gt)
+    assert np.array_equal(sequential_matrix.dp, parallel_matrix.dp)
 
 
 def test_af_rounding_and_y_model_conflict_resolution() -> None:

@@ -64,7 +64,7 @@ Details: [install.md](install.md).
   unsupported properties after a warning. Reject mistyped values. Generated
   YAML must not include unused compatibility keys.
 - Keep the CLI as documented in [cli.md](cli.md):
-  - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`
+  - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] [-t THREADS] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`

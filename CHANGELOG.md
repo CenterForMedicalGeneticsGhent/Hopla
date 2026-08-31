@@ -12,6 +12,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Added a typed Python analysis engine at `src/hopla/` with Typer CLI subtools `run`, `convert`, `concordance`, and `transform`.
 - Added schema-validated YAML and JSON settings loading through jsonschema and pydantic, including rejection of unknown properties.
 - Added columnar VCF loading with cyvcf2 into shared site tables and sample-by-site NumPy matrices.
+- Added `hopla run -t` / `--threads` for contig-parallel VCF loading (default:
+  all CPUs). Indexed VCFs (tabix or CSI) are read per contig in a process pool;
+  a missing index logs a warning and falls back to a single sequential scan.
 - Added filter 1 / filter 2 masks, variant statistics, ADO/ADI, BAF, Mendelian errors, parent mapping, and Merlin haplotyping with neighbourhood voting and short-segment correction.
 - Added a self-contained offline HTML report that inlines `plotly.js`, gzip-compresses columnar payloads, and draws SVG panels lazily on scroll.
 - Added optional `{family.id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, enabled with `--export-parquet` and `--export-bigwig`.

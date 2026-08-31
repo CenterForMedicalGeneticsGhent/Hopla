@@ -38,7 +38,7 @@ The package manual is [docs/README.md](docs/README.md).
 - Keep [docs/settings.md](docs/settings.md) aligned with that schema and with engine defaults.
 - Validate settings against the schema before loading a VCF. Ignore unsupported properties after a warning. Reject mistyped values. Generated YAML must not include unused compatibility keys.
 - Keep the CLI as documented in [docs/cli.md](docs/cli.md):
-  - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`
+  - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] [-t THREADS] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import polars as pl
@@ -131,3 +132,13 @@ def test_run_export_flags_write_parquet_and_igv(
     assert (export_dir / "manifest.json").exists()
     assert (export_dir / "baf.parquet").exists()
     assert (export_dir / "igv-session.xml").exists()
+
+
+def test_run_threads_option_help_and_validation() -> None:
+    """Expose -t/--threads and reject a zero thread count as usage."""
+    help_result = runner.invoke(app, ["run", "--help"])
+    assert help_result.exit_code == 0
+    help_text = re.sub(r"\x1b\[[0-9;]*m", "", help_result.stdout)
+    assert "--threads" in "".join(help_text.split())
+    invalid = runner.invoke(app, ["run", "-t", "0", "settings.yaml", "family.vcf"])
+    assert invalid.exit_code == 2
