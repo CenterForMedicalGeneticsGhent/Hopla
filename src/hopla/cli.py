@@ -110,6 +110,15 @@ def run_command(
             help="Write BigWig, BED, SEG, and an IGV desktop session.",
         ),
     ] = False,
+    threads: Annotated[
+        int | None,
+        typer.Option(
+            "-t",
+            "--threads",
+            min=1,
+            help="VCF reader threads (default: all CPUs).",
+        ),
+    ] = None,
 ) -> None:
     """Run the complete family analysis and write its report."""
     if log_level is not None:
@@ -124,6 +133,7 @@ def run_command(
             cytoband_path=cytoband_path,
             export_parquet_data=export_parquet_data,
             export_bigwig=export_bigwig,
+            threads=threads,
             progress=logging.info,
         )
         typer.echo(report)

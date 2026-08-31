@@ -5,7 +5,7 @@ The `hopla` command is small. Global options are `-h` / `--help`, `-V` /
 precede operands for each command.
 
 ```
-hopla [-hV] [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND]
+hopla [-hV] [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] [-t THREADS]
       [--export-parquet|--no-export-parquet]
       [--export-bigwig|--no-export-bigwig]
       SETTINGS.{yaml,yml,json} VCF
@@ -35,6 +35,10 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   Hopla downloads and decompresses
   [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz)
   into a temporary directory for that run.
+- `-t THREADS` / `--threads THREADS` is the number of VCF reader threads
+  (default: all CPUs). Indexed VCFs (tabix `.tbi` or CSI `.csi`) load contigs
+  in parallel. A missing index logs a warning and falls back to a single
+  sequential scan. `-t 1` stays single-threaded without that warning.
 - `--export-parquet` / `--no-export-parquet` controls writing portable Parquet
   tables under `{family.id}-export/` (default: off).
 - `--export-bigwig` / `--no-export-bigwig` controls writing BigWig, BED, SEG,

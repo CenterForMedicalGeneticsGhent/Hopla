@@ -39,7 +39,10 @@ The Python engine is explicit and columnar:
    derives pedigree defaults before VCF loading. Engine modules resolve
    parents and sex directly from family members by ID.
 2. `vcf.py` streams selected biallelic SNVs with cyvcf2 into one `SiteTable`
-   and compact sample-by-site NumPy matrices.
+   and compact sample-by-site NumPy matrices. Indexed VCFs load supported
+   contigs in a thread pool (`hopla run -t`, default all CPUs). Without a
+   tabix or CSI index, loading warns and falls back to a single sequential
+   scan.
 3. `filters.py`, `analysis.py`, and `merlin.py` operate on masks and matrices;
    they do not duplicate site columns per sample.
 4. `report.py` serializes each result table by column, gzip-compresses the

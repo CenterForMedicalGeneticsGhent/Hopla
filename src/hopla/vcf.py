@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+import os
+from collections.abc import Iterable
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +18,31 @@ from hopla.settings import Settings
 
 # cyvcf2 pads ragged genotype rows so that mixed-ploidy sites stay rectangular.
 ABSENT_ALLELE = -2
+
+
+@dataclass(slots=True)
+class _CollectedSites:
+    """Accumulate retained SNV columns before stacking into matrices."""
+
+    chrom: list[int] = field(default_factory=list)
+    pos: list[int] = field(default_factory=list)
+    ref: list[str] = field(default_factory=list)
+    alt: list[str] = field(default_factory=list)
+    genotypes: list[np.ndarray] = field(default_factory=list)
+    depths: list[np.ndarray] = field(default_factory=list)
+    ref_depths: list[np.ndarray] = field(default_factory=list)
+    alt_depths: list[np.ndarray] = field(default_factory=list)
+
+    def extend(self, other: _CollectedSites) -> None:
+        """Append another contig's retained sites in order."""
+        self.chrom.extend(other.chrom)
+        self.pos.extend(other.pos)
+        self.ref.extend(other.ref)
+        self.alt.extend(other.alt)
+        self.genotypes.extend(other.genotypes)
+        self.depths.extend(other.depths)
+        self.ref_depths.extend(other.ref_depths)
+        self.alt_depths.extend(other.alt_depths)
 
 
 def _format_matrix(variant: Any, key: str, samples: int, columns: int = 1) -> np.ndarray:
@@ -55,57 +85,137 @@ def _decode_genotypes(variant: Any, samples: int, haploid_is_homozygous: bool) -
     return result
 
 
-def load_vcf(path: Path, samples: tuple[str, ...]) -> tuple[SiteTable, GenotypeMatrix]:
-    """Stream biallelic SNVs and selected sample FORMAT fields from a VCF."""
-    reader = VCF(str(path), samples=list(samples), lazy=True)
-    missing = set(samples) - set(reader.samples)
-    if missing:
-        raise ValueError(f"Sample(s) not found in vcf_file: {', '.join(sorted(missing))}")
-    # cyvcf2 yields subset columns in file order, so map them onto the requested order.
-    file_order = list(reader.samples)
-    permutation = np.asarray([file_order.index(sample) for sample in samples])
-    chroms: list[int] = []
-    positions: list[int] = []
-    refs: list[str] = []
-    alts: list[str] = []
-    genotypes: list[np.ndarray] = []
-    depths: list[np.ndarray] = []
-    ref_depths: list[np.ndarray] = []
-    alt_depths: list[np.ndarray] = []
-    for variant in reader:
-        chrom = variant.CHROM if str(variant.CHROM).startswith("chr") else f"chr{variant.CHROM}"
+def _canonical_chrom(name: object) -> str | None:
+    """Return the Hopla chromosome label, or None when the contig is unsupported."""
+    text = str(name)
+    chrom = text if text.startswith("chr") else f"chr{text}"
+    return chrom if chrom in CHROMOSOME_CODES else None
+
+
+def _index_path(path: Path) -> Path | None:
+    """Return a sibling tabix or CSI index when one exists."""
+    for suffix in (".tbi", ".csi"):
+        candidate = path.with_name(f"{path.name}{suffix}")
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _thread_count(threads: int | None) -> int:
+    """Resolve omitted thread counts to the host CPU count."""
+    if threads is None:
+        return os.cpu_count() or 1
+    return threads
+
+
+def _collect_variants(variants: Iterable[Any], sample_count: int) -> _CollectedSites:
+    """Retain biallelic SNVs from a cyvcf2 iterator."""
+    collected = _CollectedSites()
+    for variant in variants:
+        chrom = _canonical_chrom(variant.CHROM)
         alt = variant.ALT[0] if len(variant.ALT) == 1 else ""
-        if chrom not in CHROMOSOME_CODES or len(variant.REF) != 1 or len(alt) != 1:
+        if chrom is None or len(variant.REF) != 1 or len(alt) != 1:
             continue
-        gt = _decode_genotypes(variant, len(samples), haploid_is_homozygous=chrom == "chrX")
-        ad = _format_matrix(variant, "AD", len(samples), 2)
-        dp = _format_matrix(variant, "DP", len(samples))[:, 0]
-        chroms.append(CHROMOSOME_CODES[chrom])
-        positions.append(int(variant.POS))
-        refs.append(str(variant.REF))
-        alts.append(str(alt))
-        genotypes.append(gt)
-        depths.append(np.clip(dp, 0, np.iinfo(np.uint16).max).astype(np.uint16))
-        ref_depths.append(np.clip(ad[:, 0], 0, np.iinfo(np.uint16).max).astype(np.uint16))
-        alt_depths.append(np.clip(ad[:, 1], 0, np.iinfo(np.uint16).max).astype(np.uint16))
-    reader.close()
-    if not positions:
+        gt = _decode_genotypes(variant, sample_count, haploid_is_homozygous=chrom == "chrX")
+        ad = _format_matrix(variant, "AD", sample_count, 2)
+        dp = _format_matrix(variant, "DP", sample_count)[:, 0]
+        collected.chrom.append(CHROMOSOME_CODES[chrom])
+        collected.pos.append(int(variant.POS))
+        collected.ref.append(str(variant.REF))
+        collected.alt.append(str(alt))
+        collected.genotypes.append(gt)
+        collected.depths.append(np.clip(dp, 0, np.iinfo(np.uint16).max).astype(np.uint16))
+        collected.ref_depths.append(np.clip(ad[:, 0], 0, np.iinfo(np.uint16).max).astype(np.uint16))
+        collected.alt_depths.append(np.clip(ad[:, 1], 0, np.iinfo(np.uint16).max).astype(np.uint16))
+    return collected
+
+
+def _load_contig(contig: str, path: Path, samples: tuple[str, ...]) -> _CollectedSites:
+    """Stream one contig through an independent cyvcf2 reader."""
+    reader = VCF(str(path), samples=list(samples), lazy=True)
+    try:
+        return _collect_variants(reader(contig), len(samples))
+    finally:
+        reader.close()
+
+
+def _supported_contigs(seqnames: Iterable[object]) -> list[str]:
+    """Keep header contig names that map onto Hopla chromosomes, in header order."""
+    contigs: list[str] = []
+    seen: set[str] = set()
+    for name in seqnames:
+        text = str(name)
+        if text in seen or _canonical_chrom(text) is None:
+            continue
+        seen.add(text)
+        contigs.append(text)
+    return contigs
+
+
+def _assemble(
+    collected: _CollectedSites,
+    samples: tuple[str, ...],
+    permutation: np.ndarray,
+) -> tuple[SiteTable, GenotypeMatrix]:
+    """Stack retained columns into the shared site table and genotype matrices."""
+    if not collected.pos:
         raise ValueError("VCF contains no supported biallelic SNVs.")
     sites = SiteTable(
-        chrom=np.asarray(chroms, dtype=np.uint8),
-        pos=np.asarray(positions, dtype=np.uint32),
-        ref=np.asarray(refs, dtype=np.str_),
-        alt=np.asarray(alts, dtype=np.str_),
+        chrom=np.asarray(collected.chrom, dtype=np.uint8),
+        pos=np.asarray(collected.pos, dtype=np.uint32),
+        ref=np.asarray(collected.ref, dtype=np.str_),
+        alt=np.asarray(collected.alt, dtype=np.str_),
     )
     matrix = GenotypeMatrix(
-        gt=np.stack(genotypes, axis=1)[permutation],
-        dp=np.stack(depths, axis=1)[permutation],
-        ad_ref=np.stack(ref_depths, axis=1)[permutation],
-        ad_alt=np.stack(alt_depths, axis=1)[permutation],
+        gt=np.stack(collected.genotypes, axis=1)[permutation],
+        dp=np.stack(collected.depths, axis=1)[permutation],
+        ad_ref=np.stack(collected.ref_depths, axis=1)[permutation],
+        ad_alt=np.stack(collected.alt_depths, axis=1)[permutation],
         samples=samples,
         sample_index={sample: index for index, sample in enumerate(samples)},
     )
     return sites, matrix
+
+
+def load_vcf(
+    path: Path,
+    samples: tuple[str, ...],
+    *,
+    threads: int | None = None,
+) -> tuple[SiteTable, GenotypeMatrix]:
+    """Stream biallelic SNVs and selected sample FORMAT fields from a VCF."""
+    resolved = _thread_count(threads)
+    reader = VCF(str(path), samples=list(samples), lazy=True)
+    missing = set(samples) - set(reader.samples)
+    if missing:
+        reader.close()
+        raise ValueError(f"Sample(s) not found in vcf_file: {', '.join(sorted(missing))}")
+    # cyvcf2 yields subset columns in file order, so map them onto the requested order.
+    file_order = list(reader.samples)
+    permutation = np.asarray([file_order.index(sample) for sample in samples])
+    indexed = _index_path(path) is not None
+    contigs = _supported_contigs(reader.seqnames)
+    workers = min(resolved, len(contigs)) if indexed else 1
+    if resolved > 1 and not indexed:
+        logging.warning(
+            "No tabix/CSI index found for %s; VCF loading will be single-threaded.",
+            path,
+        )
+    if workers > 1:
+        reader.close()
+        collected = _CollectedSites()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [
+                pool.submit(_load_contig, contig, path, samples) for contig in contigs
+            ]
+            for future in futures:
+                collected.extend(future.result())
+        return _assemble(collected, samples, permutation)
+    try:
+        collected = _collect_variants(reader, len(samples))
+    finally:
+        reader.close()
+    return _assemble(collected, samples, permutation)
 
 
 def mask_male_x_heterozygotes(
