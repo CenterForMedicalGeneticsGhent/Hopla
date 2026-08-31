@@ -6,7 +6,8 @@ import logging
 import os
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -35,14 +36,8 @@ class _CollectedSites:
 
     def extend(self, other: _CollectedSites) -> None:
         """Append another contig's retained sites in order."""
-        self.chrom.extend(other.chrom)
-        self.pos.extend(other.pos)
-        self.ref.extend(other.ref)
-        self.alt.extend(other.alt)
-        self.genotypes.extend(other.genotypes)
-        self.depths.extend(other.depths)
-        self.ref_depths.extend(other.ref_depths)
-        self.alt_depths.extend(other.alt_depths)
+        for item in fields(self):
+            getattr(self, item.name).extend(getattr(other, item.name))
 
 
 def _format_matrix(variant: Any, key: str, samples: int, columns: int = 1) -> np.ndarray:
@@ -92,20 +87,9 @@ def _canonical_chrom(name: object) -> str | None:
     return chrom if chrom in CHROMOSOME_CODES else None
 
 
-def _index_path(path: Path) -> Path | None:
-    """Return a sibling tabix or CSI index when one exists."""
-    for suffix in (".tbi", ".csi"):
-        candidate = path.with_name(f"{path.name}{suffix}")
-        if candidate.is_file():
-            return candidate
-    return None
-
-
-def _thread_count(threads: int | None) -> int:
-    """Resolve omitted thread counts to the host CPU count."""
-    if threads is None:
-        return os.cpu_count() or 1
-    return threads
+def _has_index(path: Path) -> bool:
+    """Return whether a sibling tabix or CSI index exists."""
+    return any(path.with_name(f"{path.name}{suffix}").is_file() for suffix in (".tbi", ".csi"))
 
 
 def _collect_variants(variants: Iterable[Any], sample_count: int) -> _CollectedSites:
@@ -141,15 +125,7 @@ def _load_contig(contig: str, path: Path, samples: tuple[str, ...]) -> _Collecte
 
 def _supported_contigs(seqnames: Iterable[object]) -> list[str]:
     """Keep header contig names that map onto Hopla chromosomes, in header order."""
-    contigs: list[str] = []
-    seen: set[str] = set()
-    for name in seqnames:
-        text = str(name)
-        if text in seen or _canonical_chrom(text) is None:
-            continue
-        seen.add(text)
-        contigs.append(text)
-    return contigs
+    return [str(name) for name in seqnames if _canonical_chrom(name) is not None]
 
 
 def _assemble(
@@ -184,7 +160,7 @@ def load_vcf(
     threads: int | None = None,
 ) -> tuple[SiteTable, GenotypeMatrix]:
     """Stream biallelic SNVs and selected sample FORMAT fields from a VCF."""
-    resolved = _thread_count(threads)
+    resolved = os.cpu_count() or 1 if threads is None else threads
     reader = VCF(str(path), samples=list(samples), lazy=True)
     missing = set(samples) - set(reader.samples)
     if missing:
@@ -193,7 +169,7 @@ def load_vcf(
     # cyvcf2 yields subset columns in file order, so map them onto the requested order.
     file_order = list(reader.samples)
     permutation = np.asarray([file_order.index(sample) for sample in samples])
-    indexed = _index_path(path) is not None
+    indexed = _has_index(path)
     contigs = _supported_contigs(reader.seqnames)
     workers = min(resolved, len(contigs)) if indexed else 1
     if resolved > 1 and not indexed:
@@ -201,20 +177,17 @@ def load_vcf(
             "No tabix/CSI index found for %s; VCF loading will be single-threaded.",
             path,
         )
-    if workers > 1:
-        reader.close()
-        collected = _CollectedSites()
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = [
-                pool.submit(_load_contig, contig, path, samples) for contig in contigs
-            ]
-            for future in futures:
-                collected.extend(future.result())
+    if workers <= 1:
+        try:
+            collected = _collect_variants(reader, len(samples))
+        finally:
+            reader.close()
         return _assemble(collected, samples, permutation)
-    try:
-        collected = _collect_variants(reader, len(samples))
-    finally:
-        reader.close()
+    reader.close()
+    collected = _CollectedSites()
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for chunk in pool.map(partial(_load_contig, path=path, samples=samples), contigs):
+            collected.extend(chunk)
     return _assemble(collected, samples, permutation)
 
 
