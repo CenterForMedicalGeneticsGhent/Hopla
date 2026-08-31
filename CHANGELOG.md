@@ -5,14 +5,6 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
-### Changed
-
-- Installed the local package as an editable pixi path dependency, so
-  `pixi install` is enough and the `install-py` / CLI wrapper tasks are gone.
-- Locked `default` and `dev` in one solve group. After the shell hook, the
-  image replaces the editable path install with a non-editable `pip install`
-  so the runtime stage does not need `src/`.
-
 ## [3.0.0] - 2026-08-28
 
 ### Added
@@ -46,6 +38,11 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Genome-wide BAF and parent-mapping downsampling (`limit_baf_to_p`, `limit_pm_to_p`) uses a deterministic stride rather than random sampling.
 - Genotype-count and haplotype-concordance grids are HTML tables rather than Plotly tables.
 - Copy-number segmentation uses a deterministic recursive CBS change statistic.
+- Installed the local package as an editable pixi path dependency, so
+  `pixi install` is enough and the `install-py` / CLI wrapper tasks are gone.
+- Locked `default` and `dev` in one solve group. After the shell hook, the
+  image replaces the editable path install with a non-editable `pip install`
+  so the runtime stage does not need `src/`.
 
 ### Removed
 
