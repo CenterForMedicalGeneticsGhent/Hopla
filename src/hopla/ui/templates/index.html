@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Hopla settings editor</title>
+  <title>Hopla settings editor and analysis</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/app.js" defer></script>
@@ -11,7 +11,10 @@
 <body>
   <header>
     <h1>Hopla</h1>
-    <p>Build and validate a settings file for <code>hopla run</code>.</p>
+    <p>
+      {% if analysis %}Build, validate, and run a family analysis.
+      {% else %}Build and validate a settings file for <code>hopla run</code>.{% endif %}
+    </p>
     <label class="upload button">Import configuration
       <input id="config-upload" type="file" accept=".txt,.yaml,.yml,.json">
     </label>
@@ -24,6 +27,7 @@
       <button type="button" data-tab="parameters">Parameters</button>
       <button type="button" data-tab="advanced">Advanced</button>
       <button type="button" data-tab="config">Config</button>
+      {% if analysis %}<button type="button" data-tab="analysis">Analysis</button>{% endif %}
     </nav>
 
     <section id="pedigree" class="panel active">
@@ -61,7 +65,7 @@
         <label><input id="keep_chromosomes_only" type="checkbox"> Keep chromosomes only</label>
         <label><input id="keep_regions_only" type="checkbox"> Keep regions only</label>
       </div>
-      <p class="hint">VCF, output-directory, and cytoband paths belong on the command line.</p>
+      <p class="hint">Select the input VCF on the Analysis tab.</p>
     </section>
 
     <section id="advanced" class="panel">
@@ -84,6 +88,31 @@
       </div>
       <pre id="yaml-preview"></pre>
     </section>
+
+    {% if analysis %}
+    <section id="analysis" class="panel">
+      <h2>Run analysis</h2>
+      <p>
+        Hopla uses the current validated configuration. Imported configurations and changes made
+        in this editor are handled identically.
+      </p>
+      <div class="analysis-controls">
+        <label>Family VCF
+          <input id="vcf-upload" type="file"
+                 accept=".vcf,.vcf.gz,.vcf.bgz,.gz,.bgz,text/plain,application/gzip">
+        </label>
+        <button type="button" id="run-analysis">Run analysis</button>
+      </div>
+      <p class="hint">
+        The VCF and generated report are stored temporarily and removed when this server stops.
+        Web runs generate the HTML report only.
+      </p>
+      <p id="analysis-status" role="status" aria-live="polite">Select a VCF to begin.</p>
+      <progress id="analysis-progress" aria-label="Analysis running" hidden></progress>
+      <ol id="analysis-log" class="log" hidden></ol>
+      <a id="report-download" class="button" href="#" download hidden>Download HTML report</a>
+    </section>
+    {% endif %}
   </main>
 
   <template id="member-template">

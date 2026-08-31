@@ -7,7 +7,8 @@ manual under `docs/`.
 ```text
 pyproject.toml              package metadata, console script, tool config
 src/hopla/__init__.py       package version
-src/hopla/cli.py            Typer dispatcher and run orchestration
+src/hopla/cli.py            Typer command-line dispatcher
+src/hopla/pipeline.py       shared analysis orchestration
 src/hopla/settings.py       schema validation and pedigree defaults
 src/hopla/vcf.py            cyvcf2 streaming into SiteTable / matrices
 src/hopla/filters.py        filter 1 and filter 2 masks
@@ -18,7 +19,7 @@ src/hopla/flow.py           concordance / transform helpers
 src/hopla/convert.py        legacy key=value → YAML conversion
 src/hopla/cytobands.py      UCSC cytoband load / download
 src/hopla/report.py         self-contained HTML report assembly
-src/hopla/serve.py          Starlette settings-editor application
+src/hopla/serve.py          Starlette settings and analysis application
 src/hopla/ui/               form mapping, Jinja template, CSS, and JavaScript
 src/hopla/export/           Parquet and IGV desktop exporters
 src/hopla/models.py         shared typed tables and chromosome constants
@@ -55,31 +56,38 @@ aggregation; NumPy owns dense genotype operations. Merlin 1.1.2 remains an
 external executable so its haplotyping inference stays compatible with prior
 Hopla Merlin workflows.
 
-`cli.py` owns command-line parsing, logging setup, temporary cytoband download
-lifetime, pipeline orchestration, and output writes. Individual modules define
-helpers only; reordering imports or calling one module in isolation is not a
-supported public API beyond the console script.
+`cli.py` owns command-line parsing and logging setup. `pipeline.py` owns the
+shared analysis sequence, temporary cytoband download lifetime, and output
+writes used by the CLI and web interface. Individual analysis modules define
+the narrower helpers called by that sequence.
 
-## Settings editor flow
+## Web interface flow
 
 `hopla serve` starts the Starlette application in `serve.py` through Uvicorn.
 The application serves package-local Jinja, CSS, and JavaScript assets from
 `ui/`. Browser form state is stateless: preview, import, and download requests
 carry the complete form model. `ui/form.py` converts that model to schema-valid
 settings and reconstructs the youngest pedigree from imported legacy,
-YAML, or JSON settings. The editor does not accept VCFs or run analyses.
+YAML, or JSON settings.
+
+For an analysis, the application validates the current form, allocates a
+randomly identified job directory under an application-lifetime temporary
+directory, and streams the selected VCF into it. The blocking shared pipeline
+runs in a worker thread while the browser polls coarse job status. Web jobs
+disable portable and IGV exports; the completed HTML report remains available
+for download until the server stops.
 
 ## Change placement
 
-- Keep command parsing and `run` orchestration in `cli.py`.
+- Keep command parsing in `cli.py` and shared run orchestration in `pipeline.py`.
 - Keep settings validation and derived defaults in `settings.py`.
 - Put VCF loading and genotype matrices in `vcf.py`.
 - Put filter masks in `filters.py`.
 - Put analysis tables in `analysis.py`.
 - Put Merlin execution and haplotype correction in `merlin.py`.
 - Put report HTML assembly in `report.py`.
-- Put settings-editor HTTP routes in `serve.py` and form mapping/assets in
-  `ui/`.
+- Put settings and analysis HTTP routes in `serve.py` and form mapping/assets
+  in `ui/`.
 - Put portable / IGV exporters under `export/`.
 - Add behavior coverage under `tests/`.
 

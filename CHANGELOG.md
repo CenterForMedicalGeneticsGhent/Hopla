@@ -15,6 +15,9 @@ subtools. Historical notes from the predecessor analysis pipeline live in
 - Replaced pixi features and environments `hopla-py` / `hopla-py-dev` with the default environment plus `dev`.
 - Merged the pixi workspace into `pyproject.toml` (`[tool.pixi…]`) and dropped `pixi.toml`.
 - Kept `pixi.lock` free of PyPI source dependencies; it resolves conda packages only.
+- Extended `hopla serve` to run the current browser configuration with an
+  uploaded VCF and return a temporary self-contained HTML report, with a live
+  step log and a `--no-analysis` flag that serves settings editing only.
 
 ### Removed
 
