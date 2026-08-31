@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import sys
-import tempfile
 import webbrowser
 from enum import StrEnum
 from pathlib import Path
@@ -16,19 +15,12 @@ import typer
 import uvicorn
 
 from hopla import __version__
-from hopla.analysis import build_analysis_tables, haplotype_concordance
 from hopla.convert import convert_settings
-from hopla.cytobands import chromosome_sizes, fetch_hg38, load_cytobands
-from hopla.export import export_igv_tracks, export_parquet
-from hopla.filters import apply_filter1, apply_filter2
 from hopla.flow import concordance as compare_flows
 from hopla.flow import transform as transform_flow
-from hopla.merlin import run_merlin
-from hopla.pedigree import add_ghosts, predict_genders
-from hopla.report import render_report
+from hopla.pipeline import run_analysis
 from hopla.serve import create_app
 from hopla.settings import load_settings
-from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
 app = typer.Typer(
     no_args_is_help=True,
@@ -125,35 +117,15 @@ def run_command(
     try:
         logging.info("Validating settings")
         settings = load_settings(settings_path)
-        logging.info("Loading VCF")
-        sites, matrix = load_vcf(vcf_path, settings.real_samples)
-        settings.genders = predict_genders(settings, sites, matrix)
-        mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.genders)
-        add_ghosts(settings)
-        logging.info("Applying filters")
-        filtered1 = apply_filter1(sites, matrix, settings)
-        filtered2 = apply_filter2(sites, matrix, filtered1, settings)
-        with tempfile.TemporaryDirectory(prefix="hopla-cytobands-") as temporary:
-            cytobands_file = cytoband_path or fetch_hg38(Path(temporary) / "cytoBand.txt")
-            cytobands = load_cytobands(cytobands_file)
-            sizes = chromosome_sizes(cytobands)
-            logging.info("Computing analyses")
-            tables = build_analysis_tables(sites, matrix, filtered1, filtered2, settings)
-            if settings.run_merlin:
-                logging.info("Running Merlin")
-                tables["haplotypes"] = run_merlin(
-                    out_dir / f"{settings.fam_id}-merlin", sites, matrix, filtered2, settings
-                )
-                if settings.concordance_table:
-                    tables["haplotype_concordance"] = haplotype_concordance(tables["haplotypes"])
-            if export_parquet_data:
-                logging.info("Writing portable Parquet exports")
-                export_parquet(out_dir / f"{settings.fam_id}-export", settings.fam_id, tables)
-            if export_bigwig:
-                logging.info("Writing IGV tracks")
-                export_igv_tracks(out_dir / f"{settings.fam_id}-export", tables, sizes)
-            report = out_dir / f"{settings.fam_id}-output.html"
-            render_report(report, settings, tables, matrix.samples, cytobands)
+        report = run_analysis(
+            settings,
+            vcf_path,
+            out_dir,
+            cytoband_path=cytoband_path,
+            export_parquet_data=export_parquet_data,
+            export_bigwig=export_bigwig,
+            progress=logging.info,
+        )
         typer.echo(report)
     except (OSError, ValueError, RuntimeError, pl.exceptions.PolarsError) as error:
         _runtime_error(error)
@@ -178,13 +150,19 @@ def serve_command(
     open_browser: Annotated[
         bool, typer.Option("--open/--no-open", help="Open the editor in a local browser.")
     ] = True,
+    analysis: Annotated[
+        bool,
+        typer.Option("--analysis/--no-analysis", help="Offer the analysis runner."),
+    ] = True,
 ) -> None:
     """Serve the local Hopla settings editor."""
     url = f"http://{host}:{port}/"
     if open_browser and sys.stdout.isatty() and host in {"127.0.0.1", "localhost", "::1"}:
         Timer(0.5, webbrowser.open, args=(url,)).start()
     logging.info("Serving the settings editor at %s", url)
-    uvicorn.run(create_app(), host=host, port=port, log_level="warning")
+    if not analysis:
+        logging.info("Serving settings only; the analysis runner is disabled")
+    uvicorn.run(create_app(analysis=analysis), host=host, port=port, log_level="warning")
 
 
 @app.command("concordance")

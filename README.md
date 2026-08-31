@@ -28,7 +28,9 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
 
 - A (multisample) `vcf.gz` file.
 - A YAML or JSON [settings file](docs/settings.md) describing the family and analysis options. Create it by hand or with the optional local [`hopla serve`](docs/serve.md) editor.
-- The VCF path and output directory are command-line arguments, not settings keys.
+- For CLI runs, the VCF path and output directory are command-line arguments,
+  not settings keys. The local web interface can instead upload a selected VCF
+  and return a temporary HTML report.
 
 ## Quick start
 
@@ -42,6 +44,10 @@ pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 By default `hopla run` also writes `{fam_id}-export/` with Parquet tables and
 IGV desktop tracks. See [exports.md](docs/exports.md). Example settings and a
 legacy conversion fixture are in [`example/`](example/).
+
+`hopla serve` can create or import settings, upload a VCF selected in the
+browser, run the analysis, and return its HTML report. Web runs use temporary
+storage and omit the Parquet and IGV exports.
 
 ```bash
 hopla run settings.yaml family.vcf.gz

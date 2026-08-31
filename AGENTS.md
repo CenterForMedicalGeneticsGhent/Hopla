@@ -42,7 +42,7 @@ The package manual is [docs/README.md](docs/README.md).
   - `hopla convert LEGACY [OUTPUT]`
   - `hopla concordance FLOW1 FLOW2 [-r]`
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
-  - `hopla serve [--host HOST] [--port PORT] [--no-open]`
+  - `hopla serve [--host HOST] [--port PORT] [--no-open] [--no-analysis]`
 - `vcf_file`, `out_dir`, and `cytoband_file` are CLI paths, not settings properties. Validate that supplied paths exist. `OUT_DIR` defaults to the current working directory; an omitted cytoband table is downloaded from UCSC.
 - Default `run` also writes `{fam_id}-export/` Parquet and IGV sidecars unless disabled with `--no-export-parquet` / `--no-export-bigwig`.
 - `convert` maps the legacy `key=value` settings format to schema-validated YAML.
