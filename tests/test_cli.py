@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import polars as pl
@@ -137,7 +138,7 @@ def test_run_threads_option_help_and_validation() -> None:
     """Expose -t/--threads and reject a zero thread count as usage."""
     help_result = runner.invoke(app, ["run", "--help"])
     assert help_result.exit_code == 0
-    assert "-t" in help_result.stdout
-    assert "--threads" in help_result.stdout
+    help_text = re.sub(r"\x1b\[[0-9;]*m", "", help_result.stdout)
+    assert "--threads" in "".join(help_text.split())
     invalid = runner.invoke(app, ["run", "-t", "0", "settings.yaml", "family.vcf"])
     assert invalid.exit_code == 2
