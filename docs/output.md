@@ -9,7 +9,7 @@ portable Parquet tables and IGV desktop tracks under `{family.id}-export/`; see
 The report is always a single offline document: the offline `plotly.js` bundle
 is inlined once, analysis tables are serialized column-wise and gzip-compressed
 inside the HTML, and the browser expands them with `DecompressionStream` before
-drawing. Figures are built in the browser from that single payload and drawn
+drawing. A contents list at the top links to each `h2` and `h3` section. Figures are built in the browser from that single payload and drawn
 only when they scroll into view. The file requires JavaScript and a current
 browser with `DecompressionStream` support. Report size still grows with the
 number of samples and plotted variants. Restrict `baf_ids`, enable

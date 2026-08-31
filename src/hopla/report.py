@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import gzip
 import json
+import re
 from html import escape
 from importlib.util import find_spec
 from pathlib import Path
@@ -40,6 +41,38 @@ FILTER_TITLES = (
     "Filter 1: filter 0, --dp_hard_limit, af_hard_limit and --dp_soft_limit",
     "Filter 2: filter 0, filter 1, keep_informative_ids and --keep_hetero_ids",
 )
+
+
+class _Outline:
+    """Collect unique heading anchors for a report table of contents."""
+
+    def __init__(self) -> None:
+        self.entries: list[tuple[int, str, str]] = []
+        self._used: dict[str, int] = {}
+
+    def heading(self, level: int, text: str) -> str:
+        """Emit one heading and record it when it belongs in the contents."""
+        slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or f"section-{level}"
+        count = self._used.get(slug, 0) + 1
+        self._used[slug] = count
+        if count > 1:
+            slug = f"{slug}-{count}"
+        if level in (2, 3):
+            self.entries.append((level, text, slug))
+        return f'<h{level} id="{escape(slug)}">{escape(text)}</h{level}>'
+
+    def toc(self) -> str:
+        """Render nested contents links for recorded h2 and h3 headings."""
+        if not self.entries:
+            return ""
+        items = []
+        for level, text, slug in self.entries:
+            indent = ' class="toc-h3"' if level == 3 else ""
+            items.append(f'<li{indent}><a href="#{escape(slug)}">{escape(text)}</a></li>')
+        return (
+            '<nav class="toc" aria-label="Contents"><p class="toc-title">Contents</p>'
+            "<ul>" + "".join(items) + "</ul></nav>"
+        )
 
 
 def _json_value(value: Any) -> Any:
@@ -316,11 +349,15 @@ def _concordance_table(tables: dict[str, pl.DataFrame], samples: tuple[str, ...]
 
 
 def _statistics_block(
-    tables: dict[str, pl.DataFrame], settings: Settings, samples: tuple[str, ...], level: int
+    tables: dict[str, pl.DataFrame],
+    settings: Settings,
+    samples: tuple[str, ...],
+    level: int,
+    outline: _Outline,
 ) -> str:
     """Render the shared variant-statistics block of one filter stage."""
     parts = [
-        "<h3>Variant statistics</h3>",
+        outline.heading(3, "Variant statistics"),
         "<h4>Total number of variants</h4>",
         _variant_totals(tables, settings, samples, level),
         "<h4>Number of variants table</h4>",
@@ -345,25 +382,26 @@ def _body(
     chromosomes: list[str],
 ) -> str:
     """Assemble every report section in documented filter order."""
+    outline = _Outline()
     parts: list[str] = []
     if settings.info.strip():
-        parts.append("<h2>Family/disease information</h2>")
+        parts.append(outline.heading(2, "Family/disease information"))
         parts.append(f'<p class="family-info">{escape(settings.info)}</p>')
     if len(samples) > 1:
-        parts.append("<h2>Family tree</h2>")
+        parts.append(outline.heading(2, "Family tree"))
         parts.append(f'<div class="pedigree">{pedigree_svg(settings)}</div>')
 
-    parts.append(f"<h2>{escape(FILTER_TITLES[0])}</h2>")
-    parts.append(_statistics_block(tables, settings, samples, 0))
-    parts.append("<h3>Vcf-based copy number (bam-based verification recommended)</h3>")
+    parts.append(outline.heading(2, FILTER_TITLES[0]))
+    parts.append(_statistics_block(tables, settings, samples, 0, outline))
+    parts.append(outline.heading(3, "Vcf-based copy number (bam-based verification recommended)"))
     parts.append(
         _grid([_figure({"kind": "cn", "sample": sample}, 210) for sample in samples], 1)
     )
 
-    parts.append(f"<h2>{escape(FILTER_TITLES[1])}</h2>")
-    parts.append(_statistics_block(tables, settings, samples, 1))
+    parts.append(outline.heading(2, FILTER_TITLES[1]))
+    parts.append(_statistics_block(tables, settings, samples, 1, outline))
     if settings.regions and "baf" in tables:
-        parts.append("<h3>B-allele frequency (BAF), region(s) of interest</h3>")
+        parts.append(outline.heading(3, "B-allele frequency (BAF), region(s) of interest"))
         for region in settings.regions:
             parts.append(f"<h4>{escape(region)}</h4>")
             parts.append(
@@ -380,7 +418,7 @@ def _body(
         suffix = (
             f", only {settings.value_of_p * 100:g}% of data" if settings.limit_baf_to_p else ""
         )
-        parts.append(f"<h3>B-allele frequency (BAF), genome-wide{escape(suffix)}</h3>")
+        parts.append(outline.heading(3, f"B-allele frequency (BAF), genome-wide{suffix}"))
         for sample in baf_samples:
             parts.append(f"<h4>{escape(sample_label(settings, sample))}</h4>")
             parts.append(
@@ -397,14 +435,14 @@ def _body(
         children = [
             sample for sample in samples if sample in set(mendelian["sample"].to_list())
         ]
-        parts.append("<h3>Mendelian errors</h3>")
+        parts.append(outline.heading(3, "Mendelian errors"))
         parts.append(
             _grid([_figure({"kind": "men", "sample": child}, 210) for child in children], 1)
         )
     mapping = tables.get("parent_mapping")
     if mapping is not None and not mapping.is_empty():
         suffix = f", only {settings.value_of_p * 100:g}% of data" if settings.limit_pm_to_p else ""
-        parts.append(f"<h3>Parent mapping{escape(suffix)}</h3>")
+        parts.append(outline.heading(3, f"Parent mapping{suffix}"))
         children = [sample for sample in samples if sample in set(mapping["child"].to_list())]
         for child in children:
             parts.append(f"<h4>{escape(sample_label(settings, child))}</h4>")
@@ -415,11 +453,11 @@ def _body(
             panels.append(_figure({"kind": "pmlegend", "sample": child}, 260))
             parts.append(_grid(panels, 4))
 
-    parts.append(f"<h2>{escape(FILTER_TITLES[2])}</h2>")
-    parts.append(_statistics_block(tables, settings, samples, 2))
+    parts.append(outline.heading(2, FILTER_TITLES[2]))
+    parts.append(_statistics_block(tables, settings, samples, 2, outline))
     haplotypes = tables.get("haplotypes")
     if haplotypes is not None and not haplotypes.is_empty():
-        parts.append("<h3>Haplotyping by Merlin</h3>")
+        parts.append(outline.heading(3, "Haplotyping by Merlin"))
         height = 60 * len(samples) + 90
         drawn = [chrom for chrom in chromosomes if chrom in set(haplotypes["chrom"].to_list())]
         parts.append(
@@ -427,9 +465,9 @@ def _body(
         )
         concordance = _concordance_table(tables, samples)
         if concordance:
-            parts.append("<h3>Haplotyping by Merlin: strand concordance</h3>")
+            parts.append(outline.heading(3, "Haplotyping by Merlin: strand concordance"))
             parts.append(concordance)
-    return "".join(parts)
+    return outline.toc() + "".join(parts)
 
 
 def render_report(
@@ -468,9 +506,17 @@ def render_report(
 
 _STYLE = """
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:#0f172a;margin:0 auto;padding:24px 32px 96px;max-width:1600px;line-height:1.45}
-h1{font-size:22px;margin:0 0 24px}
+h1{font-size:22px;margin:0 0 16px}
+h2,h3{scroll-margin-top:12px}
 h2{font-size:19px;margin:44px 0 12px;padding-top:16px;border-top:2px solid #0f172a}
 h3{font-size:16px;margin:28px 0 8px}
+.toc{margin:0 0 8px;padding:16px 20px 12px;border:1px solid #cbd5f5;background:#f8fafc}
+.toc-title{font-size:16px;font-weight:600;margin:0 0 8px}
+.toc ul{margin:0;padding:0;list-style:none}
+.toc li{margin:4px 0}
+.toc li.toc-h3{margin-left:18px}
+.toc a{color:#1F78B4;text-decoration:none}
+.toc a:hover{text-decoration:underline}
 h4{font-size:14px;margin:20px 0 6px;color:#334155}
 h5{font-size:13px;margin:12px 0 2px;color:#475569}
 p{margin:2px 0;font-size:13px}

@@ -5,6 +5,11 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Added
+
+- Added a contents list at the top of the HTML report with links to each
+  section.
+
 ### Changed
 
 - Replaced verbose variant-total and ADO/ADI report lists with compact,

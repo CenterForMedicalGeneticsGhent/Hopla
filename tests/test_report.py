@@ -203,8 +203,13 @@ def test_report_restores_every_original_section() -> None:
     finally:
         output.unlink(missing_ok=True)
 
-    titles = [match for match in re.findall(r"<h[234]>(.*?)</h[234]>", html)]
+    titles = [match for match in re.findall(r"<h[234][^>]*>(.*?)</h[234]>", html)]
     assert titles.index("Family/disease information") < titles.index("Family tree")
+    assert html.index('class="toc"') < html.index("Family/disease information")
+    assert 'href="#family-disease-information"' in html
+    assert 'id="family-disease-information"' in html
+    assert html.count('href="#variant-statistics') == 3
+    assert "Mendelian errors" not in html.split("</nav>", 1)[0]
     for expected in (
         "Filter 0: single nucleotide variants",
         "Vcf-based copy number (bam-based verification recommended)",
