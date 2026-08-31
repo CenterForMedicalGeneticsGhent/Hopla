@@ -122,7 +122,10 @@ def test_run_one_uses_merlinpy_and_removes_rejected_markers(
         )
         assert x_mode is chromosome_x
         calls.append("error")
-        return "    FAMILY     PERSON     MARKER      RATIO\n         1     SAMPLE        id2      0.001\n"
+        return (
+            "    FAMILY     PERSON     MARKER      RATIO\n"
+            "         1     SAMPLE        id2      0.001\n"
+        )
 
     def fake_best(dat: Path, ped: Path, mapfile: Path, x_mode: bool) -> tuple[str, str]:
         assert "id2" not in dat.read_text(encoding="utf-8")
