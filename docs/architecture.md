@@ -19,6 +19,9 @@ src/hopla/flow.py           concordance / transform helpers
 src/hopla/convert.py        legacy key=value → YAML conversion
 src/hopla/cytobands.py      UCSC cytoband load / download
 src/hopla/report.py         self-contained HTML report assembly
+src/hopla/report.css        report stylesheet, inlined at render time
+src/hopla/report.js         report figure script, inlined at render time
+src/hopla/plotly-basic.min.js  plotly.js basic v3.7.0, inlined at render time
 src/hopla/serve.py          Starlette settings and analysis application
 src/hopla/ui/               form mapping, Jinja template, CSS, and JavaScript
 src/hopla/export/           Parquet and IGV desktop exporters
@@ -29,7 +32,8 @@ docs/                       user and contributor manual
 
 The settings schema is packaged with the wheel as
 `hopla/schema/hopla.schema.json` from `src/hopla/schema/hopla.schema.json`.
-There is no runtime fallback to another package tree.
+Report CSS, JS, and the plotly.js basic bundle sit next to `report.py` and are
+packaged the same way. There is no runtime fallback to another package tree.
 
 ## Engine flow
 
@@ -46,10 +50,10 @@ The Python engine is explicit and columnar:
 3. `filters.py`, `analysis.py`, and `merlin.py` operate on masks and matrices;
    they do not duplicate site columns per sample.
 4. `report.py` serializes each result table by column, gzip-compresses the
-   payload, and inlines the offline `plotly.js` bundle once. Figures are built
-   in the browser from that single payload and drawn only when they scroll into
-   view, so the report keeps Plotly visuals without repeating the data per
-   figure.
+   payload, and inlines packaged `report.css`, `report.js`, and plotly.js
+   basic once. Figures are built in the browser from that single payload and
+   drawn only when they scroll into view, so the report keeps Plotly visuals
+   without repeating the data per figure.
 5. `export/parquet.py` and `export/igv.py` optionally write the same visualized
    tables as portable Parquet plus BigWig / BED / SEG / `igv-session.xml`
    sidecars. See [exports.md](exports.md).
@@ -108,4 +112,5 @@ deterministic recursive circular-binary-segmentation change statistic and is
 therefore not bit-identical to permutation-based circular-binary-segmentation
 with resampling.
 
-The report always inlines Plotly assets and uses the Paired palette.
+The report always inlines packaged CSS, JS, and plotly.js basic, and uses the
+Paired palette.

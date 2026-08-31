@@ -14,7 +14,7 @@ The package manual is [docs/README.md](docs/README.md).
 - Add Python dependencies to both `[project]` / `[project.optional-dependencies]` and `[tool.pixi.dependencies]` / `[tool.pixi.feature.dev.dependencies]` in `pyproject.toml`; regenerate `pixi.lock` with pixi. Conda entries override the same-named PyPI requirements from `[project]`. Keep the bioconda `conda-pypi-map` entry for `pybigwig` so osx-arm64 does not pull a PyPI source build.
 - Keep `pixi.lock` free of third-party PyPI source dependencies. Every locked third-party dependency is a conda package; the local package is the editable `[tool.pixi.pypi-dependencies]` path entry.
 - Prefer the pixi editable path install over unmanaged global pip installs.
-- Hopla must not invoke Pandoc. The report always inlines the offline `plotly.js` bundle and compresses the columnar payload itself.
+- Hopla must not invoke Pandoc. The report always inlines packaged `report.css`, `report.js`, and plotly.js basic, and compresses the columnar payload itself.
 
 ## Package structure
 
@@ -24,7 +24,7 @@ The package manual is [docs/README.md](docs/README.md).
 - Keep the lightweight settings editor under `src/hopla/ui/` and its Starlette application in `src/hopla/serve.py`. Package all templates and static assets.
 - Put private analysis helpers in the narrowest relevant module documented in [docs/architecture.md](docs/architecture.md).
 - Keep portable Parquet and IGV exporters under `src/hopla/export/`.
-- Keep the settings schema in `src/hopla/schema/hopla.schema.json` (packaged as `hopla/schema/hopla.schema.json`). There is no runtime fallback to another package tree.
+- Keep the settings schema in `src/hopla/schema/hopla.schema.json` (packaged as `hopla/schema/hopla.schema.json`). Keep `src/hopla/report.css`, `src/hopla/report.js`, and `src/hopla/plotly-basic.min.js` next to `report.py`. There is no runtime fallback to another package tree.
 - Keep [docs/architecture.md](docs/architecture.md) aligned with this structure.
 - Keep the package version, CLI version, pixi version, and [CHANGELOG.md](CHANGELOG.md) release entry in sync. CLI-breaking changes require a major version bump.
 - Record Python pipeline changes in [CHANGELOG.md](CHANGELOG.md).

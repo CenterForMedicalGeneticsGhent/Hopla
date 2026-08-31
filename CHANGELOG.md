@@ -16,6 +16,8 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   horizontally scrollable HTML tables.
 - Capped shared variant-depth histogram bins at the pooled 99.5th percentile,
   retaining higher observations in the final bin.
+- Moved report CSS and JS into packaged sibling files and inlined plotly.js
+  basic instead of the full library, shrinking typical HTML by about 3.7 MB.
 
 ### Fixed
 

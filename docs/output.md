@@ -6,15 +6,16 @@ often be inspected. Pass `--export-parquet` and `--export-bigwig` to also write
 portable Parquet tables and IGV desktop tracks under `{family.id}-export/`; see
 [exports.md](exports.md).
 
-The report is always a single offline document: the offline `plotly.js` bundle
-is inlined once, analysis tables are serialized column-wise and gzip-compressed
-inside the HTML, and the browser expands them with `DecompressionStream` before
-drawing. A contents list at the top links to each `h2` and `h3` section. Figures are built in the browser from that single payload and drawn
-only when they scroll into view. The file requires JavaScript and a current
-browser with `DecompressionStream` support. Report size still grows with the
-number of samples and plotted variants. Restrict `baf_ids`, enable
-`limit_baf_to_p` or `limit_pm_to_p`, and use the haplotyping region controls when
-further reduction is needed.
+The report is always a single offline document: packaged `report.css`,
+`report.js`, and plotly.js basic are inlined, analysis tables are serialized
+column-wise and gzip-compressed inside the HTML, and the browser expands them
+with `DecompressionStream` before drawing. A contents list at the top links to
+each `h2` and `h3` section. Figures are built in the browser from that single
+payload and drawn only when they scroll into view. The file requires JavaScript
+and a current browser with `DecompressionStream` support. Report size still
+grows with the number of samples and plotted variants. Restrict `baf_ids`,
+enable `limit_baf_to_p` or `limit_pm_to_p`, and use the haplotyping region
+controls when further reduction is needed.
 
 Output names use `family.id` (default `hopla`). Haplotyping colours are relative
 within a family: the same haplotype colour is not stable across different HTML

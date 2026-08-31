@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 from html import unescape
 from pathlib import Path
 
@@ -232,3 +233,27 @@ def test_report_restores_every_original_section() -> None:
     assert kinds.count("gbaf") == 2  # one panel per chromosome that has cytobands
     assert "Plotly" in html
     assert "application/gzip+json" in html
+
+
+def test_report_inlines_packaged_assets(tmp_path: Path) -> None:
+    """Inline sibling CSS, JS, and the vendored plotly.js basic file."""
+    package = Path(__file__).resolve().parents[1]
+    css = (package / "src/hopla/report.css").read_text(encoding="utf-8")
+    js = (package / "src/hopla/report.js").read_text(encoding="utf-8")
+    with (package / "src/hopla/plotly-basic.min.js").open(encoding="utf-8") as handle:
+        plotly_head = handle.read(80)
+    force_include = tomllib.loads((package / "pyproject.toml").read_text(encoding="utf-8"))[
+        "tool"
+    ]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+    assert force_include["src/hopla/report.css"] == "hopla/report.css"
+    assert force_include["src/hopla/report.js"] == "hopla/report.js"
+    assert force_include["src/hopla/plotly-basic.min.js"] == "hopla/plotly-basic.min.js"
+
+    output = tmp_path / "family-output.html"
+    render_report(output, _trio(), {}, ("father",), CYTOBANDS)
+    html = output.read_text(encoding="utf-8")
+    assert "table.matrix th.block0" in css
+    assert "table.matrix th.block0" in html
+    assert "BUILD.depth" in js
+    assert "BUILD.depth" in html
+    assert plotly_head in html

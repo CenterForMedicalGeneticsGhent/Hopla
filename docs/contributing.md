@@ -23,8 +23,9 @@ An agent-discoverable copy of this material lives in
   third-party dependency is a conda package; the local package is the
   editable `[tool.pixi.pypi-dependencies]` path entry.
 - Prefer the pixi editable path install over unmanaged global pip installs.
-- Hopla must not invoke Pandoc. The report always inlines the offline
-  `plotly.js` bundle and compresses the columnar payload itself.
+- Hopla must not invoke Pandoc. The report always inlines packaged
+  `report.css`, `report.js`, and plotly.js basic, and compresses the columnar
+  payload itself.
 
 Details: [install.md](install.md).
 
@@ -41,8 +42,9 @@ Details: [install.md](install.md).
   [architecture.md](architecture.md).
 - Keep portable Parquet and IGV exporters under `src/hopla/export/`.
 - Keep the settings schema in `src/hopla/schema/hopla.schema.json` (packaged as
-  `hopla/schema/hopla.schema.json`). There is no runtime fallback to another
-  package tree.
+  `hopla/schema/hopla.schema.json`). Keep `src/hopla/report.css`,
+  `src/hopla/report.js`, and `src/hopla/plotly-basic.min.js` next to
+  `report.py`. There is no runtime fallback to another package tree.
 - Keep [architecture.md](architecture.md) aligned with this structure.
 - Keep the package version, CLI version, pixi version, and
   [CHANGELOG.md](../CHANGELOG.md) release entry in sync. CLI-breaking changes
