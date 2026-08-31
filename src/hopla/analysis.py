@@ -489,16 +489,21 @@ def copy_number_table(
         )
         median_value = frame["mean_depth"].median()
         median = float(median_value) if isinstance(median_value, (int, float)) else 1.0
-        frame = frame.with_columns(
-            (pl.col("mean_depth") / median).log(base=2).cast(pl.Float32).alias("log2_ratio"),
-            (pl.col("start") + settings.window_size - 1).alias("end"),
-            pl.lit(sample).alias("sample"),
-            pl.lit(True).alias("mask"),
-        ).drop("_key")
+        frame = (
+            frame.with_columns(
+                (pl.col("mean_depth") / median).log(base=2).cast(pl.Float32).alias("log2_ratio"),
+                (pl.col("start") + settings.window_size - 1).alias("end"),
+                pl.lit(sample).alias("sample"),
+            )
+            .with_columns(pl.col("log2_ratio").is_finite().fill_null(False).alias("mask"))
+            .drop("_key")
+        )
         windows.append(frame)
         segment_rows = []
         for chrom in CHROMOSOMES:
-            chromosome_frame = frame.filter(pl.col("chrom") == chrom)
+            # Windows without a finite ratio would otherwise collapse the whole
+            # chromosome into one unplottable segment.
+            chromosome_frame = frame.filter((pl.col("chrom") == chrom) & pl.col("mask"))
             values = chromosome_frame["log2_ratio"].to_numpy()
             if values.size == 0:
                 continue

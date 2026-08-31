@@ -75,6 +75,10 @@ generated. A BAM-based tool such as
 [WisecondorX](https://github.com/CenterForMedicalGeneticsGhent/WisecondorX/)
 is strongly recommended to verify copy number.
 
+Windows without coverage have no finite log2 ratio. They are excluded from
+segmentation and from IGV tracks, and are flagged as `mask = false` in the
+portable `copy_number` table. Segments span across such gaps.
+
 ## Filter 1: filter 0 plus `dp_hard_limit`, `af_hard_limit`, and `dp_soft_limit`
 
 Tables and plots applied to SNVs after those filters. See

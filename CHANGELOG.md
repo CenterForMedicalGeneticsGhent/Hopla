@@ -21,6 +21,10 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Render male chromosome-X Merlin results as one haplotype strand while
   preserving the absent second strand as `X` in compatibility outputs.
+- Segment copy number from covered windows only. A single window without
+  coverage produced an infinite ratio that suppressed segmentation and left
+  whole chromosomes without a visible segment. Uncovered windows are now
+  flagged in the `mask` column.
 
 ## [3.0.0] - 2026-08-28
 

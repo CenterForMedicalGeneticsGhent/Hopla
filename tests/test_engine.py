@@ -10,7 +10,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from hopla.analysis import _duo_errors, _trio_errors, variant_depth_table
+from hopla.analysis import (
+    _duo_errors,
+    _trio_errors,
+    copy_number_table,
+    variant_depth_table,
+)
 from hopla.filters import apply_filter1, apply_filter2
 from hopla.merlin import (
     _mark_haploid_x,
@@ -99,6 +104,49 @@ def test_variant_depth_caps_outliers_on_shared_sample_bins() -> None:
     assert first_bins["count"].sum() == first.size
     assert second_bins["count"].sum() == second.size
     assert first_bins["count"][-1] == 1
+
+
+def test_zero_depth_window_keeps_its_chromosome_segmented() -> None:
+    """One uncovered window must not drop a whole chromosome from the segments."""
+    window = 1_000_000
+    per_chromosome = 12
+    chroms, positions, depths = [], [], []
+    for code in (1, 2):
+        for index in range(per_chromosome):
+            chroms.append(code)
+            positions.append(index * window + 1)
+            # chr2 loses coverage in one window; every other window is covered.
+            depths.append(0 if code == 2 and index == 5 else 30)
+    sites = SiteTable(
+        chrom=np.asarray(chroms, dtype=np.uint8),
+        pos=np.asarray(positions, dtype=np.uint32),
+        ref=np.asarray(["A"] * len(chroms), dtype=np.str_),
+        alt=np.asarray(["G"] * len(chroms), dtype=np.str_),
+    )
+    depth_row = np.asarray([depths], dtype=np.uint16)
+    matrix = GenotypeMatrix(
+        gt=np.zeros(depth_row.shape, dtype=np.int8),
+        dp=depth_row,
+        ad_ref=np.zeros(depth_row.shape, dtype=np.uint16),
+        ad_alt=np.zeros(depth_row.shape, dtype=np.uint16),
+        samples=("sample",),
+        sample_index={"sample": 0},
+    )
+    settings = Settings(
+        family={"members": [{"id": "sample", "sex": "F"}]},
+        run_merlin=False,
+        window_size=window,
+    )
+
+    windows, segments = copy_number_table(sites, matrix, settings)
+
+    uncovered = windows.filter(~windows["mask"])
+    assert uncovered.height == 1
+    assert uncovered["chrom"].to_list() == ["chr2"]
+    for chrom in ("chr1", "chr2"):
+        means = segments.filter(segments["chrom"] == chrom)["seg_mean"].to_numpy()
+        assert means.size >= 1, chrom
+        assert np.all(np.isfinite(means)), chrom
 
 
 def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
