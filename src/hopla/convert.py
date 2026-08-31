@@ -101,9 +101,10 @@ def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
     properties = schema_properties()
     converted: dict[str, Any] = {}
+    family: dict[str, Any] | None = None
     if "sample_ids" in raw:
         sexes = raw.get("sexes", raw.get("genders"))
-        converted["family"] = family_from_parallel_arrays(
+        family = family_from_parallel_arrays(
             _csv_tokens(raw["sample_ids"], nullable=False),
             father_ids=(
                 _csv_tokens(raw["father_ids"], nullable=True) if "father_ids" in raw else None
@@ -121,6 +122,8 @@ def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
             converted[key] = _coerce(value, properties[key])
         else:
             converted[key] = value
+    if family is not None:
+        converted["family"] = family
     prepared, _ignored = prepare_settings_mapping(converted)
     errors = list(Draft7Validator(schema).iter_errors(prepared))
     if errors:
