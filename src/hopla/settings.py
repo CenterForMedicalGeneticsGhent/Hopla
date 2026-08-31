@@ -62,7 +62,7 @@ class Family(BaseModel):
             raise ValueError("multiple family members require a father and/or mother")
         return self
 
-    def model_post_init(self, _context: Any) -> None:
+    def model_post_init(self, _context: object) -> None:
         """Build constant-time member lookup after validation."""
         self._member_by_id = {member.id: member for member in self.members}
 
