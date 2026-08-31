@@ -60,7 +60,7 @@ The package manual is [docs/README.md](docs/README.md).
 ## Containers
 
 - Build `Dockerfile` from the repository-root context and `pixi.lock`.
-- Resolve every third-party dependency through `pixi install --locked`; the image then overlays a non-editable `pip install --no-deps --force-reinstall .` so the runtime stage does not need `src/`.
+- Resolve every third-party dependency through `pixi install --locked`; after the shell hook, the image uninstalls the editable path package and overlays a non-editable `pip install --no-deps .` so the runtime stage does not need `src/`.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification

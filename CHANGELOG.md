@@ -9,8 +9,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Installed the local package as an editable pixi path dependency, so
   `pixi install` is enough and the `install-py` / CLI wrapper tasks are gone.
-- Locked `default` and `dev` in one solve group. The image still overlays a
-  non-editable `pip install` so the runtime stage does not need `src/`.
+- Locked `default` and `dev` in one solve group. After the shell hook, the
+  image replaces the editable path install with a non-editable `pip install`
+  so the runtime stage does not need `src/`.
 
 ## [3.0.0] - 2026-08-28
 

@@ -4,10 +4,11 @@ WORKDIR /app
 COPY pixi.lock pyproject.toml LICENSE README.md ./
 COPY src ./src
 RUN pixi install --locked \
-    && pixi run python -m pip install --no-deps --force-reinstall . \
     && pixi shell-hook -s bash > /app/entrypoint.sh \
     && printf '\nexec "$@"\n' >> /app/entrypoint.sh \
-    && chmod 0755 /app/entrypoint.sh
+    && chmod 0755 /app/entrypoint.sh \
+    && /app/.pixi/envs/default/bin/python -m pip uninstall -y hopla \
+    && /app/.pixi/envs/default/bin/python -m pip install --no-deps .
 
 FROM ubuntu:24.04 AS production
 

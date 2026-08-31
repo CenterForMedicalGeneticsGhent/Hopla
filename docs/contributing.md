@@ -97,8 +97,8 @@ Details: [install.md](install.md).
 
 - Build `Dockerfile` from the repository-root context and `pixi.lock`.
 - Resolve every third-party dependency through `pixi install --locked`; the
-  image then overlays a non-editable
-  `pip install --no-deps --force-reinstall .` so the runtime stage does not
+  image then uninstalls the editable path package and overlays a
+  non-editable `pip install --no-deps .` so the runtime stage does not
   need `src/`.
 - Do not ship the pixi binary in the runtime stage.
 
