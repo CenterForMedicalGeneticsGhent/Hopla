@@ -22,7 +22,6 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
 - [igv.js feasibility evaluation](docs/igvjs-evaluation.md)
 - [Contributing](docs/contributing.md)
 - [Changelog](CHANGELOG.md)
-- [Archived legacy pipeline changelog](docs/archive/legacy-pipeline-changelog.md)
 
 ## Input
 
