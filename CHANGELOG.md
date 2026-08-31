@@ -23,7 +23,7 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Replaced order-aligned pedigree arrays in generated YAML/JSON with structured
   `family.id` and `family.members` objects. Existing parallel-array settings
-  are remapped when loaded.
+  are remapped when loaded; the engine also uses member-by-ID lookup directly.
 - Renamed legacy `genders` values to member `sex` values during conversion and import.
 - `info` is multiline free text rather than a list of lines. The settings editor uses one text box instead of Disease / Inheritance / Sequencing note fields.
 - Import, convert, and `hopla run` ignore unsupported keys after a warning instead of failing. Generated YAML omits unused compatibility keys.

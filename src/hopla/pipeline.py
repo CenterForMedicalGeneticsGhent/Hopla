@@ -37,8 +37,8 @@ def run_analysis(
 
     update("Loading VCF")
     sites, matrix = load_vcf(vcf_path, settings.real_samples)
-    settings.sexes = predict_sexes(settings, sites, matrix)
-    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.sexes)
+    predict_sexes(settings, sites, matrix)
+    mask_male_x_heterozygotes(sites, matrix, settings)
     add_ghosts(settings)
     update("Applying filters")
     filtered1 = apply_filter1(sites, matrix, settings)
@@ -52,17 +52,19 @@ def run_analysis(
         if settings.run_merlin:
             update("Running Merlin")
             tables["haplotypes"] = run_merlin(
-                out_dir / f"{settings.fam_id}-merlin", sites, matrix, filtered2, settings
+                out_dir / f"{settings.family.id}-merlin", sites, matrix, filtered2, settings
             )
             if settings.concordance_table:
                 tables["haplotype_concordance"] = haplotype_concordance(tables["haplotypes"])
         if export_parquet_data:
             update("Writing portable Parquet exports")
-            export_parquet(out_dir / f"{settings.fam_id}-export", settings.fam_id, tables)
+            export_parquet(
+                out_dir / f"{settings.family.id}-export", settings.family.id, tables
+            )
         if export_bigwig:
             update("Writing IGV tracks")
-            export_igv_tracks(out_dir / f"{settings.fam_id}-export", tables, sizes)
+            export_igv_tracks(out_dir / f"{settings.family.id}-export", tables, sizes)
         update("Rendering report")
-        report = out_dir / f"{settings.fam_id}-output.html"
+        report = out_dir / f"{settings.family.id}-output.html"
         render_report(report, settings, tables, matrix.samples, cytobands)
     return report

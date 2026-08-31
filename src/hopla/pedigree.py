@@ -7,12 +7,13 @@ from html import escape
 import numpy as np
 
 from hopla.models import CHROMOSOME_CODES, GenotypeMatrix, SiteTable
-from hopla.settings import Settings, Sex
+from hopla.settings import FamilyMember, Settings, Sex
 
 
 def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> list[Sex]:
     """Fill unknown sexes from pedigree roles and chromosome depth ratios."""
-    result = list(settings.sexes)
+    fathers = {member.father for member in settings.family.members if member.father}
+    mothers = {member.mother for member in settings.family.members if member.mother}
     autosomal = sites.chrom <= 22
     x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
     y_mask = (
@@ -44,13 +45,13 @@ def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) 
         where=autosomal_mean > 0,
     )
     for sample in matrix.samples:
-        index = settings.sample_ids.index(sample)
-        if result[index] is not None:
+        member = settings.family.member(sample)
+        if member.sex is not None:
             continue
-        if sample in settings.mother_ids:
-            result[index] = "F"
-        elif sample in settings.father_ids:
-            result[index] = "M"
+        if sample in mothers:
+            member.sex = "F"
+        elif sample in fathers:
+            member.sex = "M"
         else:
             matrix_index = matrix.sample_index[sample]
             x_value, y_value = x_copies[matrix_index], y_copies[matrix_index]
@@ -62,41 +63,37 @@ def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) 
             )
             if x_sex is None and y_sex is None:
                 raise ValueError(f"Could not predict sex for sample {sample}.")
-            result[index] = y_sex if y_sex is not None else x_sex
+            member.sex = y_sex if y_sex is not None else x_sex
     unresolved = [
-        sample for sample, sex in zip(settings.sample_ids, result, strict=True) if sex is None
+        member.id for member in settings.family.members if member.sex is None
     ]
     if unresolved:
         raise ValueError(f"Sex must be provided for ghost sample(s): {', '.join(unresolved)}")
-    return result
+    return [member.sex for member in settings.family.members]
 
 
 def add_ghosts(settings: Settings) -> Settings:
     """Add missing single parents as sequential U identifiers."""
     existing = [
         int(sample[1:])
-        for sample in settings.sample_ids
+        for sample in settings.family.member_ids
         if sample[:1].upper() == "U" and sample[1:].isdigit()
     ]
     counter = max(existing, default=0)
-    original_count = len(settings.sample_ids)
-    for index in range(original_count):
-        missing_father = settings.father_ids[index] is None
-        missing_mother = settings.mother_ids[index] is None
+    for member in list(settings.family.members):
+        missing_father = member.father is None
+        missing_mother = member.mother is None
         if missing_father == missing_mother:
             continue
         counter += 1
         ghost = f"U{counter}"
         if missing_father:
-            settings.father_ids[index] = ghost
+            member.father = ghost
             sex: Sex = "M"
         else:
-            settings.mother_ids[index] = ghost
+            member.mother = ghost
             sex = "F"
-        settings.sample_ids.append(ghost)
-        settings.father_ids.append(None)
-        settings.mother_ids.append(None)
-        settings.sexes.append(sex)
+        settings.family.add_member(FamilyMember(id=ghost, sex=sex))
     return settings
 
 
@@ -121,8 +118,8 @@ def sample_label(settings: Settings, sample: str) -> str:
 
 def _generations(settings: Settings) -> list[int]:
     """Place samples one row below their deepest parent and partners on a shared row."""
-    index = {sample: position for position, sample in enumerate(settings.sample_ids)}
-    depth = [0] * len(settings.sample_ids)
+    index = {sample: position for position, sample in enumerate(settings.family.member_ids)}
+    depth = [0] * len(settings.family.members)
     couples = [
         (index[father], index[mother])
         for father, mother in _sibships(settings)
@@ -130,8 +127,8 @@ def _generations(settings: Settings) -> list[int]:
     ]
     for _ in range(2 * len(depth) + 2):
         changed = False
-        for position in range(len(depth)):
-            for parent in (settings.father_ids[position], settings.mother_ids[position]):
+        for position, member in enumerate(settings.family.members):
+            for parent in (member.father, member.mother):
                 if parent in index and depth[position] <= depth[index[parent]]:
                     depth[position] = depth[index[parent]] + 1
                     changed = True
@@ -147,14 +144,14 @@ def _generations(settings: Settings) -> list[int]:
 
 def _sibships(settings: Settings) -> dict[tuple[str, str], list[str]]:
     """Group samples by the parent pair that produced them."""
-    known = set(settings.sample_ids)
+    known = set(settings.family.member_ids)
     families: dict[tuple[str, str], list[str]] = {}
-    for position, sample in enumerate(settings.sample_ids):
-        father = settings.father_ids[position]
-        mother = settings.mother_ids[position]
+    for member in settings.family.members:
+        father = member.father
+        mother = member.mother
         pair = (father if father in known else "", mother if mother in known else "")
         if any(pair):
-            families.setdefault(pair, []).append(sample)
+            families.setdefault(pair, []).append(member.id)
     return families
 
 
@@ -175,14 +172,14 @@ def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
         for member, other in ((father, mother), (mother, father))
     }
     # Columns are wide enough that neighbouring labels never touch.
-    widest = max(len(sample_label(settings, sample)) for sample in settings.sample_ids)
+    widest = max(len(sample_label(settings, sample)) for sample in settings.family.member_ids)
     column = max(_COLUMN, 7.4 * widest + 18)
     rows: dict[int, list[str]] = {}
     positions: dict[str, float] = {}
     for generation in sorted(set(depth)):
         members = [
             sample
-            for position, sample in enumerate(settings.sample_ids)
+            for position, sample in enumerate(settings.family.member_ids)
             if depth[position] == generation
         ]
         ordered: list[str] = []
@@ -202,7 +199,7 @@ def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
         placed = [positions[sample] for sample in samples]
         return (min(placed) + max(placed)) / 2
 
-    index = {sample: position for position, sample in enumerate(settings.sample_ids)}
+    index = {sample: position for position, sample in enumerate(settings.family.member_ids)}
     for _ in range(6):
         for (father, mother), children in families.items():
             parents = [parent for parent in (father, mother) if parent]
@@ -213,8 +210,8 @@ def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
         for (father, mother), children in families.items():
             parents = [parent for parent in (father, mother) if parent]
             if any(
-                settings.father_ids[index[parent]] in index
-                or settings.mother_ids[index[parent]] in index
+                settings.family.member(parent).father in index
+                or settings.family.member(parent).mother in index
                 for parent in parents
             ):
                 continue
@@ -230,7 +227,7 @@ def pedigree_svg(settings: Settings) -> str:
     """Render the family as a conventional pedigree chart."""
     positions, depth = _layout(settings)
     families = _sibships(settings)
-    index = {sample: position for position, sample in enumerate(settings.sample_ids)}
+    index = {sample: position for position, sample in enumerate(settings.family.member_ids)}
     rows = {sample: _MARGIN + depth[index[sample]] * _GENERATION for sample in positions}
     half = _SYMBOL / 2
 
@@ -260,7 +257,7 @@ def pedigree_svg(settings: Settings) -> str:
     symbols: list[str] = []
     for sample, x in positions.items():
         y = rows[sample]
-        sex = settings.sexes[index[sample]]
+        sex = settings.family.member(sample).sex
         affected = sample in settings.affected_ids
         fill = "#334155" if affected else "#ffffff"
         if sex == "M":

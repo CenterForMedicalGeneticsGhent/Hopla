@@ -12,7 +12,7 @@ from hopla.analysis import _duo_errors, _trio_errors
 from hopla.filters import apply_filter1, apply_filter2
 from hopla.merlin import _marker_indices, _parse_blocks, correct_short_segments, weighted_vote
 from hopla.models import GenotypeMatrix, SiteTable
-from hopla.pedigree import predict_sexes
+from hopla.pedigree import add_ghosts, predict_sexes
 from hopla.settings import Settings, load_settings, validate_settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
@@ -23,7 +23,7 @@ def test_vcf_and_filters(family_vcf: Path, settings_file: Path) -> None:
     sites, matrix = load_vcf(family_vcf, settings.real_samples)
     assert sites.size == 46
     assert matrix.gt.shape == (3, 46)
-    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.sexes)
+    mask_male_x_heterozygotes(sites, matrix, settings)
     assert matrix.gt[matrix.sample_index["FATHER"], -1] == -1
     filtered1 = apply_filter1(sites, matrix, settings)
     filtered2 = apply_filter2(sites, matrix, filtered1, settings)
@@ -161,8 +161,9 @@ def test_af_rounding_and_y_model_conflict_resolution() -> None:
         sample_index={"sample": 0},
     )
     assert np.allclose(matrix.allele_fraction()[0], [0.333, 0.667, 0.667])
-    settings = Settings(sample_ids=["sample"], sexes=[None], run_merlin=False)
+    settings = Settings(family={"members": [{"id": "sample"}]}, run_merlin=False)
     assert predict_sexes(settings, sites, matrix) == ["M"]
+    assert settings.family.member("sample").sex == "M"
 
 
 def test_unsupported_settings_are_ignored(caplog: pytest.LogCaptureFixture) -> None:
@@ -176,8 +177,7 @@ def test_unsupported_settings_are_ignored(caplog: pytest.LogCaptureFixture) -> N
                 "bogus": 1,
             }
         )
-    assert settings.sexes == ["M"]
-    assert settings.family is not None
+    assert settings.family.member("A").sex == "M"
     assert settings.family.members[0].id == "A"
     assert "bogus" in caplog.text
     assert "self_contained" in caplog.text
@@ -195,6 +195,25 @@ def test_structured_family_wins_over_parallel_arrays(
                 "sexes": ["M"],
             }
         )
-    assert settings.sample_ids == ["CANONICAL"]
+    assert settings.family.member_ids == ("CANONICAL",)
     assert "sample_ids" in caplog.text
     assert "sexes" in caplog.text
+
+
+def test_generated_ghost_is_added_to_structured_family() -> None:
+    """Add a missing parent without creating parallel pedigree state."""
+    settings = validate_settings(
+        {
+            "family": {
+                "members": [
+                    {"id": "FATHER", "sex": "M"},
+                    {"id": "CHILD", "father": "FATHER", "sex": "F"},
+                ]
+            },
+            "run_merlin": False,
+        }
+    )
+    add_ghosts(settings)
+    assert settings.family.member("CHILD").mother == "U1"
+    assert settings.family.member("U1").sex == "F"
+    assert settings.family.member_ids == ("FATHER", "CHILD", "U1")

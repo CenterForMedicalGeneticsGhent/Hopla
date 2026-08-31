@@ -198,13 +198,13 @@ def test_stream_vcf_run_and_download_report(
         progress: ProgressCallback | None = None,
     ) -> Path:
         del cytoband_path
-        assert settings.sample_ids == ["FATHER"]
+        assert settings.family.member_ids == ("FATHER",)
         assert vcf_path.read_bytes() == b"VCF data"
         assert export_parquet_data is False
         assert export_bigwig is False
         assert progress is not None
         progress("Computing analyses")
-        report = out_dir / f"{settings.fam_id}-output.html"
+        report = out_dir / f"{settings.family.id}-output.html"
         report.write_text("<html>report</html>", encoding="utf-8")
         return report
 

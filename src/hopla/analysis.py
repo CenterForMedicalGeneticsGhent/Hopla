@@ -222,9 +222,9 @@ def ado_adi(
     rows: list[dict[str, object]] = []
     for level, calls in ((0, matrix.gt), (1, filtered1.gt)):
         for child in matrix.samples:
-            pedigree_index = settings.sample_ids.index(child)
-            father = settings.father_ids[pedigree_index]
-            mother = settings.mother_ids[pedigree_index]
+            member = settings.family.member(child)
+            father = member.father
+            mother = member.mother
             if father not in matrix.sample_index or mother not in matrix.sample_index:
                 continue
             child_gt = calls[matrix.sample_index[child]]
@@ -331,9 +331,9 @@ def mendelian_table(
     starts, keys = _window_ids(sites, filtered.site_mask, settings.window_size)
     frames: list[pl.DataFrame] = []
     for child in matrix.samples:
-        pedigree = settings.sample_ids.index(child)
-        father = settings.father_ids[pedigree]
-        mother = settings.mother_ids[pedigree]
+        member = settings.family.member(child)
+        father = member.father
+        mother = member.mother
         child_gt = filtered.gt[matrix.sample_index[child]]
         trio = np.zeros(child_gt.size, dtype=np.int8)
         fat = np.zeros(child_gt.size, dtype=np.int8)
@@ -378,9 +378,9 @@ def parent_mapping_table(
     source = np.flatnonzero(filtered.site_mask)
     rows: list[pl.DataFrame] = []
     for child in matrix.samples:
-        pedigree = settings.sample_ids.index(child)
-        father = settings.father_ids[pedigree]
-        mother = settings.mother_ids[pedigree]
+        member = settings.family.member(child)
+        father = member.father
+        mother = member.mother
         child_gt = filtered.gt[matrix.sample_index[child]]
         masks: list[tuple[str, np.ndarray]] = []
         if father in matrix.sample_index:

@@ -55,11 +55,11 @@ def test_structured_family_is_independent_of_member_order() -> None:
             "run_merlin": False,
         }
     )
-    assert settings.sample_ids == ["CHILD", "MOTHER", "FATHER"]
-    assert settings.father_ids == ["FATHER", None, None]
-    assert settings.mother_ids == ["MOTHER", None, None]
-    assert settings.sexes == [None, "F", "M"]
-    assert settings.fam_id == "family.one"
+    assert settings.family.member_ids == ("CHILD", "MOTHER", "FATHER")
+    assert settings.family.member("CHILD").father == "FATHER"
+    assert settings.family.member("CHILD").mother == "MOTHER"
+    assert [member.sex for member in settings.family.members] == [None, "F", "M"]
+    assert settings.family.id == "family.one"
 
 
 @pytest.mark.parametrize(

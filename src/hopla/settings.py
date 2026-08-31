@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 import yaml
 from jsonschema import Draft7Validator
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 Sex = Literal["M", "F"] | None
 CLI_ONLY_KEYS = frozenset({"vcf_file", "out_dir", "cytoband_file"})
@@ -38,6 +38,49 @@ class Family(BaseModel):
 
     id: str = Field(default="hopla", min_length=1)
     members: list[FamilyMember] = Field(min_length=1)
+    _member_by_id: dict[str, FamilyMember] = PrivateAttr(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_members(self) -> Family:
+        """Reject duplicate IDs, dangling parents, and unrelated member lists."""
+        member_ids = [member.id for member in self.members]
+        duplicates = sorted(
+            sample for sample in set(member_ids) if member_ids.count(sample) > 1
+        )
+        if duplicates:
+            raise ValueError(f"family member IDs must be unique: {', '.join(duplicates)}")
+        parents = [
+            parent
+            for member in self.members
+            for parent in (member.father, member.mother)
+            if parent is not None
+        ]
+        unknown = sorted(set(parents) - set(member_ids))
+        if unknown:
+            raise ValueError(f"sample references not found in family members: {', '.join(unknown)}")
+        if len(self.members) > 1 and not parents:
+            raise ValueError("multiple family members require a father and/or mother")
+        return self
+
+    def model_post_init(self, _context: Any) -> None:
+        """Build constant-time member lookup after validation."""
+        self._member_by_id = {member.id: member for member in self.members}
+
+    @property
+    def member_ids(self) -> tuple[str, ...]:
+        """Return member IDs in configured presentation order."""
+        return tuple(member.id for member in self.members)
+
+    def member(self, sample_id: str) -> FamilyMember:
+        """Return a family member by sample ID."""
+        return self._member_by_id[sample_id]
+
+    def add_member(self, member: FamilyMember) -> None:
+        """Append a generated pedigree member and update the ID lookup."""
+        if member.id in self._member_by_id:
+            raise ValueError(f"family member ID already exists: {member.id}")
+        self.members.append(member)
+        self._member_by_id[member.id] = member
 
 
 class Settings(BaseModel):
@@ -45,11 +88,7 @@ class Settings(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    family: Family | None = None
-    sample_ids: list[str] = Field(default_factory=list)
-    father_ids: list[str | None] = Field(default_factory=list)
-    mother_ids: list[str | None] = Field(default_factory=list)
-    sexes: list[Sex] = Field(default_factory=list)
+    family: Family
     run_merlin: bool = True
     dp_hard_limit_ids: list[str] = Field(default_factory=list)
     dp_hard_limit: float = Field(default=10, ge=0)
@@ -74,7 +113,6 @@ class Settings(BaseModel):
     keep_chromosomes_only: bool = True
     keep_regions_only: bool = False
     concordance_table: bool = True
-    fam_id: str = Field(default="hopla", min_length=1)
     x_cutoff: float = 1.5
     y_cutoff: float = 0.6
     window_size: int = Field(default=1_000_000, gt=0)
@@ -86,29 +124,7 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def validate_family(self) -> Settings:
-        """Expand and validate the structured pedigree and sample references."""
-        if self.family is not None:
-            self.sample_ids = [member.id for member in self.family.members]
-            self.father_ids = [member.father for member in self.family.members]
-            self.mother_ids = [member.mother for member in self.family.members]
-            self.sexes = [member.sex for member in self.family.members]
-            self.fam_id = self.family.id
-        if not self.sample_ids:
-            raise ValueError("family must contain at least one member")
-        duplicates = sorted(
-            sample for sample in set(self.sample_ids) if self.sample_ids.count(sample) > 1
-        )
-        if duplicates:
-            raise ValueError(f"family member IDs must be unique: {', '.join(duplicates)}")
-        size = len(self.sample_ids)
-        for name in ("father_ids", "mother_ids", "sexes"):
-            values = getattr(self, name)
-            if not values:
-                setattr(self, name, [None] * size)
-            elif len(values) != size:
-                raise ValueError(f"{name} must have the same length as sample_ids")
-        if size > 1 and not any(self.father_ids) and not any(self.mother_ids):
-            raise ValueError("multiple samples require father_ids and/or mother_ids")
+        """Validate top-level sample references and analysis regions."""
         referenced = (
             self.dp_hard_limit_ids
             + self.af_hard_limit_ids
@@ -120,32 +136,36 @@ class Settings(BaseModel):
             + self.affected_ids
             + self.nonaffected_ids
             + self.baf_ids
-            + [item for item in self.father_ids + self.mother_ids if item is not None]
         )
-        unknown = sorted(set(referenced) - set(self.sample_ids))
+        unknown = sorted(set(referenced) - set(self.family.member_ids))
         if unknown:
-            raise ValueError(f"sample references not found in sample_ids: {', '.join(unknown)}")
+            raise ValueError(f"sample references not found in family members: {', '.join(unknown)}")
         if len(self.keep_informative_ids) not in (0, 2):
             raise ValueError("keep_informative_ids must contain zero or two samples")
         for region in self.regions:
             if re.fullmatch(r"chr[^:]+:[0-9]+-[0-9]+", region) is None:
                 raise ValueError(f"invalid region: {region}")
         self.window_size_voting_x = self.window_size_voting_x or self.window_size_voting
-        self.fam_id = re.sub(r"[^\w]", ".", self.fam_id)
-        if self.family is not None:
-            self.family.id = self.fam_id
+        self.family.id = re.sub(r"[^\w]", ".", self.family.id)
         return self
 
     @property
     def real_samples(self) -> tuple[str, ...]:
         """Return samples backed by VCF columns rather than pedigree ghosts."""
         return tuple(
-            sample for sample in self.sample_ids if re.fullmatch(r"U[0-9]+", sample, re.I) is None
+            sample
+            for sample in self.family.member_ids
+            if re.fullmatch(r"U[0-9]+", sample, re.I) is None
         )
 
     def derive_filter_ids(self) -> Settings:
         """Fill filter sample lists using the original pedigree-derived defaults."""
-        parents = {item for item in self.father_ids + self.mother_ids if item in self.real_samples}
+        parents = {
+            parent
+            for member in self.family.members
+            for parent in (member.father, member.mother)
+            if parent in self.real_samples
+        }
         terminal = [sample for sample in self.real_samples if sample not in parents]
         if len(self.real_samples) == 1:
             parents = set(self.real_samples)

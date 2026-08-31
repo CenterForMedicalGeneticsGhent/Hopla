@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +9,7 @@ import numpy as np
 from cyvcf2 import VCF  # type: ignore[import-untyped]
 
 from hopla.models import CHROMOSOME_CODES, GenotypeMatrix, SiteTable
+from hopla.settings import Settings
 
 # cyvcf2 pads ragged genotype rows so that mixed-ploidy sites stay rectangular.
 ABSENT_ALLELE = -2
@@ -111,12 +111,11 @@ def load_vcf(path: Path, samples: tuple[str, ...]) -> tuple[SiteTable, GenotypeM
 def mask_male_x_heterozygotes(
     sites: SiteTable,
     matrix: GenotypeMatrix,
-    sample_ids: Sequence[str],
-    sexes: Sequence[str | None],
+    settings: Settings,
 ) -> None:
     """Mark diploid heterozygous chromosome-X calls missing in male samples."""
     x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
     for sample in matrix.samples:
-        if sexes[sample_ids.index(sample)] == "M":
+        if settings.family.member(sample).sex == "M":
             sample_index = matrix.sample_index[sample]
             matrix.gt[sample_index, x_mask & (matrix.gt[sample_index] == 1)] = -1
