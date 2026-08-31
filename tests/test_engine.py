@@ -162,7 +162,7 @@ def test_af_rounding_and_y_model_conflict_resolution() -> None:
     )
     assert np.allclose(matrix.allele_fraction()[0], [0.333, 0.667, 0.667])
     settings = Settings(family={"members": [{"id": "sample"}]}, run_merlin=False)
-    assert predict_sexes(settings, sites, matrix) == ["M"]
+    predict_sexes(settings, sites, matrix)
     assert settings.family.member("sample").sex == "M"
 
 

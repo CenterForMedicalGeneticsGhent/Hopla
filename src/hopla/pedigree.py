@@ -10,7 +10,7 @@ from hopla.models import CHROMOSOME_CODES, GenotypeMatrix, SiteTable
 from hopla.settings import FamilyMember, Settings, Sex
 
 
-def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> list[Sex]:
+def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> None:
     """Fill unknown sexes from pedigree roles and chromosome depth ratios."""
     fathers = {member.father for member in settings.family.members if member.father}
     mothers = {member.mother for member in settings.family.members if member.mother}
@@ -69,7 +69,6 @@ def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) 
     ]
     if unresolved:
         raise ValueError(f"Sex must be provided for ghost sample(s): {', '.join(unresolved)}")
-    return [member.sex for member in settings.family.members]
 
 
 def add_ghosts(settings: Settings) -> Settings:
@@ -93,7 +92,7 @@ def add_ghosts(settings: Settings) -> Settings:
         else:
             member.mother = ghost
             sex = "F"
-        settings.family.add_member(FamilyMember(id=ghost, sex=sex))
+        settings.family.members.append(FamilyMember(id=ghost, sex=sex))
     return settings
 
 
@@ -116,21 +115,20 @@ def sample_label(settings: Settings, sample: str) -> str:
     return sample
 
 
-def _generations(settings: Settings) -> list[int]:
+def _generations(settings: Settings) -> dict[str, int]:
     """Place samples one row below their deepest parent and partners on a shared row."""
-    index = {sample: position for position, sample in enumerate(settings.family.member_ids)}
-    depth = [0] * len(settings.family.members)
+    depth = {member.id: 0 for member in settings.family.members}
     couples = [
-        (index[father], index[mother])
+        (father, mother)
         for father, mother in _sibships(settings)
         if father and mother
     ]
     for _ in range(2 * len(depth) + 2):
         changed = False
-        for position, member in enumerate(settings.family.members):
+        for member in settings.family.members:
             for parent in (member.father, member.mother):
-                if parent in index and depth[position] <= depth[index[parent]]:
-                    depth[position] = depth[index[parent]] + 1
+                if parent in depth and depth[member.id] <= depth[parent]:
+                    depth[member.id] = depth[parent] + 1
                     changed = True
         for first, second in couples:
             shared = max(depth[first], depth[second])
@@ -161,7 +159,7 @@ def _separate(positions: dict[str, float], members: list[str], column: float) ->
         positions[right] = max(positions[right], positions[left] + column)
 
 
-def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
+def _layout(settings: Settings) -> tuple[dict[str, float], dict[str, int]]:
     """Place every sample on a generation row with children centred under parents."""
     depth = _generations(settings)
     families = _sibships(settings)
@@ -176,11 +174,9 @@ def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
     column = max(_COLUMN, 7.4 * widest + 18)
     rows: dict[int, list[str]] = {}
     positions: dict[str, float] = {}
-    for generation in sorted(set(depth)):
+    for generation in sorted(set(depth.values())):
         members = [
-            sample
-            for position, sample in enumerate(settings.family.member_ids)
-            if depth[position] == generation
+            sample for sample in settings.family.member_ids if depth[sample] == generation
         ]
         ordered: list[str] = []
         for sample in members:
@@ -199,26 +195,25 @@ def _layout(settings: Settings) -> tuple[dict[str, float], list[int]]:
         placed = [positions[sample] for sample in samples]
         return (min(placed) + max(placed)) / 2
 
-    index = {sample: position for position, sample in enumerate(settings.family.member_ids)}
     for _ in range(6):
         for (father, mother), children in families.items():
             parents = [parent for parent in (father, mother) if parent]
             shift = centre(parents) - centre(children)
             for child in children:
                 positions[child] += shift
-            _separate(positions, rows[depth[index[children[0]]]], column)
+            _separate(positions, rows[depth[children[0]]], column)
         for (father, mother), children in families.items():
             parents = [parent for parent in (father, mother) if parent]
             if any(
-                settings.family.member(parent).father in index
-                or settings.family.member(parent).mother in index
+                settings.family.member(parent).father in depth
+                or settings.family.member(parent).mother in depth
                 for parent in parents
             ):
                 continue
             shift = centre(children) - centre(parents)
             for parent in parents:
                 positions[parent] += shift
-            _separate(positions, rows[depth[index[parents[0]]]], column)
+            _separate(positions, rows[depth[parents[0]]], column)
     offset = _MARGIN - min(positions.values())
     return {sample: value + offset for sample, value in positions.items()}, depth
 
@@ -227,8 +222,7 @@ def pedigree_svg(settings: Settings) -> str:
     """Render the family as a conventional pedigree chart."""
     positions, depth = _layout(settings)
     families = _sibships(settings)
-    index = {sample: position for position, sample in enumerate(settings.family.member_ids)}
-    rows = {sample: _MARGIN + depth[index[sample]] * _GENERATION for sample in positions}
+    rows = {sample: _MARGIN + depth[sample] * _GENERATION for sample in positions}
     half = _SYMBOL / 2
 
     lines: list[str] = []
@@ -280,7 +274,7 @@ def pedigree_svg(settings: Settings) -> str:
         )
 
     width = max(positions.values()) + _MARGIN
-    height = _MARGIN + max(depth) * _GENERATION + _MARGIN + 20
+    height = _MARGIN + max(depth.values()) * _GENERATION + _MARGIN + 20
     return (
         f'<svg class="pedigree-svg" viewBox="0 0 {width:.0f} {height:.0f}" width="{width:.0f}" '
         'role="img" aria-label="Family tree">'

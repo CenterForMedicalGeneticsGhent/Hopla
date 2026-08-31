@@ -73,11 +73,6 @@ class Family(BaseModel):
                 return item
         raise KeyError(sample_id)
 
-    def add_member(self, member: FamilyMember) -> None:
-        """Append a generated pedigree member."""
-        self.members.append(member)
-
-
 class Settings(BaseModel):
     """Model all supported analysis settings."""
 
@@ -192,6 +187,43 @@ def schema_properties() -> dict[str, Any]:
     return properties
 
 
+def _aligned_column(name: str, values: object, size: int) -> list[Any]:
+    if values in (None, []):
+        return [None] * size
+    if not isinstance(values, list) or len(values) != size:
+        raise ValueError(f"{name} must have the same length as sample_ids")
+    return values
+
+
+def family_from_parallel_arrays(
+    sample_ids: list[Any],
+    *,
+    father_ids: object = None,
+    mother_ids: object = None,
+    sexes: object = None,
+    fam_id: object = None,
+) -> dict[str, Any]:
+    """Zip historical parallel pedigree arrays into a family object."""
+    size = len(sample_ids)
+    fathers = _aligned_column("father_ids", father_ids, size)
+    mothers = _aligned_column("mother_ids", mother_ids, size)
+    sexes_column = _aligned_column("sexes", sexes, size)
+    family: dict[str, Any] = {
+        "members": [
+            {
+                "id": sample_id,
+                "father": fathers[index],
+                "mother": mothers[index],
+                "sex": sexes_column[index],
+            }
+            for index, sample_id in enumerate(sample_ids)
+        ]
+    }
+    if fam_id is not None:
+        family["id"] = fam_id
+    return family
+
+
 def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     """Remap historical names, coerce `info`, and drop unsupported keys."""
     prepared = dict(raw)
@@ -203,37 +235,17 @@ def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[
         ignored.extend(conflicting)
         for key in conflicting:
             prepared.pop(key)
-    elif "sample_ids" in prepared:
-        sample_ids = prepared["sample_ids"]
-        if isinstance(sample_ids, list):
-            size = len(sample_ids)
-            aligned: dict[str, list[Any]] = {}
-            for key in ("father_ids", "mother_ids", "sexes"):
-                values = prepared.get(key)
-                if key == "sexes" and values is None:
-                    values = prepared.get("genders")
-                if values in (None, []):
-                    aligned[key] = [None] * size
-                elif not isinstance(values, list) or len(values) != size:
-                    raise ValueError(f"{key} must have the same length as sample_ids")
-                else:
-                    aligned[key] = values
-            family: dict[str, Any] = {
-                "members": [
-                    {
-                        "id": sample_id,
-                        "father": aligned["father_ids"][index],
-                        "mother": aligned["mother_ids"][index],
-                        "sex": aligned["sexes"][index],
-                    }
-                    for index, sample_id in enumerate(sample_ids)
-                ]
-            }
-        else:
-            family = {"members": sample_ids}
-        if "fam_id" in prepared:
-            family["id"] = prepared["fam_id"]
-        prepared["family"] = family
+    elif isinstance(prepared.get("sample_ids"), list):
+        sexes = prepared.get("sexes")
+        if sexes is None:
+            sexes = prepared.get("genders")
+        prepared["family"] = family_from_parallel_arrays(
+            prepared["sample_ids"],
+            father_ids=prepared.get("father_ids"),
+            mother_ids=prepared.get("mother_ids"),
+            sexes=sexes,
+            fam_id=prepared.get("fam_id"),
+        )
         for key in LEGACY_FAMILY_KEYS:
             prepared.pop(key, None)
     if isinstance(prepared.get("info"), list):

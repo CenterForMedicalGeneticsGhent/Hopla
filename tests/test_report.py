@@ -45,7 +45,7 @@ def test_pedigree_places_children_below_and_between_their_parents() -> None:
     """Draw generations as rows with the sibship centred under the parent couple."""
     settings = _trio()
     positions, depth = _layout(settings)
-    assert depth == [0, 0, 1]
+    assert depth == {"father": 0, "mother": 0, "child": 1}
     assert positions["child"] == (positions["father"] + positions["mother"]) / 2
     assert positions["father"] != positions["mother"]
 
@@ -90,11 +90,10 @@ def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
         run_merlin=False,
     )
     positions, depth = _layout(settings)
-    generation = dict(zip(settings.family.member_ids, depth, strict=True))
-    assert generation["grandmother"] == generation["grandfather"] == 0
+    assert depth["grandmother"] == depth["grandfather"] == 0
     # The father has no parents but marries into the second generation.
-    assert generation["mother"] == generation["father"] == 1
-    assert generation["child"] == 2
+    assert depth["mother"] == depth["father"] == 1
+    assert depth["child"] == 2
     assert positions["child"] == (positions["mother"] + positions["father"]) / 2
 
 

@@ -9,7 +9,13 @@ from typing import Any
 import yaml
 from jsonschema import Draft7Validator
 
-from hopla.settings import prepare_settings_mapping, schema_path, schema_properties
+from hopla.settings import (
+    LEGACY_FAMILY_KEYS,
+    family_from_parallel_arrays,
+    prepare_settings_mapping,
+    schema_path,
+    schema_properties,
+)
 
 
 def parse_legacy_text(text: str) -> dict[str, str | list[str]]:
@@ -82,23 +88,36 @@ def _coerce(value: str | list[str], specification: dict[str, Any]) -> Any:
     return value
 
 
+def _csv_tokens(value: str | list[str], *, nullable: bool) -> list[Any]:
+    tokens = value if isinstance(value, list) else value.split(",")
+    return [
+        None if str(token).strip() in {"", "NA"} and nullable else str(token).strip()
+        for token in tokens
+    ]
+
+
 def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
     """Coerce a parsed legacy mapping and drop unsupported keys."""
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
     properties = schema_properties()
-    nullable_lists = {"father_ids", "mother_ids", "sexes", "genders"}
-    list_keys = nullable_lists | {"sample_ids"}
     converted: dict[str, Any] = {}
+    if "sample_ids" in raw:
+        sexes = raw.get("sexes", raw.get("genders"))
+        converted["family"] = family_from_parallel_arrays(
+            _csv_tokens(raw["sample_ids"], nullable=False),
+            father_ids=(
+                _csv_tokens(raw["father_ids"], nullable=True) if "father_ids" in raw else None
+            ),
+            mother_ids=(
+                _csv_tokens(raw["mother_ids"], nullable=True) if "mother_ids" in raw else None
+            ),
+            sexes=_csv_tokens(sexes, nullable=True) if sexes is not None else None,
+            fam_id=raw.get("fam_id"),
+        )
     for key, value in raw.items():
-        if key in list_keys:
-            if isinstance(value, list):
-                converted[key] = value
-            else:
-                converted[key] = [
-                    None if token.strip() in {"", "NA"} and key in nullable_lists else token.strip()
-                    for token in value.split(",")
-                ]
-        elif key in properties:
+        if key in LEGACY_FAMILY_KEYS:
+            continue
+        if key in properties:
             converted[key] = _coerce(value, properties[key])
         else:
             converted[key] = value
