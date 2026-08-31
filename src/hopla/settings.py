@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-import shutil
+from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, Literal
 
@@ -163,11 +163,7 @@ class Settings(BaseModel):
         self.dp_hard_limit_ids = self.dp_hard_limit_ids or sorted(parents)
         self.af_hard_limit_ids = self.af_hard_limit_ids or sorted(parents)
         self.dp_soft_limit_ids = self.dp_soft_limit_ids or terminal
-        if (
-            len(self.real_samples) == 1
-            or shutil.which("merlin") is None
-            or shutil.which("minx") is None
-        ):
+        if len(self.real_samples) == 1 or find_spec("merlinpy") is None:
             self.run_merlin = False
         return self
 

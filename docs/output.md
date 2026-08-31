@@ -123,10 +123,10 @@ ADO/ADI is not calculated.
 
 ### Haplotyping by Merlin
 
-Merlin runs when more than one real sample is in `family.members`, `run_merlin` is
-`true`, and the `merlin` / `minx` executables are on `$PATH`. There is no
-haplotyping when the family structure does not allow it (no reference sample
-means no breakpoints in the haplotyping strands).
+Merlin runs through `merlinpy` when more than one real sample is in
+`family.members`, `run_merlin` is `true`, and the package is available. There
+is no haplotyping when the family structure does not allow it (no reference
+sample means no breakpoints in the haplotyping strands).
 
 Haplotypes are coloured. Colours are relative between individuals and strands
 within a family. Hover a variant for details.

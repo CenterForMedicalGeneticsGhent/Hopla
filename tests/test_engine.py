@@ -4,13 +4,21 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pytest
 
+import hopla.merlin as merlin_module
 from hopla.analysis import _duo_errors, _trio_errors
 from hopla.filters import apply_filter1, apply_filter2
-from hopla.merlin import _marker_indices, _parse_blocks, correct_short_segments, weighted_vote
+from hopla.merlin import (
+    _marker_indices,
+    _parse_blocks,
+    _run_one,
+    correct_short_segments,
+    weighted_vote,
+)
 from hopla.models import GenotypeMatrix, SiteTable
 from hopla.pedigree import add_ghosts, predict_sexes
 from hopla.settings import Settings, load_settings, validate_settings
@@ -80,6 +88,65 @@ def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
     map_path.write_text("1\tid9\t1.0\nX\tid21\t2.0\n", encoding="utf-8")
     assert _marker_indices(map_path)["chr1"].tolist() == [8]
     assert _marker_indices(map_path)["chrX"].tolist() == [20]
+
+
+@pytest.mark.parametrize(
+    ("suffix", "model", "chromosome_x"),
+    [("", "best", False), ("X", "sample", True)],
+)
+def test_run_one_uses_merlinpy_and_removes_rejected_markers(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    suffix: str,
+    model: Literal["sample", "best"],
+    chromosome_x: bool,
+) -> None:
+    """Run both merlinpy phases and retain their compatibility output files."""
+    prefix = tmp_path / f"merlin{suffix}"
+    Path(f"{prefix}.dat").write_text("M id1\nM id2\n", encoding="utf-8")
+    Path(f"{prefix}.map").write_text(
+        f"{'X' if chromosome_x else '1'}\tid1\t1.0\n"
+        f"{'X' if chromosome_x else '1'}\tid2\t2.0\n",
+        encoding="utf-8",
+    )
+    Path(f"{prefix}.ped").write_text(
+        "1\tSAMPLE\t0\t0\t1\tA/A\tC/C\n", encoding="utf-8"
+    )
+    calls: list[str] = []
+
+    def fake_error(dat: Path, ped: Path, mapfile: Path, x_mode: bool) -> str:
+        assert (dat, ped, mapfile) == (
+            Path(f"{prefix}.dat"),
+            Path(f"{prefix}.ped"),
+            Path(f"{prefix}.map"),
+        )
+        assert x_mode is chromosome_x
+        calls.append("error")
+        return "    FAMILY     PERSON     MARKER      RATIO\n         1     SAMPLE        id2      0.001\n"
+
+    def fake_best(dat: Path, ped: Path, mapfile: Path, x_mode: bool) -> tuple[str, str]:
+        assert "id2" not in dat.read_text(encoding="utf-8")
+        assert "id2" not in mapfile.read_text(encoding="utf-8")
+        assert "C/C" not in ped.read_text(encoding="utf-8")
+        assert x_mode is chromosome_x
+        calls.append("best")
+        return "best chromosome\n", "best flow\n"
+
+    def fake_sample(dat: Path, ped: Path, mapfile: Path, x_mode: bool) -> tuple[str, str]:
+        chromosome_text, flow_text = fake_best(dat, ped, mapfile, x_mode)
+        calls[-1] = "sample"
+        return chromosome_text.replace("best", "sample"), flow_text.replace("best", "sample")
+
+    monkeypatch.setattr(merlin_module, "run_error", fake_error)
+    monkeypatch.setattr(merlin_module, "run_best", fake_best)
+    monkeypatch.setattr(merlin_module, "run_sample", fake_sample)
+
+    _run_one(tmp_path, suffix, model)
+
+    assert calls == ["error", model]
+    assert Path(f"{prefix}.err").read_text(encoding="utf-8").endswith("id2      0.001\n")
+    assert Path(f"{prefix}.chr").read_text(encoding="utf-8") == f"{model} chromosome\n"
+    assert Path(f"{prefix}.flow").read_text(encoding="utf-8") == f"{model} flow\n"
 
 
 def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:

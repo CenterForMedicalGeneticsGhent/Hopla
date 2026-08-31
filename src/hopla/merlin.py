@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
+from typing import Literal, assert_never
 
 import numpy as np
 import polars as pl
+from merlinpy import run_best, run_error, run_sample
 
 from hopla.models import CHROMOSOMES, FilteredGenotypes, GenotypeMatrix, SiteTable
 from hopla.settings import Settings
@@ -128,27 +129,30 @@ def _write_inputs(
         )
 
 
-def _run_one(directory: Path, executable: str, suffix: str, model: str) -> None:
+def _run_one(directory: Path, suffix: str, model: Literal["sample", "best"]) -> None:
     """Run Merlin error detection then haplotyping for one chromosome group."""
     prefix = directory / f"merlin{suffix}"
-    common = ["-d", f"{prefix}.dat", "-p", f"{prefix}.ped", "-m", f"{prefix}.map"]
-    with (directory / f"merlin{suffix}.o").open("w", encoding="utf-8") as output:
-        subprocess.run(
-            [executable, *common, "--error", "--prefix", str(prefix)], check=True, stdout=output
-        )
+    dat_path = Path(f"{prefix}.dat")
+    ped_path = Path(f"{prefix}.ped")
+    map_path = Path(f"{prefix}.map")
+    chromosome_x = suffix == "X"
+    error_text = run_error(dat_path, ped_path, map_path, chromosome_x)
     errors = Path(f"{prefix}.err")
+    errors.write_text(error_text, encoding="utf-8")
     rejected = set()
     if errors.exists() and errors.stat().st_size:
         error_lines = errors.read_text(encoding="utf-8").splitlines()[1:]
         rejected = {columns[2] for line in error_lines if len(columns := line.split()) >= 3}
     if rejected:
         _remove_rejected_markers(prefix, {str(value) for value in rejected})
-    with (directory / f"merlin{suffix}.o").open("a", encoding="utf-8") as output:
-        subprocess.run(
-            [executable, *common, f"--{model}", "--prefix", str(prefix)],
-            check=True,
-            stdout=output,
-        )
+    if model == "best":
+        chromosome_text, flow_text = run_best(dat_path, ped_path, map_path, chromosome_x)
+    elif model == "sample":
+        chromosome_text, flow_text = run_sample(dat_path, ped_path, map_path, chromosome_x)
+    else:
+        assert_never(model)
+    Path(f"{prefix}.chr").write_text(chromosome_text, encoding="utf-8")
+    Path(f"{prefix}.flow").write_text(flow_text, encoding="utf-8")
 
 
 def _remove_rejected_markers(prefix: Path, rejected: set[str]) -> None:
@@ -228,8 +232,8 @@ def run_merlin(
     """Execute Merlin/minx and return corrected long-form haplotypes."""
     output_directory.mkdir(parents=True, exist_ok=True)
     _write_inputs(output_directory, sites, matrix, filtered, settings)
-    _run_one(output_directory, "merlin", "", settings.merlin_model)
-    _run_one(output_directory, "minx", "X", settings.merlin_model)
+    _run_one(output_directory, "", settings.merlin_model)
+    _run_one(output_directory, "X", settings.merlin_model)
     flow = _parse_blocks(output_directory / "merlin.flow", matrix.samples)
     flow.update(_parse_blocks(output_directory / "merlinX.flow", matrix.samples, ("chrX",)))
     geno = _parse_blocks(output_directory / "merlin.chr", matrix.samples)

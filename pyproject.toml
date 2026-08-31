@@ -20,6 +20,7 @@ dependencies = [
   "cyvcf2",
   "jsonschema",
   "jinja2",
+  "merlinpy",
   "numpy",
   "plotly",
   "polars",
@@ -77,6 +78,7 @@ conda-pypi-map = { bioconda = { mapping = { pybigwig = "pybigwig" } } }
 
 [tool.pixi.pypi-dependencies]
 hopla = { path = ".", editable = true }
+merlinpy = { path = "../abecasis-lab-merlin", editable = true }
 
 [tool.pixi.dependencies]
 python = ">=3.12,<3.14"
@@ -94,7 +96,6 @@ starlette = "*"
 typer = "*"
 uvicorn = "*"
 pip = "*"
-merlin = "1.1.2.*"
 
 [tool.pixi.feature.dev.dependencies]
 mypy = "*"

@@ -10,17 +10,17 @@ An agent-discoverable copy of this material lives in
 
 - Use the root pixi environments (`default` and `dev`) and the committed
   `pixi.lock`.
-- Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
-  available on each of those platforms in the default environment.
+- Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. The sibling
+  `../abecasis-lab-merlin` repository supplies the editable `merlinpy`
+  dependency in each environment.
 - Require Python 3.12 or newer.
 - Add Python dependencies to both `[project]` / `[project.optional-dependencies]`
-  and `[tool.pixi.dependencies]` / `[tool.pixi.feature.dev.dependencies]` in
-  `pyproject.toml`; regenerate `pixi.lock` with pixi. Conda entries override
-  the same-named PyPI requirements from `[project]`. Keep the bioconda
-  `conda-pypi-map` entry for `pybigwig` so osx-arm64 does not pull a PyPI
-  source build.
-- Keep `pixi.lock` free of third-party PyPI source dependencies. Every locked
-  third-party dependency is a conda package; the local package is the
+  and the matching pixi conda or PyPI dependency section in `pyproject.toml`;
+  regenerate `pixi.lock` with pixi. Conda entries override the same-named PyPI
+  requirements from `[project]`. Keep the bioconda `conda-pypi-map` entry for
+  `pybigwig` so osx-arm64 does not pull a PyPI source build.
+- Keep `pixi.lock` free of third-party PyPI source dependencies except for the
+  editable `merlinpy` sibling path. The local Hopla package is the other
   editable `[tool.pixi.pypi-dependencies]` path entry.
 - Prefer the pixi editable path install over unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline
@@ -95,11 +95,12 @@ Details: [install.md](install.md).
 
 ## Containers
 
-- Build `Dockerfile` from the repository-root context and `pixi.lock`.
-- Resolve every third-party dependency through `pixi install --locked`; the
-  image then uninstalls the editable path package and overlays a
-  non-editable `pip install --no-deps .` so the runtime stage does not
-  need `src/`.
+- Build `hopla/Dockerfile` from the parent context containing sibling `hopla/`
+  and `abecasis-lab-merlin/` checkouts.
+- Resolve dependencies through `pixi install --locked`; after the shell hook,
+  the image replaces both editable path packages with non-editable
+  `pip install --no-deps` installs so the runtime stage does not need either
+  source tree.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification

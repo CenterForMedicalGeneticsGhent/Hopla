@@ -52,9 +52,9 @@ The Python engine is explicit and columnar:
    sidecars. See [exports.md](exports.md).
 
 All functions are typed and documented. Polars owns tabular joins and
-aggregation; NumPy owns dense genotype operations. Merlin 1.1.2 remains an
-external executable so its haplotyping inference stays compatible with prior
-Hopla Merlin workflows.
+aggregation; NumPy owns dense genotype operations. Hopla calls the validated
+Merlin 1.1.2-compatible `merlinpy` API in-process for error detection and
+haplotyping.
 
 `cli.py` owns command-line parsing and logging setup. `pipeline.py` owns the
 shared analysis sequence, temporary cytoband download lifetime, and output

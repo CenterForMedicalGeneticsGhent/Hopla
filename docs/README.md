@@ -39,8 +39,11 @@ This manual documents the Python package at the repository root. Start from the
 ## Quick start
 
 ```bash
-git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
-cd Hopla
+mkdir hopla-workspace
+cd hopla-workspace
+git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla hopla
+git clone https://github.com/matthdsm/abecasis-lab-merlin
+cd hopla
 pixi install --locked
 pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
@@ -48,9 +51,8 @@ pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 The command validates settings before reading the VCF and writes a compact,
 offline HTML report. Pass `--export-parquet` and `--export-bigwig` to also write
 portable Parquet tables and IGV desktop tracks under `{family.id}-export/`.
-Merlin 1.1.2 remains an optional
-external dependency for haplotyping. Example settings live in
-[`example/`](../example/).
+The sibling Merlin repository supplies the in-process `merlinpy` haplotyping
+dependency. Example settings live in [`example/`](../example/).
 
 Alternatively, run `pixi run hopla serve` to create or import settings, select
 a VCF in the browser, and download the generated HTML report.

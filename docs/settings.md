@@ -101,10 +101,9 @@ When more than one member is listed, at least one member must name a non-null
   When omitted or `null`, the model predicts sex (see `x_cutoff` and
   `y_cutoff`).
 - **`run_merlin`** (`boolean`, default `true`) Whether Merlin haplotyping should
-  run. The Merlin executables directory (`path/to/merlin-1.1.2/executables`)
-  must be on `$PATH`, which is automatic with the pixi default environment.
-  The engine forces `run_merlin` to `false` when only one real (non-ghost)
-  sample is present, or when `merlin` or `minx` is not found on `$PATH`.
+  run through the in-process `merlinpy` package. The engine forces
+  `run_merlin` to `false` when only one real (non-ghost) sample is present or
+  `merlinpy` is unavailable.
 
 The cytoband table is a CLI path (`-c CYTOBAND`), not a settings property. See
 [cli.md](cli.md).
@@ -183,6 +182,9 @@ cover that sample.
 - **`merlin_model`** (`sample` or `best`, default `best`) Underlying
   [Merlin haplotyping
   model](http://csg.sph.umich.edu/abecasis/merlin/tour/haplotyping.html).
+  `merlinpy` currently supports `sample` only for zero-bit families and raises
+  an error for informative pedigrees; use the default `best` for those
+  families.
 - **`min_seg_var`** (`number ≥ 0`, default `5`) Minimum number of variants in a
   same-haplotype segment. Segments that do not comply are corrected to the
   neighbouring haplotype. Corrected haplotypes use a circle symbol. Set to `0`

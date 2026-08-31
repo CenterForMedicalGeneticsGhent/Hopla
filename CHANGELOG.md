@@ -5,6 +5,14 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced native `merlin` / `minx` subprocesses with in-process calls to the
+  sibling `merlinpy` package. Merlin no longer needs to be on `$PATH`.
+- The `sample` Merlin model is supported only for zero-bit families by
+  `merlinpy`; informative pedigrees fail with an explicit error. The default
+  `best` model remains supported.
+
 ## [3.0.0] - 2026-08-28
 
 ### Added

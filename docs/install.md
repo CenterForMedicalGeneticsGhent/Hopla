@@ -6,20 +6,28 @@ environment).
 ## Pixi (Linux and macOS)
 
 The repository includes a locked [pixi](https://pixi.sh) environment for
-`linux-64`, `linux-aarch64`, and `osx-arm64`. Merlin 1.1.2 is included on each
-of those platforms in the default environment.
+`linux-64`, `linux-aarch64`, and `osx-arm64`. Clone the
+[abecasis-lab-merlin](https://github.com/matthdsm/abecasis-lab-merlin)
+repository beside Hopla so pixi can install its `merlinpy` package:
+
+```text
+workspace/
+├── abecasis-lab-merlin/
+└── hopla/
+```
 
 ```bash
+cd workspace/hopla
 pixi install --locked
 pixi run hopla --help
 ```
 
-Use `pixi install --locked` so the committed `pixi.lock` is respected. Third-party
-lock entries are conda packages; the local package is the editable pixi path
-dependency, so `pixi install` puts `hopla` on the environment `PATH`.
+Use `pixi install --locked` so the committed `pixi.lock` is respected. The
+local Hopla package and sibling `merlinpy` package are editable pixi path
+dependencies; other third-party lock entries are conda packages.
 
-The default environment holds analysis dependencies and Merlin. The `dev`
-environment adds pytest, ruff, mypy, and typing stubs.
+The default environment holds analysis dependencies, including `merlinpy`.
+The `dev` environment adds pytest, ruff, mypy, and typing stubs.
 
 Pixi tasks (from the repository root):
 
@@ -31,10 +39,11 @@ After install, `pixi run hopla` invokes the console script (for example
 
 ## Pip (development tree)
 
-From the repository root, with a Python 3.12+ environment that already provides
-Merlin on `$PATH` when haplotyping is needed:
+From the Hopla repository root, with a Python 3.12+ environment and the Merlin
+repository cloned beside it:
 
 ```bash
+python -m pip install -e ../abecasis-lab-merlin
 python -m pip install -e '.[dev]'
 hopla --help
 ```
@@ -52,6 +61,7 @@ editable pip install:
   - cyvcf2
   - Jinja2
   - jsonschema
+  - merlinpy
   - numpy
   - plotly
   - polars
@@ -62,24 +72,26 @@ editable pip install:
   - Starlette
   - typer
   - Uvicorn
-- Standalone tools
-  - [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html) (v1.1.2),
-    including the `merlin` and `minx` executables on `$PATH` when
-    `run_merlin` is enabled
 
-Merlin’s version should be exactly as given. The Merlin executables folder
-(`path/to/merlin-1.1.2/executables`) must be on `$PATH`, which is automatic
-with the pixi default environment. If `merlin` or `minx` is missing, or only
-one real sample is analyzed, the engine sets `run_merlin` to `false`.
+Hopla calls `merlinpy` in-process; the native `merlin` and `minx` executables
+are not required. If `merlinpy` is unavailable, or only one real sample is
+analyzed, the engine sets `run_merlin` to `false`.
+
+Build the container from the directory containing both repositories so the
+path dependency is in the Docker build context:
+
+```bash
+docker build -f hopla/Dockerfile -t hopla .
+```
 
 Hopla must not invoke Pandoc. The HTML report always inlines the offline
 `plotly.js` bundle shipped with the plotly package and gzip-compresses the
 columnar analysis payload for the browser to expand with
 `DecompressionStream`.
 
-Prefer adding Python dependencies in `pyproject.toml` under both `[project]`
-and `[tool.pixi.dependencies]` (or the `dev` extra / `[tool.pixi.feature.dev]`),
-then regenerate `pixi.lock` with pixi. Keep those dependencies available as
-conda packages so the lock stays free of third-party PyPI source builds.
+Prefer adding Python dependencies in `pyproject.toml` under `[project]` and
+the matching pixi conda or PyPI dependency section, then regenerate
+`pixi.lock` with pixi. Keep dependencies available as conda packages where
+possible; `merlinpy` is the explicit editable sibling-path exception.
 
 See [CHANGELOG.md](../CHANGELOG.md) for changes to the Python engine.
