@@ -30,6 +30,19 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
   not settings keys. The local web interface can instead upload a selected VCF
   and return a temporary HTML report.
 
+### Maximum family size for haplotyping
+
+Merlin refuses any chromosome whose pedigree complexity exceeds its built-in
+24-bit limit, scored as `2 x descendants - founders`. Two parents and thirteen
+children reach exactly 24 bits, so that is the largest such family Merlin will
+haplotype; adding four grandparents lowers the ceiling to twelve children.
+Beyond that, Merlin silently skips every autosome and only chromosome X is
+haplotyped, because `minx` treats males as hemizygous and scores the same
+family lower. Hopla logs a warning naming the skipped chromosomes and still
+writes the report, and the [settings editor](docs/serve.md) stops you adding
+members past the limit. Every other analysis is unaffected by family size. See
+[HTML output](docs/output.md) for details.
+
 ## Quick start
 
 ```bash

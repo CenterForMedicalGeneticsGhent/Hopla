@@ -140,6 +140,14 @@ Merlin runs when more than one real sample is in `family.members`, `run_merlin` 
 haplotyping when the family structure does not allow it (no reference sample
 means no breakpoints in the haplotyping strands).
 
+Merlin refuses chromosomes whose pedigree complexity exceeds its built-in
+24-bit limit, scored as `2 x descendants - founders`. A family with two parents
+and fourteen children scores 26 bits, so Merlin skips every autosome and only
+chromosome X is haplotyped, because `minx` treats males as hemizygous and
+scores the same family lower. Hopla logs a warning naming the skipped
+chromosomes and still writes the report; those chromosomes simply have no
+haplotype panel.
+
 Haplotypes are coloured. Colours are relative between individuals and strands
 within a family. Hover a variant for details.
 

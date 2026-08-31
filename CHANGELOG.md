@@ -27,6 +27,10 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   coverage produced an infinite ratio that suppressed segmentation and left
   whole chromosomes without a visible segment. Uncovered windows are now
   flagged in the `mask` column.
+- Warn when Merlin returns no haplotypes for a chromosome. Merlin silently
+  skips chromosomes whose pedigree complexity exceeds its 24-bit limit, so
+  large families produced a report with missing haplotype panels and no
+  explanation.
 
 ## [3.0.0] - 2026-08-28
 

@@ -26,6 +26,14 @@ unused compatibility keys. The editor writes each pedigree card as an entry in
 `family.members`, including its `sex`, and stores family notes as a single
 multiline `info` string.
 
+**Add sibling** and **Add embryo** stop once the pedigree reaches Merlin's
+24-bit complexity limit, scored as `2 x descendants - founders`: thirteen
+children for a two-parent family, or twelve once grandparents are added. The
+editor explains why it stopped. Merlin would otherwise skip every autosome and
+the report would have no haplotype panels, as described in
+[HTML output](output.md). Importing a larger family is still allowed; only the
+add buttons are limited.
+
 ## Run an analysis
 
 Create a configuration in the form or import an existing configuration, then:

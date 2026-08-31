@@ -21,6 +21,7 @@ from hopla.merlin import (
     _mark_haploid_x,
     _marker_indices,
     _parse_blocks,
+    _warn_skipped_chromosomes,
     correct_short_segments,
     weighted_vote,
 )
@@ -180,6 +181,39 @@ def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
     map_path.write_text("1\tid9\t1.0\nX\tid21\t2.0\n", encoding="utf-8")
     assert _marker_indices(map_path)["chr1"].tolist() == [8]
     assert _marker_indices(map_path)["chrX"].tolist() == [20]
+
+
+def test_warn_when_merlin_skips_complex_pedigree_chromosomes(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Explain the bit limit when Merlin emits no haplotypes for a chromosome."""
+    settings = Settings(
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                *(
+                    {"id": f"child{index}", "father": "father", "mother": "mother"}
+                    for index in range(14)
+                ),
+            ]
+        },
+        run_merlin=False,
+    )
+    flow = {"chrX": np.asarray([["A|B"]])}
+    markers = {
+        "chr1": np.asarray([0], dtype=np.int64),
+        "chrX": np.asarray([1], dtype=np.int64),
+    }
+    with caplog.at_level(logging.WARNING):
+        _warn_skipped_chromosomes(flow, markers, settings)
+    assert "chr1" in caplog.text
+    assert "26 bits" in caplog.text
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _warn_skipped_chromosomes(flow, {"chrX": markers["chrX"]}, settings)
+    assert caplog.text == ""
 
 
 def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:

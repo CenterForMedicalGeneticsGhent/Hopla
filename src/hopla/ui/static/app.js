@@ -26,8 +26,51 @@ const placeholders = {
   father: "U1",
   mother: "U2",
 };
+// Merlin skips any chromosome whose pedigree scores above 24 bits, counted as
+// 2 x non-founders - founders. Mirrors add_ghosts() in hopla/pedigree.py, which
+// gives every half-orphan its own ghost founder.
+const MERLIN_BIT_LIMIT = 24;
 let previewTimer;
 let analysisTimer;
+
+function isActiveMember(role) {
+  return state.members[role].sample_id !== placeholders[role];
+}
+
+function pedigreeBits(childCount) {
+  let founders = 0;
+  let nonFounders = 0;
+  const tally = (parents, count) => {
+    if (count <= 0) return;
+    if (parents === 0) founders += count;
+    else nonFounders += count;
+    if (parents === 1) founders += count;
+  };
+  tally(0, fixedGroups.grandparents.filter(isActiveMember).length);
+  if (isActiveMember("father")) {
+    tally(["paternal_grandfather", "paternal_grandmother"].filter(isActiveMember).length, 1);
+  }
+  if (isActiveMember("mother")) {
+    tally(["maternal_grandfather", "maternal_grandmother"].filter(isActiveMember).length, 1);
+  }
+  tally(["father", "mother"].filter(isActiveMember).length, childCount);
+  return 2 * nonFounders - founders;
+}
+
+function updateMemberLimit() {
+  const children = state.siblings.length + state.embryos.length;
+  const full = pedigreeBits(children + 1) > MERLIN_BIT_LIMIT;
+  document.querySelector("#add-sibling").disabled = full;
+  document.querySelector("#add-embryo").disabled = full;
+  const note = document.querySelector("#member-limit");
+  note.hidden = !full;
+  if (full) {
+    note.textContent =
+      `This family has ${children} children and scores ${pedigreeBits(children)} of Merlin's ` +
+      `${MERLIN_BIT_LIMIT} complexity bits. Adding another would make Merlin skip every ` +
+      "autosome, leaving the report without haplotype panels.";
+  }
+}
 
 function message(text, error = false) {
   const node = document.querySelector("#message");
@@ -104,6 +147,7 @@ function renderMembers() {
       container.append(card);
     });
   });
+  updateMemberLimit();
 }
 
 const scalarFields = [
@@ -167,6 +211,7 @@ async function updatePreview() {
 }
 
 function schedulePreview() {
+  updateMemberLimit();
   clearTimeout(previewTimer);
   previewTimer = setTimeout(updatePreview, 250);
 }

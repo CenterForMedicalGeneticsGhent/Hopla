@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 import subprocess
 from pathlib import Path
@@ -217,6 +218,26 @@ def _parse_blocks(
     return parsed
 
 
+def _warn_skipped_chromosomes(
+    flow: dict[str, np.ndarray], marker_indices: dict[str, np.ndarray], settings: Settings
+) -> None:
+    """Warn when Merlin produced no haplotypes for chromosomes it was given."""
+    missing = [chrom for chrom in marker_indices if chrom not in flow]
+    if not missing:
+        return
+    descendants = sum(1 for member in settings.family.members if member.father or member.mother)
+    founders = len(settings.family.members) - descendants
+    logging.warning(
+        "Merlin produced no haplotypes for %s. Merlin skips a chromosome when pedigree "
+        "complexity exceeds its default 24-bit limit; this family scores %d bits "
+        "(2 x %d descendants - %d founders). Those chromosomes have no haplotype panel.",
+        ", ".join(missing),
+        2 * descendants - founders,
+        descendants,
+        founders,
+    )
+
+
 def _marker_indices(path: Path) -> dict[str, np.ndarray]:
     """Read retained source-site indices from a Merlin map file."""
     indices: dict[str, list[int]] = {}
@@ -247,6 +268,7 @@ def run_merlin(
     geno.update(_parse_blocks(output_directory / "merlinX.chr", matrix.samples, ("chrX",)))
     marker_indices = _marker_indices(output_directory / "merlin.map")
     marker_indices.update(_marker_indices(output_directory / "merlinX.map"))
+    _warn_skipped_chromosomes(flow, marker_indices, settings)
     rows: list[dict[str, object]] = []
     for chrom, flow_matrix in flow.items():
         genotype_values = geno.get(chrom)
