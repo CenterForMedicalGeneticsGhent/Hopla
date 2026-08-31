@@ -23,7 +23,6 @@ This manual documents the Python package at the repository root. Start from the
 - [igv.js feasibility evaluation](igvjs-evaluation.md)
 - [Contributing](contributing.md)
 - [Changelog](../CHANGELOG.md)
-- [Archived legacy pipeline changelog](archive/legacy-pipeline-changelog.md)
 
 ## Input
 
