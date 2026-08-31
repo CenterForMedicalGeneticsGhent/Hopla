@@ -11,28 +11,23 @@ of those platforms in the default environment.
 
 ```bash
 pixi install --locked
-pixi run install-py
 pixi run hopla --help
 ```
 
-Use `pixi install --locked` so the committed `pixi.lock` is respected. The lock
-holds conda packages only; the local package is installed on top of it with an
-editable pip install.
+Use `pixi install --locked` so the committed `pixi.lock` is respected. Third-party
+lock entries are conda packages; the local package is the editable pixi path
+dependency, so `pixi install` puts `hopla` on the environment `PATH`.
 
 The default environment holds analysis dependencies and Merlin. The `dev`
 environment adds pytest, ruff, mypy, and typing stubs.
 
 Pixi tasks (from the repository root):
 
-- default environment `install-py` — editable install with
-  `python -m pip install --no-deps -e .`
-- default environment `hopla`, `serve`, `convert`, `concordance`, and
-  `transform` — installed Python CLI entry points (depend on `install-py`)
 - `dev` environment `lint-py` — `ruff check` and `mypy`
 - `dev` environment `test-py` — `pytest tests`
 
-After the editable install, the `hopla` console script is also available on the
-environment `PATH`.
+After install, `pixi run hopla` invokes the console script (for example
+`pixi run hopla convert` or `pixi run hopla serve`).
 
 ## Pip (development tree)
 
@@ -85,6 +80,6 @@ columnar analysis payload for the browser to expand with
 Prefer adding Python dependencies in `pyproject.toml` under both `[project]`
 and `[tool.pixi.dependencies]` (or the `dev` extra / `[tool.pixi.feature.dev]`),
 then regenerate `pixi.lock` with pixi. Keep those dependencies available as
-conda packages so the lock stays free of PyPI source builds.
+conda packages so the lock stays free of third-party PyPI source builds.
 
 See [CHANGELOG.md](../CHANGELOG.md) for changes to the Python engine.

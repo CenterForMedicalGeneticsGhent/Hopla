@@ -19,10 +19,10 @@ An agent-discoverable copy of this material lives in
   the same-named PyPI requirements from `[project]`. Keep the bioconda
   `conda-pypi-map` entry for `pybigwig` so osx-arm64 does not pull a PyPI
   source build.
-- Keep `pixi.lock` free of PyPI source dependencies. Every locked dependency
-  is a conda package; the local package itself is not locked.
-- Prefer editable installs through `pixi run install-py` rather than unmanaged
-  global pip installs.
+- Keep `pixi.lock` free of third-party PyPI source dependencies. Every locked
+  third-party dependency is a conda package; the local package is the
+  editable `[tool.pixi.pypi-dependencies]` path entry.
+- Prefer the pixi editable path install over unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline
   `plotly.js` bundle and compresses the columnar payload itself.
 
@@ -97,7 +97,9 @@ Details: [install.md](install.md).
 
 - Build `Dockerfile` from the repository-root context and `pixi.lock`.
 - Resolve every third-party dependency through `pixi install --locked`; the
-  image then installs the local package with `pip install --no-deps .`.
+  image then overlays a non-editable
+  `pip install --no-deps --force-reinstall .` so the runtime stage does not
+  need `src/`.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification

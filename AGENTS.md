@@ -12,8 +12,8 @@ The package manual is [docs/README.md](docs/README.md).
 - Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is available on each of those platforms in the default environment.
 - Require Python 3.12 or newer.
 - Add Python dependencies to both `[project]` / `[project.optional-dependencies]` and `[tool.pixi.dependencies]` / `[tool.pixi.feature.dev.dependencies]` in `pyproject.toml`; regenerate `pixi.lock` with pixi. Conda entries override the same-named PyPI requirements from `[project]`. Keep the bioconda `conda-pypi-map` entry for `pybigwig` so osx-arm64 does not pull a PyPI source build.
-- Keep `pixi.lock` free of PyPI source dependencies. Every locked dependency is a conda package; the local package itself is not locked.
-- Prefer editable installs through `pixi run install-py` rather than unmanaged global pip installs.
+- Keep `pixi.lock` free of third-party PyPI source dependencies. Every locked third-party dependency is a conda package; the local package is the editable `[tool.pixi.pypi-dependencies]` path entry.
+- Prefer the pixi editable path install over unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline `plotly.js` bundle and compresses the columnar payload itself.
 
 ## Package structure
@@ -60,7 +60,7 @@ The package manual is [docs/README.md](docs/README.md).
 ## Containers
 
 - Build `Dockerfile` from the repository-root context and `pixi.lock`.
-- Resolve every third-party dependency through `pixi install --locked`; the image then installs the local package with `pip install --no-deps .`.
+- Resolve every third-party dependency through `pixi install --locked`; the image then overlays a non-editable `pip install --no-deps --force-reinstall .` so the runtime stage does not need `src/`.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification

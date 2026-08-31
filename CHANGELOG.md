@@ -3,6 +3,15 @@
 This changelog covers the Hopla Python package, settings editor, and command-line
 subtools, including historical notes from the predecessor R analysis pipeline.
 
+## [Unreleased]
+
+### Changed
+
+- Installed the local package as an editable pixi path dependency, so
+  `pixi install` is enough and the `install-py` / CLI wrapper tasks are gone.
+- Locked `default` and `dev` in one solve group. The image still overlays a
+  non-editable `pip install` so the runtime stage does not need `src/`.
+
 ## [3.0.0] - 2026-08-28
 
 ### Added

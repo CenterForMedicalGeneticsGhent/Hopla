@@ -75,6 +75,9 @@ channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 conda-pypi-map = { bioconda = { mapping = { pybigwig = "pybigwig" } } }
 
+[tool.pixi.pypi-dependencies]
+hopla = { path = ".", editable = true }
+
 [tool.pixi.dependencies]
 python = ">=3.12,<3.14"
 cyvcf2 = "*"
@@ -101,17 +104,10 @@ types-pyyaml = "*"
 types-jsonschema = "*"
 httpx2 = ">=2.12.0,<3"
 
-[tool.pixi.tasks]
-install-py = { cmd = "python -m pip install --no-deps -e ." }
-hopla = { cmd = "hopla", depends-on = ["install-py"] }
-convert = { cmd = "hopla convert", depends-on = ["install-py"] }
-concordance = { cmd = "hopla concordance", depends-on = ["install-py"] }
-transform = { cmd = "hopla transform", depends-on = ["install-py"] }
-serve = { cmd = "hopla serve", depends-on = ["install-py"] }
-
 [tool.pixi.feature.dev.tasks]
-lint-py = { cmd = "ruff check src tests && mypy src", depends-on = ["install-py"] }
-test-py = { cmd = "pytest tests", depends-on = ["install-py"] }
+lint-py = "ruff check src tests && mypy src"
+test-py = "pytest tests"
 
 [tool.pixi.environments]
-dev = ["dev"]
+default = { features = [], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
