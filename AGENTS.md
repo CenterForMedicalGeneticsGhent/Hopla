@@ -29,7 +29,7 @@ The package manual is [docs/README.md](docs/README.md).
 - Keep the package version, CLI version, pixi version, and [CHANGELOG.md](CHANGELOG.md) release entry in sync. CLI-breaking changes require a major version bump.
 - Record Python pipeline changes in [CHANGELOG.md](CHANGELOG.md).
 - Keep the manual in `docs/` in sync with the schema, engine defaults, and CLI. Keep [`example/`](example/) fixtures aligned with documented settings and convert behaviour.
-- Do not overwrite [docs/exports.md](docs/exports.md) or [docs/igvjs-evaluation.md](docs/igvjs-evaluation.md) when updating architecture notes.
+- Do not overwrite [docs/exports.md](docs/exports.md) when updating architecture notes.
 
 ## Settings and command line
 
