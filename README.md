@@ -8,7 +8,7 @@ post-natal work, the report is meant to support embryo selection during
 preimplantation genetic testing, with the aim of healthy births in affected
 families. The name is both a ‘haplo’ anagram and a children’s television show.
 
-This repository holds the typed Python package `hopla` (version 4.0.0).
+This repository holds the typed Python package `hopla` (version 3.0.0).
 
 ## Contents
 
@@ -63,7 +63,7 @@ pixi run hopla serve
 ## Container images
 
 The image is published as `quay.io/cmgg/hopla` with `latest`, `stable`, a
-package version such as `4.0.0`, or a commit SHA.
+package version such as `3.0.0`, or a commit SHA.
 
 ```bash
 docker build -t hopla .

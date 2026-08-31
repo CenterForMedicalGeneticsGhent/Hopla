@@ -32,7 +32,7 @@ def test_help_version_and_usage_status() -> None:
     assert runner.invoke(app, ["--help"]).exit_code == 0
     version = runner.invoke(app, ["--version"])
     assert version.exit_code == 0
-    assert version.stdout == "v4.0.0\n"
+    assert version.stdout == "v3.0.0\n"
     assert runner.invoke(app, ["serve", "--help"]).exit_code == 0
     assert runner.invoke(app, ["unknown"]).exit_code == 2
 

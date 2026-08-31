@@ -4,22 +4,13 @@ This changelog covers the Hopla Python package, settings editor, and command-lin
 subtools. Historical notes from the predecessor analysis pipeline live in
 [docs/archive/legacy-pipeline-changelog.md](docs/archive/legacy-pipeline-changelog.md).
 
-## [4.0.0] - 2026-08-31
+## [3.0.0] - 2026-08-28
 
 ### Changed
 
 - Renamed the `genders` setting to `sexes`. Legacy files still use `genders`; convert and import remap it.
 - `info` is multiline free text rather than a list of lines. The settings editor uses one text box instead of Disease / Inheritance / Sequencing note fields.
 - Import, convert, and `hopla run` ignore unsupported keys after a warning instead of failing. Generated YAML omits unused compatibility keys.
-
-### Removed
-
-- Dropped unused settings `color_palette`, `self_contained`, and `cairo` from the schema, engine, and editor.
-
-## [3.0.0] - 2026-08-28
-
-### Changed
-
 - Flattened the repository so the installable Python package lives at the root (`src/hopla/`, `tests/`, `docs/`, `example/`) instead of under `hopla-py/`.
 - Replaced pixi features and environments `hopla-py` / `hopla-py-dev` with the default environment plus `dev`.
 - Merged the pixi workspace into `pyproject.toml` (`[tool.pixi…]`) and dropped `pixi.toml`.
@@ -27,6 +18,7 @@ subtools. Historical notes from the predecessor analysis pipeline live in
 
 ### Removed
 
+- Dropped unused settings `color_palette`, `self_contained`, and `cairo` from the schema, engine, and editor.
 - Dropped the nested package directory and the `hopla-py` pixi task. Image tags remain commit SHA, `latest`, package version, and `stable` (no `ui-*` tags).
 
 ## [2.1.0] - 2026-08-28
