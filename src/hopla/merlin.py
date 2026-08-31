@@ -65,10 +65,15 @@ def correct_haplotypes(
     return corrected, corrected != flow
 
 
-def _mark_haploid_x(flow: np.ndarray, genotypes: np.ndarray) -> None:
+def _mark_haploid_x(
+    flow: np.ndarray, genotypes: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """Mark the absent second male chromosome-X strand in parsed minx output."""
-    flow[:, 1] = "X"
-    genotypes[:, 1] = "NA"
+    marked_flow = flow.astype(object, copy=True)
+    marked_genotypes = genotypes.astype(object, copy=True)
+    marked_flow[:, 1] = "X"
+    marked_genotypes[:, 1] = "NA"
+    return marked_flow, marked_genotypes
 
 
 def _alleles(
@@ -263,7 +268,7 @@ def run_merlin(
                 [value.split("|", 1) for value in genotype_values[:, sample_index]]
             )
             if chrom == "chrX" and settings.family.member(sample).sex == "M":
-                _mark_haploid_x(strands, genotype_strands)
+                strands, genotype_strands = _mark_haploid_x(strands, genotype_strands)
             window = (
                 settings.window_size_voting_x if chrom == "chrX" else settings.window_size_voting
             )

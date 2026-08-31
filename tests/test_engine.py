@@ -61,9 +61,11 @@ def test_male_x_marks_the_second_minx_strand_as_absent() -> None:
     """Represent hemizygous male chromosome X without a duplicate haplotype."""
     flow = np.asarray([["A", "A"], ["B", "B"]])
     genotypes = np.asarray([["A", "A"], ["G", "G"]])
-    _mark_haploid_x(flow, genotypes)
-    assert flow.tolist() == [["A", "X"], ["B", "X"]]
-    assert genotypes.tolist() == [["A", "NA"], ["G", "NA"]]
+    marked_flow, marked_genotypes = _mark_haploid_x(flow, genotypes)
+    assert marked_flow.tolist() == [["A", "X"], ["B", "X"]]
+    assert marked_genotypes.tolist() == [["A", "NA"], ["G", "NA"]]
+    assert flow.tolist() == [["A", "A"], ["B", "B"]]
+    assert genotypes.tolist() == [["A", "A"], ["G", "G"]]
 
 
 def test_variant_depth_caps_outliers_on_shared_sample_bins() -> None:
