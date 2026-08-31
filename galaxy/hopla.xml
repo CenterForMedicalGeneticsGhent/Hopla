@@ -12,11 +12,11 @@ vcf_path='input.vcf'
     #else
 ln -s '$operation.vcf_input.vcf_bgzip' input.vcf.gz &&
 vcf_path='input.vcf.gz'
-        #if $operation.vcf_input.index
-            #if str($operation.vcf_input.index.ext) == 'csi'
-ln -s '$operation.vcf_input.index' input.vcf.gz.csi &&
+        #if str($operation.vcf_input.index_input.index_type) != 'none'
+            #if str($operation.vcf_input.index_input.index_type) == 'csi'
+ln -s '$operation.vcf_input.index_input.index' input.vcf.gz.csi &&
             #else
-ln -s '$operation.vcf_input.index' input.vcf.gz.tbi &&
+ln -s '$operation.vcf_input.index_input.index' input.vcf.gz.tbi &&
             #end if
         #end if
     #end if
@@ -27,8 +27,12 @@ report_path="$(
         #if $operation.cytoband
         -c '$operation.cytoband' \
         #end if
-        $operation.export_parquet \
-        $operation.export_bigwig \
+        #if $operation.export_parquet
+        --export-parquet \
+        #end if
+        #if $operation.export_bigwig
+        --export-bigwig \
+        #end if
         '$operation.settings' \
         "\$vcf_path"
 )" &&
@@ -66,19 +70,31 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
                     <when value="vcf_bgzip">
                         <param name="vcf_bgzip" type="data" format="vcf_bgzip"
                                label="bgzip-compressed VCF" />
-                        <param name="index" type="data" format="tabix,csi" optional="true"
-                               label="VCF index"
-                               help="Optional tabix (.tbi) or CSI (.csi) index." />
+                        <conditional name="index_input">
+                            <param name="index_type" type="select" label="VCF index">
+                                <option value="none" selected="true">No index</option>
+                                <option value="tabix">Tabix index (.tbi)</option>
+                                <option value="csi">CSI index (.csi)</option>
+                            </param>
+                            <when value="none" />
+                            <when value="tabix">
+                                <param name="index" type="data" format="tabix"
+                                       label="Tabix index" />
+                            </when>
+                            <when value="csi">
+                                <param name="index" type="data" format="data"
+                                       label="CSI index"
+                                       help="Galaxy 23.0 has no standalone CSI history datatype; upload the .csi file as generic data." />
+                            </when>
+                        </conditional>
                     </when>
                 </conditional>
                 <param name="cytoband" type="data" format="tabular,txt" optional="true"
                        label="UCSC hg38 cytoband table"
                        help="If omitted, Hopla downloads the hg38 table from UCSC." />
                 <param name="export_parquet" type="boolean" checked="false"
-                       truevalue="--export-parquet" falsevalue=""
                        label="Export portable Parquet tables" />
                 <param name="export_bigwig" type="boolean" checked="false"
-                       truevalue="--export-bigwig" falsevalue=""
                        label="Export IGV tracks" />
             </when>
             <when value="convert">
@@ -91,7 +107,7 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
         <data name="run_report" format="html" label="${tool.name} report">
             <filter>operation['subcommand'] == 'run'</filter>
         </data>
-        <data name="run_exports" format="tar.gz" label="${tool.name} exports">
+        <data name="run_exports" format="tgz" label="${tool.name} exports">
             <filter>operation['subcommand'] == 'run'</filter>
             <filter>operation['export_parquet'] or operation['export_bigwig']</filter>
         </data>
@@ -115,7 +131,31 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
             </conditional>
             <output name="run_report">
                 <assert_contents>
-                    <has_text text="Hopla" />
+                    <has_text text="galaxy.test" />
+                    <has_text text="FATHER" />
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="log_level" value="info" />
+            <conditional name="operation">
+                <param name="subcommand" value="run" />
+                <param name="settings" value="settings.yaml" />
+                <conditional name="vcf_input">
+                    <param name="input_type" value="vcf_bgzip" />
+                    <param name="vcf_bgzip" value="family.vcf.gz" />
+                    <conditional name="index_input">
+                        <param name="index_type" value="tabix" />
+                        <param name="index" value="family.vcf.gz.tbi" />
+                    </conditional>
+                </conditional>
+                <param name="cytoband" value="cytoband.hg38.txt" />
+                <param name="export_parquet" value="false" />
+                <param name="export_bigwig" value="false" />
+            </conditional>
+            <output name="run_report">
+                <assert_contents>
+                    <has_text text="galaxy.test" />
                     <has_text text="FATHER" />
                 </assert_contents>
             </output>

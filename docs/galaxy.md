@@ -29,7 +29,9 @@ interactive report cannot render.
 When a VCF index is supplied, the wrapper stages it beside the compressed VCF
 under the filename expected by cyvcf2. Indexed input can use the Galaxy job's
 allocated slots for contig-parallel loading. Without an index, Hopla remains
-valid but falls back to a sequential scan.
+valid but falls back to a sequential scan. Galaxy 23.0 does not register CSI
+files as a standalone history datatype, so upload a `.csi` index as generic
+`data` and select **CSI index** in the tool form.
 
 Run the embedded wrapper tests from a Galaxy or Planemo environment:
 
