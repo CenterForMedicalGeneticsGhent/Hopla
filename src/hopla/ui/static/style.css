@@ -50,6 +50,20 @@ pre { min-height: 20rem; overflow: auto; border: 1px solid var(--border); paddin
 .hint { border-left: .25rem solid var(--accent); padding-left: .75rem; }
 .analysis-controls { display: flex; align-items: end; gap: 1rem; }
 .analysis-controls label { flex: 1; }
+#analysis-progress { width: 100%; height: .5rem; }
+.log {
+  max-height: 14rem;
+  overflow: auto;
+  margin: .75rem 0;
+  padding: .75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: .35rem;
+  background: var(--surface);
+  font-family: ui-monospace, monospace;
+  list-style: none;
+}
+.log li { display: flex; gap: .75rem; padding: .1rem 0; }
+.log-time { flex: 0 0 5rem; text-align: right; opacity: .7; }
 [hidden] { display: none !important; }
 @media (max-width: 650px) {
   .fields { grid-template-columns: 1fr; }

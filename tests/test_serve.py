@@ -180,6 +180,13 @@ def test_stream_vcf_run_and_download_report(
         status = _wait_for_status(client, identifier, "completed")
         assert status["message"] == "Analysis complete"
         assert status["report_url"].endswith(f"/{identifier}/report")
+        messages = [entry["message"] for entry in status["log"]]
+        assert messages == [
+            "Received 0.0 MB VCF",
+            "Computing analyses",
+            "Analysis complete",
+        ]
+        assert all(entry["seconds"] >= 0 for entry in status["log"])
 
         report = client.get(status["report_url"])
         assert report.status_code == 200
@@ -215,6 +222,9 @@ def test_analysis_rejects_invalid_input_and_empty_vcf() -> None:
         status = client.get(f"/api/analyses/{identifier}").json()
         assert status["status"] == "failed"
         assert status["error"] == "The selected VCF is empty."
+        assert status["log"][-1]["message"] == (
+            "VCF upload failed: The selected VCF is empty."
+        )
 
 
 def test_analysis_surfaces_pipeline_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -251,6 +261,9 @@ def test_analysis_surfaces_pipeline_failure(monkeypatch: pytest.MonkeyPatch) -> 
         client.put(f"/api/analyses/{identifier}/vcf", content=b"bad data")
         status = _wait_for_status(client, identifier, "failed")
         assert status["error"] == "VCF does not contain sample FATHER"
+        assert status["log"][-1]["message"] == (
+            "Analysis failed: VCF does not contain sample FATHER"
+        )
         report = client.get(f"/api/analyses/{identifier}/report")
         assert report.status_code == 409
 

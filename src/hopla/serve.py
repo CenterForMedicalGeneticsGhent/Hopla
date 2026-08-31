@@ -5,10 +5,11 @@ from __future__ import annotations
 import asyncio
 import re
 import tempfile
+import time
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +41,18 @@ class AnalysisJob:
     message: str = "Waiting for VCF upload"
     report: Path | None = None
     error: str | None = None
+    started: float = field(default_factory=time.monotonic)
+    log: list[dict[str, Any]] = field(default_factory=list)
+
+    @property
+    def elapsed(self) -> float:
+        """Return seconds since this job was created."""
+        return round(time.monotonic() - self.started, 1)
+
+    def record(self, message: str) -> None:
+        """Append one timestamped step to the job log."""
+        self.message = message
+        self.log.append({"seconds": self.elapsed, "message": message})
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -137,10 +150,6 @@ async def create_analysis(request: Request) -> JSONResponse:
 
 def _execute_analysis(job: AnalysisJob, vcf_path: Path) -> None:
     job.status = "running"
-
-    def progress(message: str) -> None:
-        job.message = message
-
     try:
         job.report = run_analysis(
             job.settings,
@@ -148,14 +157,14 @@ def _execute_analysis(job: AnalysisJob, vcf_path: Path) -> None:
             job.directory,
             export_parquet_data=False,
             export_bigwig=False,
-            progress=progress,
+            progress=job.record,
         )
         job.status = "completed"
-        job.message = "Analysis complete"
+        job.record("Analysis complete")
     except Exception as error:
         job.status = "failed"
-        job.message = "Analysis failed"
         job.error = str(error)
+        job.record(f"Analysis failed: {error}")
 
 
 async def upload_vcf(request: Request) -> JSONResponse:
@@ -176,10 +185,11 @@ async def upload_vcf(request: Request) -> JSONResponse:
         if size == 0:
             vcf_path.unlink(missing_ok=True)
             raise ValueError("The selected VCF is empty.")
+        job.record(f"Received {size / 1024 / 1024:.1f} MB VCF")
     except (OSError, ValueError) as error:
         job.status = "failed"
-        job.message = "VCF upload failed"
         job.error = str(error)
+        job.record(f"VCF upload failed: {error}")
         return JSONResponse({"error": str(error)}, status_code=422)
     task = asyncio.create_task(asyncio.to_thread(_execute_analysis, job, vcf_path))
     request.app.state.analysis_tasks.add(task)
@@ -196,6 +206,8 @@ async def analysis_status(request: Request) -> JSONResponse:
         "id": job.identifier,
         "status": job.status,
         "message": job.message,
+        "elapsed": job.elapsed,
+        "log": list(job.log),
     }
     if job.error is not None:
         result["error"] = job.error

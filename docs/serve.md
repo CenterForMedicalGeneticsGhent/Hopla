@@ -29,7 +29,14 @@ Create a configuration in the form or import an existing configuration, then:
 1. Open the **Analysis** tab.
 2. Select a `.vcf`, `.vcf.gz`, or `.vcf.bgz` file from the local system.
 3. Select **Run analysis**.
-4. Wait for the status to report completion and download the HTML report.
+4. Follow the running indicator and step log until the analysis reports
+   completion, then download the HTML report.
+
+While an analysis runs, the page lists each pipeline step with the seconds
+elapsed since the job started, the same major steps `hopla run` logs at `info`:
+receiving the VCF, loading it, applying filters, computing analyses, running
+Merlin when the pedigree allows it, and rendering the report. A failing step is
+appended to that log with its error.
 
 The browser streams the VCF to temporary storage on the machine running
 `hopla serve`. There is no configured upload-size limit, so available disk

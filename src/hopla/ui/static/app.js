@@ -239,8 +239,23 @@ function analysisState(text, error = false) {
 
 function finishAnalysis() {
   clearTimeout(analysisTimer);
+  document.querySelector("#analysis-progress").hidden = true;
   document.querySelector("#run-analysis").disabled = false;
   document.querySelector("#vcf-upload").disabled = false;
+}
+
+function renderLog(entries) {
+  const list = document.querySelector("#analysis-log");
+  list.replaceChildren(...entries.map((entry) => {
+    const item = document.createElement("li");
+    const seconds = document.createElement("span");
+    seconds.className = "log-time";
+    seconds.textContent = `${entry.seconds.toFixed(1)} s`;
+    item.append(seconds, entry.message);
+    return item;
+  }));
+  list.hidden = entries.length === 0;
+  list.scrollTop = list.scrollHeight;
 }
 
 async function pollAnalysis(identifier) {
@@ -248,8 +263,9 @@ async function pollAnalysis(identifier) {
     const response = await fetch(`/api/analyses/${identifier}`);
     if (!response.ok) throw new Error(await responseError(response));
     const result = await response.json();
+    renderLog(result.log || []);
     if (result.status === "completed") {
-      analysisState("Analysis complete. Download the HTML report below.");
+      analysisState(`Analysis complete in ${result.elapsed} s. Download the report below.`);
       const link = document.querySelector("#report-download");
       link.href = result.report_url;
       link.hidden = false;
@@ -261,7 +277,7 @@ async function pollAnalysis(identifier) {
       finishAnalysis();
       return;
     }
-    analysisState(result.message || "Analysis is running.");
+    analysisState(`${result.message || "Analysis is running"} (${result.elapsed} s)`);
     analysisTimer = setTimeout(() => pollAnalysis(identifier), 1000);
   } catch (error) {
     analysisState(error.message, true);
@@ -304,6 +320,8 @@ document.querySelector("#run-analysis").addEventListener("click", async () => {
   button.disabled = true;
   picker.disabled = true;
   document.querySelector("#report-download").hidden = true;
+  document.querySelector("#analysis-progress").hidden = false;
+  renderLog([]);
   try {
     analysisState("Validating configuration.");
     const created = await api("/api/analyses", {form: state, vcf_name: file.name});
