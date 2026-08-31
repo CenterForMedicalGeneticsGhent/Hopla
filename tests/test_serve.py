@@ -43,6 +43,23 @@ def test_editor_and_validated_download() -> None:
         assert 'filename="famID.yaml"' in download.headers["content-disposition"]
 
 
+def test_no_analysis_hides_tab_and_endpoints() -> None:
+    """Serve settings only when the analysis runner is disabled."""
+    with TestClient(create_app(analysis=False)) as client:
+        page = client.get("/")
+        assert page.status_code == 200
+        assert 'data-tab="analysis"' not in page.text
+        assert 'id="vcf-upload"' not in page.text
+        assert client.post("/api/preview", json={"form": _single_sample_form()}).status_code == 200
+
+        created = client.post(
+            "/api/analyses",
+            json={"form": _single_sample_form(), "vcf_name": "family.vcf"},
+        )
+        assert created.status_code == 404
+        assert client.get("/api/analyses/missing").status_code == 404
+
+
 def test_add_sibling_state_and_validation_error() -> None:
     """Accept repeatable member state and surface invalid values."""
     state = _single_sample_form()

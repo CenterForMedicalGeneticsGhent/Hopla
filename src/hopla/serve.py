@@ -86,7 +86,11 @@ async def _json_body(request: Request) -> dict[str, Any]:
 
 async def editor(request: Request) -> HTMLResponse:
     """Render the settings editor."""
-    return templates.TemplateResponse(request, "index.html", {"initial_state": default_form()})
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {"initial_state": default_form(), "analysis": request.app.state.analysis_enabled},
+    )
 
 
 async def preview(request: Request) -> JSONResponse:
@@ -241,22 +245,24 @@ async def _lifespan(app: Starlette) -> AsyncIterator[None]:
             await asyncio.gather(*app.state.analysis_tasks, return_exceptions=True)
 
 
-def create_app() -> Starlette:
-    """Create the local settings editor and analysis application."""
-    app = Starlette(
-        lifespan=_lifespan,
-        routes=[
-            Route("/", editor),
-            Route("/api/preview", preview, methods=["POST"]),
-            Route("/api/import", import_settings, methods=["POST"]),
-            Route("/api/download", download, methods=["POST"]),
+def create_app(*, analysis: bool = True) -> Starlette:
+    """Create the local settings editor, optionally without the analysis runner."""
+    routes: list[Route | Mount] = [
+        Route("/", editor),
+        Route("/api/preview", preview, methods=["POST"]),
+        Route("/api/import", import_settings, methods=["POST"]),
+        Route("/api/download", download, methods=["POST"]),
+    ]
+    if analysis:
+        routes += [
             Route("/api/analyses", create_analysis, methods=["POST"]),
             Route("/api/analyses/{job_id:str}/vcf", upload_vcf, methods=["PUT"]),
             Route("/api/analyses/{job_id:str}", analysis_status),
             Route("/api/analyses/{job_id:str}/report", analysis_report),
-            Mount("/static", StaticFiles(directory=UI_DIRECTORY / "static"), name="static"),
         ]
-    )
+    routes.append(Mount("/static", StaticFiles(directory=UI_DIRECTORY / "static"), name="static"))
+    app = Starlette(lifespan=_lifespan, routes=routes)
+    app.state.analysis_enabled = analysis
     app.add_middleware(SecurityHeadersMiddleware)
     return app
 

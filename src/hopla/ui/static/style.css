@@ -37,7 +37,7 @@ button:disabled { cursor: wait; opacity: .6; }
 .member-card { padding: 1rem; border: 1px solid var(--border); border-radius: .5rem; background: var(--surface); }
 .member-card > label, .fields > label { display: flex; flex-direction: column; gap: .25rem; margin: .55rem 0; }
 input, select, textarea { background: Canvas; color: CanvasText; padding: .45rem; width: 100%; }
-fieldset { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; border: 1px solid var(--border); }
+fieldset { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .3rem; border: 1px solid var(--border); }
 fieldset label, .fields label:has(input[type=checkbox]) { display: flex; align-items: center; gap: .4rem; }
 input[type=checkbox] { width: auto; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem; }

@@ -11,7 +11,10 @@
 <body>
   <header>
     <h1>Hopla</h1>
-    <p>Build, validate, and run a family analysis.</p>
+    <p>
+      {% if analysis %}Build, validate, and run a family analysis.
+      {% else %}Build and validate a settings file for <code>hopla run</code>.{% endif %}
+    </p>
     <label class="upload button">Import configuration
       <input id="config-upload" type="file" accept=".txt,.yaml,.yml,.json">
     </label>
@@ -24,7 +27,7 @@
       <button type="button" data-tab="parameters">Parameters</button>
       <button type="button" data-tab="advanced">Advanced</button>
       <button type="button" data-tab="config">Config</button>
-      <button type="button" data-tab="analysis">Analysis</button>
+      {% if analysis %}<button type="button" data-tab="analysis">Analysis</button>{% endif %}
     </nav>
 
     <section id="pedigree" class="panel active">
@@ -87,6 +90,7 @@
       <pre id="yaml-preview"></pre>
     </section>
 
+    {% if analysis %}
     <section id="analysis" class="panel">
       <h2>Run analysis</h2>
       <p>
@@ -109,6 +113,7 @@
       <ol id="analysis-log" class="log" hidden></ol>
       <a id="report-download" class="button" href="#" download hidden>Download HTML report</a>
     </section>
+    {% endif %}
   </main>
 
   <template id="member-template">

@@ -10,7 +10,8 @@ hopla serve
 
 The default address is <http://127.0.0.1:8080/>. When invoked from an
 interactive terminal, Hopla opens that address in the default browser. Use
-`--no-open` to disable this behavior or `--port` to choose another port.
+`--no-open` to disable this behavior or `--port` to choose another port. Use
+`--no-analysis` to serve the settings editor without the analysis runner.
 
 The interface provides pedigree, analysis parameter, advanced, validated YAML,
 and analysis views. It can import:
@@ -42,6 +43,11 @@ The browser streams the VCF to temporary storage on the machine running
 `hopla serve`. There is no configured upload-size limit, so available disk
 space must accommodate the input. The configuration, VCF, and generated report
 are removed when the server stops.
+
+Start the server with `--no-analysis` to offer settings editing only. The
+Analysis tab is then absent and the analysis endpoints are not registered, so an
+instance that should not read local VCFs or start runs cannot be driven into
+doing so.
 
 Web analyses generate only the self-contained HTML report; they do not generate
 the Parquet or IGV sidecars written by the default `hopla run` command. Use the

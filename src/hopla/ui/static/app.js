@@ -290,7 +290,7 @@ function isVcfName(name) {
   return lower.endsWith(".vcf") || lower.endsWith(".vcf.gz") || lower.endsWith(".vcf.bgz");
 }
 
-document.querySelector("#vcf-upload").addEventListener("change", (event) => {
+document.querySelector("#vcf-upload")?.addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (!file) {
     analysisState("Select a VCF to begin.");
@@ -303,7 +303,7 @@ document.querySelector("#vcf-upload").addEventListener("change", (event) => {
   analysisState(`Selected ${file.name}.`);
 });
 
-document.querySelector("#run-analysis").addEventListener("click", async () => {
+document.querySelector("#run-analysis")?.addEventListener("click", async () => {
   const picker = document.querySelector("#vcf-upload");
   const button = document.querySelector("#run-analysis");
   const file = picker.files[0];

@@ -13,7 +13,7 @@ hopla [-hV] [-L LEVEL] convert LEGACY [OUTPUT]
 hopla [-hV] [-L LEVEL] concordance [-r] FLOW1 FLOW2
 hopla [-hV] [-L LEVEL] transform FLOW1 FLOW2 MODE [OUTPUT]
 hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
-      [--open|--no-open]
+      [--open|--no-open] [--analysis|--no-analysis]
 ```
 
 `-L` may also appear among `run` options, before the settings and VCF operands.
@@ -49,6 +49,8 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   `<flow1>-relative.txt`.
 - `serve` starts the local browser settings editor. It binds
   `127.0.0.1:8080` by default and opens a browser when run interactively.
+  `--no-analysis` serves settings only: the Analysis tab is not rendered and
+  the analysis endpoints are not registered.
 
 `concordance` accepts `-r` only before its operands.
 
@@ -91,6 +93,7 @@ Complete example: [`example/settings.yaml`](../example/settings.yaml).
 hopla serve
 hopla serve --no-open
 hopla serve --host 0.0.0.0 --port 8080
+hopla serve --no-analysis
 ```
 
 The web interface imports legacy `.txt` and current YAML/JSON settings,

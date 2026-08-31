@@ -150,13 +150,19 @@ def serve_command(
     open_browser: Annotated[
         bool, typer.Option("--open/--no-open", help="Open the editor in a local browser.")
     ] = True,
+    analysis: Annotated[
+        bool,
+        typer.Option("--analysis/--no-analysis", help="Offer the analysis runner."),
+    ] = True,
 ) -> None:
     """Serve the local Hopla settings editor."""
     url = f"http://{host}:{port}/"
     if open_browser and sys.stdout.isatty() and host in {"127.0.0.1", "localhost", "::1"}:
         Timer(0.5, webbrowser.open, args=(url,)).start()
     logging.info("Serving the settings editor at %s", url)
-    uvicorn.run(create_app(), host=host, port=port, log_level="warning")
+    if not analysis:
+        logging.info("Serving settings only; the analysis runner is disabled")
+    uvicorn.run(create_app(analysis=analysis), host=host, port=port, log_level="warning")
 
 
 @app.command("concordance")
