@@ -53,13 +53,20 @@ Tables and plots applied to all raw single nucleotide variants.
 
 Includes variant tables, allelic drop-out (ADO) and allelic drop-in (ADI) for
 every child/embryo, variant depth histograms, and a genome-wide
-number-of-variants profile.
+number-of-variants profile. Total counts use scopes as rows and samples as
+columns. ADO and ADI use one row per sample. Both tables scroll horizontally
+when a family is wider than the report.
 
 - ADO uses variants that are `0/0` in the mother and `1/1` in the father, or
   vice versa: (homozygous variants in the child) / (total variants in the
   child).
 - ADI uses variants that are `1/1` in both mother and father: (heterozygous
   variants in the child) / (total variants in the child).
+
+Variant-depth histograms share bins and axis ranges across every sample in one
+filter section. The upper edge is the pooled 99.5th depth percentile so an
+extreme depth does not flatten the useful range; higher values are counted in
+the final bin.
 
 ### VCF-based copy number
 
@@ -151,7 +158,9 @@ Corrected haplotypes are drawn as circles instead of squares. Raw uncorrected
 genotypes remain available on hover.
 
 When the raw genotype is `NA`, it was removed by soft filtering and no symbol
-is shown.
+is shown. Male chromosome X is hemizygous and is therefore drawn as one
+haplotype strand. The absent second minx strand is retained as `X` in portable
+tables and compatibility flow files, but is not drawn.
 
 `keep_chromosomes_only` (default `true`) drops raw haplotyping points except
 complete chromosomes that contain the region(s) of interest.
@@ -163,5 +172,6 @@ HTML.
 If `concordance_table` is `true`, a pairwise HTML table compares haplotyping
 patterns between strands of different family members. Concordance per strand is
 (same-haplotype variants between strands) / (total evaluated variants). The
+absent `X` sentinel strand is ignored. The
 `concordance` subtool can compare two flow tables the same way, including a
 relative (`-r`) mode.

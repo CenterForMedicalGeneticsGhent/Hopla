@@ -10,10 +10,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from hopla.analysis import _duo_errors, _trio_errors
+from hopla.analysis import _duo_errors, _trio_errors, variant_depth_table
 from hopla.filters import apply_filter1, apply_filter2
-from hopla.merlin import _marker_indices, _parse_blocks, correct_short_segments, weighted_vote
-from hopla.models import GenotypeMatrix, SiteTable
+from hopla.merlin import (
+    _mark_haploid_x,
+    _marker_indices,
+    _parse_blocks,
+    correct_short_segments,
+    weighted_vote,
+)
+from hopla.models import FilteredGenotypes, GenotypeMatrix, SiteTable
 from hopla.pedigree import add_ghosts, predict_sexes
 from hopla.settings import Settings, load_settings, validate_settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
@@ -49,6 +55,48 @@ def test_haplotype_corrections() -> None:
     assert correct_short_segments(flow, genotype, 1).tolist() == ["A"] * 5
     voted = weighted_vote(flow, np.asarray([0, 10, 20, 30, 40], dtype=np.uint32), max_distance=25)
     assert voted.tolist() == ["A"] * 5
+
+
+def test_male_x_marks_the_second_minx_strand_as_absent() -> None:
+    """Represent hemizygous male chromosome X without a duplicate haplotype."""
+    flow = np.asarray([["A", "A"], ["B", "B"]])
+    genotypes = np.asarray([["A", "A"], ["G", "G"]])
+    _mark_haploid_x(flow, genotypes)
+    assert flow.tolist() == [["A", "X"], ["B", "X"]]
+    assert genotypes.tolist() == [["A", "NA"], ["G", "NA"]]
+
+
+def test_variant_depth_caps_outliers_on_shared_sample_bins() -> None:
+    """Keep every count while one extreme depth no longer stretches all panels."""
+    first = np.asarray([10] * 200 + [10_000], dtype=np.uint16)
+    second = np.asarray([20] * 201, dtype=np.uint16)
+    depths = np.vstack((first, second))
+    calls = np.zeros(depths.shape, dtype=np.int8)
+    matrix = GenotypeMatrix(
+        gt=calls,
+        dp=depths,
+        ad_ref=np.zeros(depths.shape, dtype=np.uint16),
+        ad_alt=np.zeros(depths.shape, dtype=np.uint16),
+        samples=("first", "second"),
+        sample_index={"first": 0, "second": 1},
+    )
+    filtered = FilteredGenotypes(
+        site_mask=np.ones(depths.shape[1], dtype=np.bool_),
+        gt=calls,
+        dp=depths.astype(np.float32),
+        af=np.zeros(depths.shape, dtype=np.float32),
+    )
+
+    table = variant_depth_table(matrix, filtered, filtered)
+    level = table.filter(table["filter_level"] == 0)
+    first_bins = level.filter(level["sample"] == "first")
+    second_bins = level.filter(level["sample"] == "second")
+    assert first_bins["bin_start"].to_list() == second_bins["bin_start"].to_list()
+    assert first_bins["bin_end"].to_list() == second_bins["bin_end"].to_list()
+    assert first_bins["bin_end"].max() == pytest.approx(20)
+    assert first_bins["count"].sum() == first.size
+    assert second_bins["count"].sum() == second.size
+    assert first_bins["count"][-1] == 1
 
 
 def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:

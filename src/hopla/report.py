@@ -168,24 +168,31 @@ def _count(frame: pl.DataFrame, level: int, sample: str, region: str) -> float:
 def _variant_totals(
     tables: dict[str, pl.DataFrame], settings: Settings, samples: tuple[str, ...], level: int
 ) -> str:
-    """Render the genome-wide and per-region variant counts as text."""
+    """Render genome-wide and per-region variant counts as a compact table."""
     frame = tables.get("variant_stats")
     if frame is None or frame.is_empty():
         return ""
 
-    def line(prefix: str, region: str) -> str:
-        """Format one count line across all samples."""
-        values = " | ".join(
-            f"{sample}: {_count(frame, level, sample, region):,.0f}" for sample in samples
-        )
-        return f"<p>° {escape(prefix)}; {escape(values)}</p>"
-
-    parts = [line("overall", "genome")]
+    header = "".join(
+        f'<th class="block{index % 2}">{escape(sample)}</th>'
+        for index, sample in enumerate(samples)
+    )
+    scopes = [("overall", "genome")]
     for region in settings.regions:
-        parts.append(line(f"in {region}", region))
-        parts.append(line(f"in {region} (left flank)", f"{region} (left flank)"))
-        parts.append(line(f"in {region} (right flank)", f"{region} (right flank)"))
-    return "".join(parts)
+        scopes.extend(
+            (
+                (f"in {region}", region),
+                (f"in {region} (left flank)", f"{region} (left flank)"),
+                (f"in {region} (right flank)", f"{region} (right flank)"),
+            )
+        )
+    rows = [f"<tr><th>Scope</th>{header}</tr>"]
+    for label, region in scopes:
+        cells = "".join(
+            f"<td>{_count(frame, level, sample, region):,.0f}</td>" for sample in samples
+        )
+        rows.append(f'<tr><th class="row-label">{escape(label)}</th>{cells}</tr>')
+    return '<div class="table-scroll"><table class="matrix">' + "".join(rows) + "</table></div>"
 
 
 def _genotype_table(tables: dict[str, pl.DataFrame], samples: tuple[str, ...], level: int) -> str:
@@ -237,25 +244,33 @@ def _genotype_table(tables: dict[str, pl.DataFrame], samples: tuple[str, ...], l
 
 
 def _ado_adi(tables: dict[str, pl.DataFrame], samples: tuple[str, ...], level: int) -> str:
-    """Render allelic drop-out and drop-in percentages per child."""
+    """Render allelic drop-out and drop-in percentages per child as a table."""
     frame = tables.get("ado_adi")
-    parts = []
-    for sample in samples:
-        parts.append(f"<h5>{escape(sample)}</h5>")
+    rows = ["<tr><th>Sample</th><th>ADO</th><th>ADI</th></tr>"]
+    for index, sample in enumerate(samples):
         matched = (
             frame.filter((pl.col("filter_level") == level) & (pl.col("sample") == sample))
             if frame is not None and not frame.is_empty()
             else None
         )
         if matched is None or matched.is_empty():
-            parts.append("<p>no two parents provided</p>")
+            rows.append(
+                f'<tr><th class="block{index % 2} row-label">{escape(sample)}</th>'
+                '<td colspan="2">no two parents provided</td></tr>'
+            )
             continue
         values = {str(row["metric"]): row["value"] for row in matched.iter_rows(named=True)}
+        cells = []
         for metric in ("ADO", "ADI"):
             value = values.get(metric)
-            text = "NA" if value is None else f"{value}%"
-            parts.append(f"<p>{metric} = {text}</p>")
-    return "".join(parts)
+            text = "NA" if value is None or value != value else f"{value}%"
+            cells.append(f"<td>{text}</td>")
+        rows.append(
+            f'<tr><th class="block{index % 2} row-label">{escape(sample)}</th>'
+            + "".join(cells)
+            + "</tr>"
+        )
+    return '<div class="table-scroll"><table class="matrix">' + "".join(rows) + "</table></div>"
 
 
 def _concordance_table(tables: dict[str, pl.DataFrame], samples: tuple[str, ...]) -> str:
@@ -464,9 +479,11 @@ p{margin:2px 0;font-size:13px}
 .fig{min-width:0;background:#fff}
 .pedigree{margin:12px 0 8px;overflow-x:auto}
 .pedigree svg{max-width:100%;height:auto}
+.table-scroll{max-width:100%;overflow-x:auto}
 table.matrix{border-collapse:collapse;font-size:11px;margin:6px 0 10px}
 table.matrix th,table.matrix td{border:1px solid #cbd5f5;padding:3px 7px;text-align:right;white-space:nowrap}
 table.matrix th{font-weight:600;text-align:center}
+table.matrix th.row-label{text-align:left}
 table.matrix th.block0{background:#A6CEE3}
 table.matrix th.block1{background:#1F78B4;color:#fff}
 table.matrix td.empty{background:#f8fafc;border-color:#eef2f7}
@@ -840,6 +857,9 @@ _SCRIPT = r"""
           mine.sort(function(a, b){ return d.pos[a] - d.pos[b]; });
           var y = strand === 1 ? base + 1 : base;
           var positions = pick(d.pos, mine), letters = pick(d.letter, mine);
+          var genotypes = pick(d.genotype, mine);
+          if (letters.every(function(letter){ return letter === 'X'; }) ||
+              genotypes.every(function(genotype){ return genotype === 'NA'; })) return;
           var px = [], py = [], pc = [], pt = [], ps = [];
           mine.forEach(function(i){
             if (d.genotype[i] === 'NA') return;

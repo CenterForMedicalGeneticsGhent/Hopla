@@ -11,7 +11,7 @@ import polars as pl
 
 from hopla.models import Cytoband
 from hopla.pedigree import _layout, pedigree_svg
-from hopla.report import render_report
+from hopla.report import _ado_adi, _variant_totals, render_report
 from hopla.settings import Settings
 
 CYTOBANDS = (
@@ -95,6 +95,59 @@ def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
     assert depth["mother"] == depth["father"] == 1
     assert depth["child"] == 2
     assert positions["child"] == (positions["mother"] + positions["father"]) / 2
+
+
+def test_large_family_statistics_use_compact_tables() -> None:
+    """Use rows and columns instead of repeated headings that grow the report."""
+    children = [f"child-{index}" for index in range(1, 9)]
+    samples = ("father", "mother", *children)
+    settings = Settings(
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                *[
+                    {
+                        "id": child,
+                        "father": "father",
+                        "mother": "mother",
+                        "sex": "F",
+                    }
+                    for child in children
+                ],
+            ]
+        },
+        regions=["chr1:500000-900000"],
+        run_merlin=False,
+    )
+    variant_stats = pl.DataFrame(
+        {
+            "filter_level": [0] * len(samples),
+            "sample": list(samples),
+            "region": ["genome"] * len(samples),
+            "metric": ["variants"] * len(samples),
+            "value": [float(index) for index in range(len(samples))],
+        }
+    )
+    ado_adi = pl.DataFrame(
+        {
+            "filter_level": [0] * (len(children) * 2),
+            "sample": [child for child in children for _ in range(2)],
+            "metric": ["ADO", "ADI"] * len(children),
+            "value": [1.25, 2.5] * len(children),
+        }
+    )
+
+    totals_html = _variant_totals({"variant_stats": variant_stats}, settings, samples, 0)
+    ado_html = _ado_adi({"ado_adi": ado_adi}, samples, 0)
+
+    assert '<div class="table-scroll"><table class="matrix">' in totals_html
+    assert totals_html.count("<tr>") == 5  # header, overall, region, and two flanks
+    assert ">father</th>" in totals_html
+    assert '<div class="table-scroll"><table class="matrix">' in ado_html
+    assert ado_html.count("<tr>") == len(samples) + 1
+    assert "<h5>" not in ado_html
+    assert '<td colspan="2">no two parents provided</td>' in ado_html
 
 
 def test_report_restores_every_original_section() -> None:

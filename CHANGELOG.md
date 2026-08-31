@@ -5,6 +5,18 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced verbose variant-total and ADO/ADI report lists with compact,
+  horizontally scrollable HTML tables.
+- Capped shared variant-depth histogram bins at the pooled 99.5th percentile,
+  retaining higher observations in the final bin.
+
+### Fixed
+
+- Render male chromosome-X Merlin results as one haplotype strand while
+  preserving the absent second strand as `X` in compatibility outputs.
+
 ## [3.0.0] - 2026-08-28
 
 ### Added

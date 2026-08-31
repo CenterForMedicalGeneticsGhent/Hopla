@@ -136,6 +136,24 @@ def genotype_counts(
     return pl.DataFrame(rows)
 
 
+def _depth_bin_edges(depths: np.ndarray) -> np.ndarray:
+    """Build histogram edges capped at the pooled 99.5th depth percentile."""
+    valid = depths[np.isfinite(depths) & (depths != 0)]
+    if valid.size == 0:
+        return np.asarray([], dtype=np.float64)
+    low = float(np.min(valid))
+    raw_high = float(np.max(valid))
+    bin_count = min(100, max(1, int(np.ceil(np.log2(valid.size))) + 1))
+    if low == raw_high:
+        low -= 0.5
+        high = raw_high + 0.5
+    else:
+        high = float(np.percentile(valid, 99.5))
+        if high <= low:
+            high = low + 0.5
+    return np.linspace(low, high, bin_count + 1)
+
+
 def variant_depth_table(
     matrix: GenotypeMatrix,
     filtered1: FilteredGenotypes,
@@ -151,15 +169,12 @@ def variant_depth_table(
         all_depths = depths[np.isfinite(depths) & (depths != 0)]
         if all_depths.size == 0:
             continue
-        bin_count = min(100, max(1, int(np.ceil(np.log2(all_depths.size))) + 1))
-        edges = np.linspace(float(np.min(all_depths)), float(np.max(all_depths)), bin_count + 1)
-        if edges[0] == edges[-1]:
-            edges = np.linspace(edges[0] - 0.5, edges[0] + 0.5, bin_count + 1)
+        edges = _depth_bin_edges(all_depths)
         for sample_index, sample in enumerate(matrix.samples):
             valid = depths[sample_index][
                 np.isfinite(depths[sample_index]) & (depths[sample_index] != 0)
             ]
-            counts, _ = np.histogram(valid, bins=edges)
+            counts, _ = np.histogram(np.clip(valid, edges[0], edges[-1]), bins=edges)
             rows.extend(
                 {
                     "filter_level": level,
