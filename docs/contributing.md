@@ -10,8 +10,8 @@ An agent-discoverable copy of this material lives in
 
 - Use the root pixi environments (`default` and `dev`) and the committed
   `pixi.lock`.
-- Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. The sibling
-  `../abecasis-lab-merlin` repository supplies the editable `merlinpy`
+- Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. The
+  `vendor/abecasis-lab-merlin` git submodule supplies the editable `merlinpy`
   dependency in each environment.
 - Require Python 3.12 or newer.
 - Add Python dependencies to both `[project]` / `[project.optional-dependencies]`
@@ -20,7 +20,7 @@ An agent-discoverable copy of this material lives in
   requirements from `[project]`. Keep the bioconda `conda-pypi-map` entry for
   `pybigwig` so osx-arm64 does not pull a PyPI source build.
 - Keep `pixi.lock` free of third-party PyPI source dependencies except for the
-  editable `merlinpy` sibling path. The local Hopla package is the other
+  editable `merlinpy` submodule path. The local Hopla package is the other
   editable `[tool.pixi.pypi-dependencies]` path entry.
 - Prefer the pixi editable path install over unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines the offline
@@ -95,12 +95,12 @@ Details: [install.md](install.md).
 
 ## Containers
 
-- Build `hopla/Dockerfile` from the parent context containing sibling `hopla/`
-  and `abecasis-lab-merlin/` checkouts.
-- Resolve dependencies through `pixi install --locked`; after the shell hook,
-  the image replaces both editable path packages with non-editable
-  `pip install --no-deps` installs so the runtime stage does not need either
-  source tree.
+- Build `Dockerfile` from the repository-root context and `pixi.lock`, including
+  the `vendor/abecasis-lab-merlin` submodule.
+- Resolve every third-party dependency through `pixi install --locked`; after
+  the shell hook, the image uninstalls the editable path packages and overlays
+  non-editable `pip install --no-deps` installs of `merlinpy` and Hopla so the
+  runtime stage does not need `src/` or the submodule tree.
 - Do not ship the pixi binary in the runtime stage.
 
 ## Verification

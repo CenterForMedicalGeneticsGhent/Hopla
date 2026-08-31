@@ -6,24 +6,22 @@ environment).
 ## Pixi (Linux and macOS)
 
 The repository includes a locked [pixi](https://pixi.sh) environment for
-`linux-64`, `linux-aarch64`, and `osx-arm64`. Clone the
-[abecasis-lab-merlin](https://github.com/matthdsm/abecasis-lab-merlin)
-repository beside Hopla so pixi can install its `merlinpy` package:
-
-```text
-workspace/
-├── abecasis-lab-merlin/
-└── hopla/
-```
+`linux-64`, `linux-aarch64`, and `osx-arm64`. Clone with submodules so pixi
+can install `merlinpy` from
+[`vendor/abecasis-lab-merlin`](https://github.com/bioinformaticsorphanage/abecasis-lab-merlin):
 
 ```bash
-cd workspace/hopla
+git clone --recurse-submodules https://github.com/CenterForMedicalGeneticsGhent/Hopla
+cd Hopla
 pixi install --locked
 pixi run hopla --help
 ```
 
+If the clone already exists without the submodule, run
+`git submodule update --init vendor/abecasis-lab-merlin`.
+
 Use `pixi install --locked` so the committed `pixi.lock` is respected. The
-local Hopla package and sibling `merlinpy` package are editable pixi path
+local Hopla package and `merlinpy` submodule are editable pixi path
 dependencies; other third-party lock entries are conda packages.
 
 The default environment holds analysis dependencies, including `merlinpy`.
@@ -40,10 +38,11 @@ After install, `pixi run hopla` invokes the console script (for example
 ## Pip (development tree)
 
 From the Hopla repository root, with a Python 3.12+ environment and the Merlin
-repository cloned beside it:
+submodule initialized:
 
 ```bash
-python -m pip install -e ../abecasis-lab-merlin
+git submodule update --init vendor/abecasis-lab-merlin
+python -m pip install -e vendor/abecasis-lab-merlin
 python -m pip install -e '.[dev]'
 hopla --help
 ```
@@ -77,11 +76,11 @@ Hopla calls `merlinpy` in-process; the native `merlin` and `minx` executables
 are not required. If `merlinpy` is unavailable, or only one real sample is
 analyzed, the engine sets `run_merlin` to `false`.
 
-Build the container from the directory containing both repositories so the
-path dependency is in the Docker build context:
+Build the container from the repository root after initializing the submodule:
 
 ```bash
-docker build -f hopla/Dockerfile -t hopla .
+git submodule update --init vendor/abecasis-lab-merlin
+docker build -t hopla .
 ```
 
 Hopla must not invoke Pandoc. The HTML report always inlines the offline
@@ -92,6 +91,6 @@ columnar analysis payload for the browser to expand with
 Prefer adding Python dependencies in `pyproject.toml` under `[project]` and
 the matching pixi conda or PyPI dependency section, then regenerate
 `pixi.lock` with pixi. Keep dependencies available as conda packages where
-possible; `merlinpy` is the explicit editable sibling-path exception.
+possible; `merlinpy` is the explicit editable submodule-path exception.
 
 See [CHANGELOG.md](../CHANGELOG.md) for changes to the Python engine.

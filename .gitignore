@@ -3,6 +3,8 @@
 !pixi.lock
 .pixi/
 *merlin
+!vendor/abecasis-lab-merlin
+!vendor/abecasis-lab-merlin/**
 *.html
 !src/hopla/ui/templates/index.html
 .DS_Store

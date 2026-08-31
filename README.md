@@ -33,7 +33,7 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
 ## Quick start
 
 ```bash
-git clone https://github.com/CenterForMedicalGeneticsGhent/Hopla
+git clone --recurse-submodules https://github.com/CenterForMedicalGeneticsGhent/Hopla
 cd Hopla
 pixi install --locked
 pixi run hopla run example/settings.yaml path/to/family.vcf.gz

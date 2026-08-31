@@ -166,8 +166,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.52.4-pyhc90fa1f_0.conda
-      - pypi: ../abecasis-lab-merlin
       - pypi: ./
+      - pypi: ./vendor/abecasis-lab-merlin
       linux-aarch64:
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/cyvcf2-0.34.0-py313h56f738b_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/htslib-1.23.1-h58d2225_0.conda
@@ -309,8 +309,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.52.4-pyhc90fa1f_0.conda
-      - pypi: ../abecasis-lab-merlin
       - pypi: ./
+      - pypi: ./vendor/abecasis-lab-merlin
       osx-arm64:
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/cyvcf2-0.34.0-py313he3ac920_0.conda
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/htslib-1.23.1-h44a9eb5_0.conda
@@ -447,8 +447,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h74c22ad_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-1.3.2-h8088a28_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - pypi: ../abecasis-lab-merlin
       - pypi: ./
+      - pypi: ./vendor/abecasis-lab-merlin
   dev:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -613,8 +613,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.52.4-pyhc90fa1f_0.conda
-      - pypi: ../abecasis-lab-merlin
       - pypi: ./
+      - pypi: ./vendor/abecasis-lab-merlin
       linux-aarch64:
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/cyvcf2-0.34.0-py313h56f738b_0.conda
       - conda: https://conda.anaconda.org/bioconda/linux-aarch64/htslib-1.23.1-h58d2225_0.conda
@@ -772,8 +772,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.52.4-pyhc90fa1f_0.conda
-      - pypi: ../abecasis-lab-merlin
       - pypi: ./
+      - pypi: ./vendor/abecasis-lab-merlin
       osx-arm64:
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/cyvcf2-0.34.0-py313he3ac920_0.conda
       - conda: https://conda.anaconda.org/bioconda/osx-arm64/htslib-1.23.1-h44a9eb5_0.conda
@@ -926,8 +926,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h74c22ad_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-1.3.2-h8088a28_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - pypi: ../abecasis-lab-merlin
       - pypi: ./
+      - pypi: ./vendor/abecasis-lab-merlin
 packages:
 - conda: https://conda.anaconda.org/bioconda/linux-64/cyvcf2-0.34.0-py313hd6fac57_0.conda
   sha256: cc4f8444289d38cea223f8f83cddd8e7270b4a9c3764e7c60f1d06f4d7a7affe
@@ -6890,12 +6890,6 @@ packages:
     - zstd >=1.5.7,<1.6.0a0
   size: 433687
   timestamp: 1786599629846
-- pypi: ../abecasis-lab-merlin
-  name: merlinpy
-  requires_dist:
-  - pytest>=8 ; extra == 'dev'
-  - ruff>=0.8 ; extra == 'dev'
-  requires_python: '>=3.12'
 - pypi: ./
   name: hopla
   requires_dist:
@@ -6919,4 +6913,10 @@ packages:
   - ruff ; extra == 'dev'
   - types-jsonschema ; extra == 'dev'
   - types-pyyaml ; extra == 'dev'
+  requires_python: '>=3.12'
+- pypi: ./vendor/abecasis-lab-merlin
+  name: merlinpy
+  requires_dist:
+  - pytest>=8 ; extra == 'dev'
+  - ruff>=0.8 ; extra == 'dev'
   requires_python: '>=3.12'

@@ -78,7 +78,7 @@ conda-pypi-map = { bioconda = { mapping = { pybigwig = "pybigwig" } } }
 
 [tool.pixi.pypi-dependencies]
 hopla = { path = ".", editable = true }
-merlinpy = { path = "../abecasis-lab-merlin", editable = true }
+merlinpy = { path = "vendor/abecasis-lab-merlin", editable = true }
 
 [tool.pixi.dependencies]
 python = ">=3.12,<3.14"

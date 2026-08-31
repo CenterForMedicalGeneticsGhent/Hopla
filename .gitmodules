@@ -1,0 +1,4 @@
+[submodule "vendor/abecasis-lab-merlin"]
+	path = vendor/abecasis-lab-merlin
+	url = https://github.com/bioinformaticsorphanage/abecasis-lab-merlin.git
+	branch = main
