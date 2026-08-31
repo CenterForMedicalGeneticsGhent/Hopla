@@ -191,6 +191,7 @@ def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[
             prepared.pop(key)
     elif "sample_ids" in prepared:
         sample_ids = prepared.get("sample_ids")
+        members: Any
         if isinstance(sample_ids, list):
             size = len(sample_ids)
             aligned: dict[str, list[Any]] = {}
