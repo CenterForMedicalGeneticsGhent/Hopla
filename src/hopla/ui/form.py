@@ -96,15 +96,15 @@ def default_form() -> dict[str, Any]:
 
 def _pedigree_mapping(settings: dict[str, Any]) -> dict[str, Any]:
     family_members = settings["family"]["members"]
-    sample_ids = [str(member["id"]) for member in family_members]
     members = {
-        sample_id: {
+        str(member["id"]): {
             "father": member.get("father"),
             "mother": member.get("mother"),
             "index": index,
         }
-        for index, (sample_id, member) in enumerate(zip(sample_ids, family_members, strict=True))
+        for index, member in enumerate(family_members)
     }
+    sample_ids = list(members)
 
     def depth(sample_id: str, visiting: set[str]) -> int:
         if sample_id in visiting or sample_id not in members:

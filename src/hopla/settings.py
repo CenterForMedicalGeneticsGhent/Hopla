@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 import yaml
 from jsonschema import Draft7Validator
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Sex = Literal["M", "F"] | None
 CLI_ONLY_KEYS = frozenset({"vcf_file", "out_dir", "cytoband_file"})
@@ -21,7 +21,7 @@ LEGACY_FAMILY_KEYS = frozenset(
 
 
 class FamilyMember(BaseModel):
-    """Describe one family member without positional cross-references."""
+    """One pedigree member."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -32,13 +32,12 @@ class FamilyMember(BaseModel):
 
 
 class Family(BaseModel):
-    """Group a named family and its pedigree members."""
+    """Named family and its members."""
 
     model_config = ConfigDict(extra="forbid")
 
     id: str = Field(default="hopla", min_length=1)
     members: list[FamilyMember] = Field(min_length=1)
-    _member_by_id: dict[str, FamilyMember] = PrivateAttr(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_members(self) -> Family:
@@ -62,25 +61,21 @@ class Family(BaseModel):
             raise ValueError("multiple family members require a father and/or mother")
         return self
 
-    def model_post_init(self, _context: object) -> None:
-        """Build constant-time member lookup after validation."""
-        self._member_by_id = {member.id: member for member in self.members}
-
     @property
     def member_ids(self) -> tuple[str, ...]:
-        """Return member IDs in configured presentation order."""
+        """Return member IDs in declaration order."""
         return tuple(member.id for member in self.members)
 
     def member(self, sample_id: str) -> FamilyMember:
-        """Return a family member by sample ID."""
-        return self._member_by_id[sample_id]
+        """Return the member with this sample ID."""
+        for item in self.members:
+            if item.id == sample_id:
+                return item
+        raise KeyError(sample_id)
 
     def add_member(self, member: FamilyMember) -> None:
-        """Append a generated pedigree member and update the ID lookup."""
-        if member.id in self._member_by_id:
-            raise ValueError(f"family member ID already exists: {member.id}")
+        """Append a generated pedigree member."""
         self.members.append(member)
-        self._member_by_id[member.id] = member
 
 
 class Settings(BaseModel):
@@ -203,15 +198,13 @@ def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[
     for key in CLI_ONLY_KEYS:
         prepared.pop(key, None)
     ignored: list[str] = []
-    supplied_family = "family" in prepared
-    if supplied_family:
+    if "family" in prepared:
         conflicting = sorted(LEGACY_FAMILY_KEYS.intersection(prepared))
         ignored.extend(conflicting)
         for key in conflicting:
             prepared.pop(key)
     elif "sample_ids" in prepared:
-        sample_ids = prepared.get("sample_ids")
-        members: Any
+        sample_ids = prepared["sample_ids"]
         if isinstance(sample_ids, list):
             size = len(sample_ids)
             aligned: dict[str, list[Any]] = {}
@@ -225,18 +218,19 @@ def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[
                     raise ValueError(f"{key} must have the same length as sample_ids")
                 else:
                     aligned[key] = values
-            members = [
-                {
-                    "id": sample_id,
-                    "father": aligned["father_ids"][index],
-                    "mother": aligned["mother_ids"][index],
-                    "sex": aligned["sexes"][index],
-                }
-                for index, sample_id in enumerate(sample_ids)
-            ]
+            family: dict[str, Any] = {
+                "members": [
+                    {
+                        "id": sample_id,
+                        "father": aligned["father_ids"][index],
+                        "mother": aligned["mother_ids"][index],
+                        "sex": aligned["sexes"][index],
+                    }
+                    for index, sample_id in enumerate(sample_ids)
+                ]
+            }
         else:
-            members = sample_ids
-        family: dict[str, Any] = {"members": members}
+            family = {"members": sample_ids}
         if "fam_id" in prepared:
             family["id"] = prepared["fam_id"]
         prepared["family"] = family

@@ -86,27 +86,18 @@ def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
     """Coerce a parsed legacy mapping and drop unsupported keys."""
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
     properties = schema_properties()
-    legacy_arrays = {
-        "sample_ids": False,
-        "father_ids": True,
-        "mother_ids": True,
-        "sexes": True,
-        "genders": True,
-    }
+    nullable_lists = {"father_ids", "mother_ids", "sexes", "genders"}
+    list_keys = nullable_lists | {"sample_ids"}
     converted: dict[str, Any] = {}
     for key, value in raw.items():
-        if key in legacy_arrays:
+        if key in list_keys:
             if isinstance(value, list):
                 converted[key] = value
             else:
                 converted[key] = [
-                    None
-                    if token.strip() in {"", "NA"} and legacy_arrays[key]
-                    else token.strip()
+                    None if token.strip() in {"", "NA"} and key in nullable_lists else token.strip()
                     for token in value.split(",")
                 ]
-        elif key == "fam_id":
-            converted[key] = value
         elif key in properties:
             converted[key] = _coerce(value, properties[key])
         else:
