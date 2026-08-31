@@ -36,9 +36,9 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz)
   into a temporary directory for that run.
 - `--export-parquet` / `--no-export-parquet` controls writing portable Parquet
-  tables under `{family.id}-export/` (default: on).
+  tables under `{family.id}-export/` (default: off).
 - `--export-bigwig` / `--no-export-bigwig` controls writing BigWig, BED, SEG,
-  and `igv-session.xml` under the same export directory (default: on). Details:
+  and `igv-session.xml` under the same export directory (default: off). Details:
   [exports.md](exports.md).
 - `convert` maps a legacy `key=value` settings file to schema-validated YAML.
   Unsupported keys are omitted after a warning. `OUTPUT` defaults to the input
@@ -74,7 +74,7 @@ With pixi:
 pixi run hopla run path/to/settings.yaml path/to/family.vcf.gz
 pixi run hopla run -o path/to/output path/to/settings.yaml path/to/family.vcf.gz
 pixi run hopla run -c path/to/cytoband.hg38.txt path/to/settings.yaml path/to/family.vcf.gz
-pixi run hopla run --no-export-parquet --no-export-bigwig path/to/settings.yaml path/to/family.vcf.gz
+pixi run hopla run --export-parquet --export-bigwig path/to/settings.yaml path/to/family.vcf.gz
 ```
 
 With an editable install on `PATH`:

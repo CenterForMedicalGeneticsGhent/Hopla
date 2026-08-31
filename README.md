@@ -40,9 +40,9 @@ pixi install --locked
 pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
-By default `hopla run` also writes `{family.id}-export/` with Parquet tables and
-IGV desktop tracks. See [exports.md](docs/exports.md). Example settings and a
-legacy conversion fixture are in [`example/`](example/).
+Pass `--export-parquet` and `--export-bigwig` to also write `{family.id}-export/`
+with Parquet tables and IGV desktop tracks. See [exports.md](docs/exports.md).
+Example settings and a legacy conversion fixture are in [`example/`](example/).
 
 `hopla serve` can create or import settings, upload a VCF selected in the
 browser, run the analysis, and return its HTML report. Web runs use temporary

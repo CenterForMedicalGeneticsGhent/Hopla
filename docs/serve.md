@@ -53,10 +53,10 @@ instance that should not read local VCFs or start runs cannot be driven into
 doing so.
 
 Web analyses generate only the self-contained HTML report; they do not generate
-the Parquet or IGV sidecars written by the default `hopla run` command. Use the
-CLI when those exports, a persistent output directory, or a custom cytoband
-file are required. When the web interface needs the default hg38 cytobands, the
-server downloads them as it does for `hopla run` without `-c`.
+Parquet or IGV sidecars. Use `hopla run` with `--export-parquet` /
+`--export-bigwig` when those exports, a persistent output directory, or a custom
+cytoband file are required. When the web interface needs the default hg38
+cytobands, the server downloads them as it does for `hopla run` without `-c`.
 
 ## Network safety
 

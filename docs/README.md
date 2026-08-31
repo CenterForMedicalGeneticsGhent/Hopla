@@ -47,8 +47,9 @@ pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
 The command validates settings before reading the VCF and writes a compact,
-offline HTML report. By default it also writes portable Parquet tables and IGV
-desktop tracks under `{family.id}-export/`. Merlin 1.1.2 remains an optional
+offline HTML report. Pass `--export-parquet` and `--export-bigwig` to also write
+portable Parquet tables and IGV desktop tracks under `{family.id}-export/`.
+Merlin 1.1.2 remains an optional
 external dependency for haplotyping. Example settings live in
 [`example/`](../example/).
 
