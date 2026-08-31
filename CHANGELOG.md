@@ -4,6 +4,18 @@ This changelog covers the Hopla Python package, settings editor, and command-lin
 subtools. Historical notes from the predecessor analysis pipeline live in
 [docs/archive/legacy-pipeline-changelog.md](docs/archive/legacy-pipeline-changelog.md).
 
+## [4.0.0] - 2026-08-31
+
+### Changed
+
+- Renamed the `genders` setting to `sexes`. Legacy files still use `genders`; convert and import remap it.
+- `info` is multiline free text rather than a list of lines. The settings editor uses one text box instead of Disease / Inheritance / Sequencing note fields.
+- Import, convert, and `hopla run` ignore unsupported keys after a warning instead of failing. Generated YAML omits unused compatibility keys.
+
+### Removed
+
+- Dropped unused settings `color_palette`, `self_contained`, and `cairo` from the schema, engine, and editor.
+
 ## [3.0.0] - 2026-08-28
 
 ### Changed

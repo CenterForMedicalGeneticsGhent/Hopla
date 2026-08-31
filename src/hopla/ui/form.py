@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 
 from hopla.convert import convert_legacy_data
-from hopla.settings import validate_settings
+from hopla.settings import prepare_settings_mapping, validate_settings
 
 PLACEHOLDERS = {
     "father": "U1",
@@ -22,7 +22,7 @@ CONTROLLED_KEYS = {
     "sample_ids",
     "father_ids",
     "mother_ids",
-    "genders",
+    "sexes",
     "dp_hard_limit_ids",
     "af_hard_limit_ids",
     "af_hard_limit",
@@ -43,14 +43,13 @@ CONTROLLED_KEYS = {
     "limit_baf_to_p",
     "limit_pm_to_p",
     "value_of_p",
-    "self_contained",
 }
 
 
 def _member(
     role: str,
     sample_id: str,
-    gender: str | None,
+    sex: str | None,
     settings: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     values = settings or {}
@@ -64,7 +63,7 @@ def _member(
     return {
         "role": role,
         "sample_id": sample_id,
-        "gender": gender or "NA",
+        "sex": sex or "NA",
         "disease_status": disease,
         "hard_dp": sample_id in values.get("dp_hard_limit_ids", []),
         "hard_af": sample_id in values.get("af_hard_limit_ids", []),
@@ -87,9 +86,7 @@ def default_form() -> dict[str, Any]:
         "embryos": [],
         "af_hard_limit": 0.25,
         "regions": [],
-        "disease": "",
-        "inheritance": "AD",
-        "sequencing_note": "",
+        "info": "",
         "window_size_voting": 10_000_000,
         "keep_chromosomes_only": True,
         "keep_regions_only": False,
@@ -97,7 +94,6 @@ def default_form() -> dict[str, Any]:
         "limit_baf_to_p": False,
         "limit_pm_to_p": True,
         "value_of_p": 0.15,
-        "self_contained": True,
         "extras": {},
     }
 
@@ -160,26 +156,27 @@ def _pedigree_mapping(settings: dict[str, Any]) -> dict[str, Any]:
 
 def settings_to_form(settings: dict[str, Any]) -> dict[str, Any]:
     """Build browser form state from a validated settings mapping."""
+    settings, _ignored = prepare_settings_mapping(settings)
     validate_settings(settings)
     state = default_form()
     mapping = _pedigree_mapping(settings)
     sample_ids = list(settings["sample_ids"])
-    genders = list(settings.get("genders") or [None] * len(sample_ids))
-    gender_by_id = dict(zip(sample_ids, genders, strict=False))
+    sexes = list(settings.get("sexes") or [None] * len(sample_ids))
+    sex_by_id = dict(zip(sample_ids, sexes, strict=False))
     fixed: dict[str, Any] = {}
     for role, placeholder in PLACEHOLDERS.items():
         sample_id = mapping.get(role) or placeholder
-        default_gender = "M" if "father" in role else "F"
+        default_sex = "M" if "father" in role else "F"
         fixed[role] = _member(
-            role, str(sample_id), gender_by_id.get(sample_id, default_gender), settings
+            role, str(sample_id), sex_by_id.get(sample_id, default_sex), settings
         )
     state["members"] = fixed
     state["siblings"] = [
-        _member("sibling", sample_id, gender_by_id.get(sample_id), settings)
+        _member("sibling", sample_id, sex_by_id.get(sample_id), settings)
         for sample_id in mapping.get("siblings", [])
     ]
     state["embryos"] = [
-        _member("embryo", sample_id, gender_by_id.get(sample_id), settings)
+        _member("embryo", sample_id, sex_by_id.get(sample_id), settings)
         for sample_id in mapping.get("embryos", [])
     ]
     state["fam_id"] = settings.get("fam_id", state["fam_id"])
@@ -193,20 +190,10 @@ def settings_to_form(settings: dict[str, Any]) -> dict[str, Any]:
         "limit_baf_to_p",
         "limit_pm_to_p",
         "value_of_p",
-        "self_contained",
+        "info",
     ):
         if key in settings:
             state[key] = settings[key]
-    info = settings.get("info", [])
-    labels = {
-        "Disease:": "disease",
-        "Inheritance:": "inheritance",
-        "Sequencing note:": "sequencing_note",
-    }
-    for line in info:
-        for prefix, key in labels.items():
-            if str(line).startswith(prefix):
-                state[key] = str(line)[len(prefix) :].strip()
     state["extras"] = {key: value for key, value in settings.items() if key not in CONTROLLED_KEYS}
     return state
 
@@ -283,23 +270,14 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             ("nonaffected_ids", "nonaffected"),
         )
     }
-    info = [
-        f"{label}: {state[key]}"
-        for label, key in (
-            ("Disease", "disease"),
-            ("Inheritance", "inheritance"),
-            ("Sequencing note", "sequencing_note"),
-        )
-        if state.get(key)
-    ]
     result: dict[str, Any] = dict(state.get("extras", {}))
     result.update(
         {
             "sample_ids": [member["sample_id"] for member in selected],
             "father_ids": father_ids,
             "mother_ids": mother_ids,
-            "genders": [
-                None if member.get("gender") == "NA" else member.get("gender")
+            "sexes": [
+                None if member.get("sex") == "NA" else member.get("sex")
                 for member in selected
             ],
             "dp_hard_limit_ids": ids("hard_dp"),
@@ -310,7 +288,7 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             "keep_hetero_ids": ids("hetero"),
             "regions": [str(region).strip() for region in state.get("regions", []) if region],
             **disease_lists,
-            "info": info,
+            "info": str(state.get("info") or ""),
             "baf_ids": ids("baf"),
             "window_size_voting": float(state["window_size_voting"]),
             "keep_chromosomes_only": bool(state["keep_chromosomes_only"]),
@@ -320,14 +298,16 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             "limit_baf_to_p": bool(state["limit_baf_to_p"]),
             "limit_pm_to_p": bool(state["limit_pm_to_p"]),
             "value_of_p": float(state["value_of_p"]),
-            "self_contained": bool(state["self_contained"]),
         }
     )
-    validate_settings(result)
-    return result
+    if not str(result.get("info") or "").strip():
+        result.pop("info", None)
+    prepared, _ignored = prepare_settings_mapping(result)
+    validate_settings(prepared)
+    return prepared
 
 
-def import_config(name: str, text: str) -> dict[str, Any]:
+def import_config(name: str, text: str) -> tuple[dict[str, Any], list[str]]:
     """Parse an uploaded legacy, YAML, or JSON configuration."""
     if len(text.encode("utf-8")) > 1024 * 1024:
         raise ValueError("Configuration files must be 1 MB or smaller.")
@@ -342,7 +322,8 @@ def import_config(name: str, text: str) -> dict[str, Any]:
         raise ValueError("Choose a .txt, .yaml, .yml, or .json configuration file.")
     if not isinstance(settings, dict):
         raise ValueError("Settings must contain a mapping at the document root.")
-    return settings_to_form(settings)
+    prepared, ignored = prepare_settings_mapping(settings)
+    return settings_to_form(prepared), ignored
 
 
 def render_yaml(state: dict[str, Any]) -> str:

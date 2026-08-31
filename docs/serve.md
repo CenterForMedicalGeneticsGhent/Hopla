@@ -18,9 +18,12 @@ views. It can import:
 - current `.yaml` and `.yml` settings;
 - current `.json` settings.
 
-Imports are limited to 1 MB. YAML downloads are validated against the packaged
-settings schema. The VCF, output-directory, and cytoband paths remain command
-line arguments and are never included in downloaded settings.
+Imports are limited to 1 MB. Unsupported keys are ignored after a warning.
+YAML downloads are validated against the packaged settings schema and omit
+unused compatibility keys. The VCF, output-directory, and cytoband paths remain
+command line arguments and are never included in downloaded settings. The
+editor maps pedigree `Sex` onto `sexes` and stores family notes as a single
+multiline `info` string.
 
 ## Network safety
 

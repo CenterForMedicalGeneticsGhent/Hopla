@@ -112,11 +112,11 @@ def mask_male_x_heterozygotes(
     sites: SiteTable,
     matrix: GenotypeMatrix,
     sample_ids: Sequence[str],
-    genders: Sequence[str | None],
+    sexes: Sequence[str | None],
 ) -> None:
     """Mark diploid heterozygous chromosome-X calls missing in male samples."""
     x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
     for sample in matrix.samples:
-        if genders[sample_ids.index(sample)] == "M":
+        if sexes[sample_ids.index(sample)] == "M":
             sample_index = matrix.sample_index[sample]
             matrix.gt[sample_index, x_mask & (matrix.gt[sample_index] == 1)] = -1

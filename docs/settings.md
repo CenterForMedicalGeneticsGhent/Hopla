@@ -4,8 +4,9 @@
 
 Analysis options are supplied as a single YAML or JSON file to `hopla run`.
 The file is validated against the packaged `hopla/schema/hopla.schema.json`
-before the VCF is loaded. Unknown properties, invalid types, missing mandatory
-values, and out-of-range values fail immediately. After schema validation, the
+before the VCF is loaded. Unknown properties are ignored after a warning.
+Invalid types, missing mandatory values, and out-of-range values fail
+immediately. After schema validation, the
 engine applies pedigree length checks, sample-reference checks, region pattern
 checks, and filter-ID defaults.
 
@@ -35,7 +36,7 @@ A complete example is [`example/settings.yaml`](../example/settings.yaml).
 - Use a `.yaml`, `.yml`, or `.json` extension.
 - The document root must be a mapping of snake_case property names.
 - Lists must be YAML/JSON arrays, not comma-separated strings.
-- Use `null` for an unknown parent or gender. Do not use `NA`.
+- Use `null` for an unknown parent or sex. Do not use `NA`.
 - Omitted properties take the defaults below (also encoded in the schema and
   analysis engine).
 - Empty arrays are allowed where the schema permits them; they mean “unset” for
@@ -50,13 +51,13 @@ A complete example is [`example/settings.yaml`](../example/settings.yaml).
 sample_ids: [sample_C, sample_B, sample_A]
 father_ids: [null, null, sample_C]
 mother_ids: [null, null, sample_B]
-genders: [M, F, null]
+sexes: [M, F, null]
 run_merlin: true
 regions:
   - chr7:117480025-117668665
-info:
-  - "Disease: Cystic Fibrosis"
-  - "Inheritance: Autosomal Recessive"
+info: |
+  Disease: Cystic Fibrosis
+  Inheritance: Autosomal Recessive
 ```
 
 Equivalent JSON is accepted. Types and constraints are identical.
@@ -87,8 +88,8 @@ When more than one sample is listed, at least one of `father_ids` or
 - **`mother_ids`** (`string | null` array, no default) Mother sample IDs. Use
   `null` when not available. Order matches `sample_ids`. Example:
   `[null, null, sample_B]`.
-- **`genders`** (`M` / `F` / `null` array, no default) Sample genders. Use
-  `null` when not available; the model then predicts gender (see `x_cutoff` and
+- **`sexes`** (`M` / `F` / `null` array, no default) Sample sex. Use
+  `null` when not available; the model then predicts sex (see `x_cutoff` and
   `y_cutoff`). Order matches `sample_ids`. Example: `[M, F, null]`.
 - **`run_merlin`** (`boolean`, default `true`) Whether Merlin haplotyping should
   run. The Merlin executables directory (`path/to/merlin-1.1.2/executables`)
@@ -99,7 +100,7 @@ When more than one sample is listed, at least one of `father_ids` or
 The cytoband table is a CLI path (`-c CYTOBAND`), not a settings property. See
 [cli.md](cli.md).
 
-If `father_ids`, `mother_ids`, or `genders` are omitted, they are filled with
+If `father_ids`, `mother_ids`, or `sexes` are omitted, they are filled with
 `null` for every entry in `sample_ids`.
 
 ### Important optional variant inclusion settings: filter 1
@@ -150,15 +151,16 @@ cover that sample.
   and sample names are colored/annotated accordingly. None or more expected.
 - **`nonaffected_ids`** (`string` array, no default) When given, the family tree
   and sample names are colored/annotated accordingly. None or more expected.
-- **`info`** (`string` array, no default) Additional lines printed at the top of
-  the HTML output:
+- **`info`** (`string`, no default) Free text printed at the top of the HTML
+  output. Line breaks are preserved. The value is not parsed as key-value
+  pairs.
 
   ```yaml
-  info:
-    - Some information.
-    - "Disease: Cystic Fibrosis"
-    - "Inheritance: Autosomal Recessive"
-    - Some more information.
+  info: |
+    Some information.
+    Disease: Cystic Fibrosis
+    Inheritance: Autosomal Recessive
+    Some more information.
   ```
 
 ### B-allele frequency (BAF) profiles
@@ -210,9 +212,9 @@ raw uncorrected genotypes remain available on hover.
 - **`fam_id`** (`string`, default `hopla`) Family ID, used in output file names.
   Non-word characters are replaced with `.` after load.
 - **`x_cutoff`** (`number`, default `1.5`) X chromosome copy-number cutoff for
-  gender prediction (one copy assumed in males, two in females).
+  sex prediction (one copy assumed in males, two in females).
 - **`y_cutoff`** (`number`, default `0.6`) Y chromosome copy-number cutoff for
-  gender prediction (one copy assumed in males, noise expected in females).
+  sex prediction (one copy assumed in males, noise expected in females).
 - **`window_size`** (`number > 0`, default `1000000`) Bin size in bp for several
   genome-wide profiles.
 - **`regions_flanking_size`** (`number ≥ 0`, default `2000000`) Flanking size in
@@ -227,19 +229,15 @@ raw uncorrected genotypes remain available on hover.
   not random.
 - **`value_of_p`** (`number` in `(0, 1]`, default `0.25`) Value of `P` for the
   two options above.
-- **`color_palette`** (`string`, default `Paired`) Accepted for schema
-  compatibility. The Python report currently always uses the ColorBrewer
-  Paired palette.
 - **`dot_factor`** (`number > 0`, default `2`) Multiplier for the size of every
   dot in the visualizations.
-- **`self_contained`** (`boolean`, default `false`) Accepted for schema
-  compatibility. The Python report is always a single offline HTML file: local
-  `plotly.js` is inlined and analysis data is gzip-compressed for the browser
-  to expand before rendering. The report requires JavaScript and a current
-  browser with `DecompressionStream` support. Hopla does not invoke Pandoc.
-- **`cairo`** (`boolean`, default `false`) Accepted for schema compatibility.
-  The Python engine does not use a cairo bitmap device; the setting has no
-  effect.
+
+The report is always a single offline HTML file: local `plotly.js` is inlined
+and analysis data is gzip-compressed for the browser to expand before
+rendering. The report requires JavaScript and a current browser with
+`DecompressionStream` support. Hopla does not invoke Pandoc. Unused historical
+keys (`color_palette`, `self_contained`, `cairo`) are ignored with a warning
+and are not written when generating YAML.
 
 ## Legacy `key=value` files
 
@@ -263,10 +261,13 @@ Conversion rules:
   the CLI instead.
 - Empty assignments are omitted so schema/engine defaults apply.
 - Comma-separated lists become YAML arrays.
-- `NA` in parent and gender lists becomes YAML `null`.
+- `NA` in parent and sex lists becomes YAML `null`.
 - `T` / `F` become `true` / `false`.
 - The converted document is validated before it is written.
-- Unknown keys and missing mandatory fields fail the conversion.
+- Unsupported keys are omitted after a warning. Missing mandatory fields fail
+  the conversion.
+- Legacy `genders` is written as `sexes`. The `start.info` … `end.info` block
+  becomes a multiline `info` string.
 
 | Legacy key | YAML / JSON key |
 | --- | --- |
@@ -275,7 +276,7 @@ Conversion rules:
 | `sample.ids` | `sample_ids` |
 | `father.ids` | `father_ids` |
 | `mother.ids` | `mother_ids` |
-| `genders` | `genders` |
+| `genders` | `sexes` |
 | `run.merlin` | `run_merlin` |
 | `cytoband.file` | *(CLI `-c CYTOBAND`; omitted from YAML)* |
 | `dp.hard.limit.ids` | `dp_hard_limit_ids` |
@@ -309,7 +310,4 @@ Conversion rules:
 | `limit.baf.to.P` | `limit_baf_to_p` |
 | `limit.pm.to.P` | `limit_pm_to_p` |
 | `value.of.P` | `value_of_p` |
-| `color.palette` | `color_palette` |
 | `dot.factor` | `dot_factor` |
-| `self.contained` | `self_contained` |
-| `cairo` | `cairo` |

@@ -55,9 +55,9 @@
         <label class="wide">Regions (one <code>chr:start-end</code> per line)
           <textarea id="regions" rows="5"></textarea>
         </label>
-        <label>Disease <input id="disease"></label>
-        <label>Inheritance <input id="inheritance"></label>
-        <label class="wide">Sequencing note <input id="sequencing_note"></label>
+        <label class="wide">Family information
+          <textarea id="info" rows="6" placeholder="Free text printed at the top of the report"></textarea>
+        </label>
         <label><input id="keep_chromosomes_only" type="checkbox"> Keep chromosomes only</label>
         <label><input id="keep_regions_only" type="checkbox"> Keep regions only</label>
       </div>
@@ -74,7 +74,6 @@
         </label>
         <label><input id="limit_pm_to_p" type="checkbox"> Limit parent mapping to P</label>
         <label><input id="limit_baf_to_p" type="checkbox"> Limit BAF to P</label>
-        <label><input id="self_contained" type="checkbox"> Self-contained report compatibility setting</label>
       </div>
     </section>
 
@@ -94,8 +93,8 @@
         <button type="button" class="remove danger">Remove</button>
       </div>
       <label>Sample ID <input class="sample-id"></label>
-      <label>Gender
-        <select class="gender"><option>NA</option><option>M</option><option>F</option></select>
+      <label>Sex
+        <select class="sex"><option>NA</option><option>M</option><option>F</option></select>
       </label>
       <label>Disease status
         <select class="disease-status">

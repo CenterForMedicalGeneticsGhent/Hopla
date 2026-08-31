@@ -24,7 +24,7 @@ from hopla.filters import apply_filter1, apply_filter2
 from hopla.flow import concordance as compare_flows
 from hopla.flow import transform as transform_flow
 from hopla.merlin import run_merlin
-from hopla.pedigree import add_ghosts, predict_genders
+from hopla.pedigree import add_ghosts, predict_sexes
 from hopla.report import render_report
 from hopla.serve import create_app
 from hopla.settings import load_settings
@@ -127,8 +127,8 @@ def run_command(
         settings = load_settings(settings_path)
         logging.info("Loading VCF")
         sites, matrix = load_vcf(vcf_path, settings.real_samples)
-        settings.genders = predict_genders(settings, sites, matrix)
-        mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.genders)
+        settings.sexes = predict_sexes(settings, sites, matrix)
+        mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.sexes)
         add_ghosts(settings)
         logging.info("Applying filters")
         filtered1 = apply_filter1(sites, matrix, settings)

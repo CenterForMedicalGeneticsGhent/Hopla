@@ -38,7 +38,7 @@ function newMember(role, index) {
   return {
     role,
     sample_id: role === "embryo" ? `embryo-${index + 1}` : `sibling-${index + 1}`,
-    gender: "NA",
+    sex: "NA",
     disease_status: "NA",
     hard_dp: role === "sibling",
     hard_af: role === "sibling",
@@ -53,7 +53,7 @@ function bindMemberCard(card, member, remove) {
   card.querySelector("h3").textContent = labels[member.role];
   const fields = {
     ".sample-id": ["sample_id", "value"],
-    ".gender": ["gender", "value"],
+    ".sex": ["sex", "value"],
     ".disease-status": ["disease_status", "value"],
     ".hard-dp": ["hard_dp", "checked"],
     ".hard-af": ["hard_af", "checked"],
@@ -80,10 +80,10 @@ function renderMembers() {
     roles.forEach((role) => {
       const card = document.querySelector("#member-template").content.firstElementChild.cloneNode(true);
       bindMemberCard(card, state.members[role], () => {
-        const gender = role.includes("father") ? "M" : "F";
+        const sex = role.includes("father") ? "M" : "F";
         state.members[role] = newMember(role, 0);
         state.members[role].sample_id = placeholders[role];
-        state.members[role].gender = gender;
+        state.members[role].sex = sex;
         renderMembers();
         schedulePreview();
       });
@@ -106,12 +106,12 @@ function renderMembers() {
 }
 
 const scalarFields = [
-  "fam_id", "af_hard_limit", "window_size_voting", "disease", "inheritance",
-  "sequencing_note", "regions_flanking_size", "value_of_p",
+  "fam_id", "af_hard_limit", "window_size_voting", "info",
+  "regions_flanking_size", "value_of_p",
 ];
 const checkboxFields = [
   "keep_chromosomes_only", "keep_regions_only", "limit_pm_to_p",
-  "limit_baf_to_p", "self_contained",
+  "limit_baf_to_p",
 ];
 
 function fillFields() {
@@ -190,13 +190,19 @@ document.querySelector("#config-upload").addEventListener("change", async (event
   }
   try {
     const response = await api("/api/import", {name: file.name, content: await file.text()});
-    const imported = (await response.json()).form;
+    const result = await response.json();
+    const imported = result.form;
     Object.keys(state).forEach((key) => delete state[key]);
     Object.assign(state, imported);
     fillFields();
     renderMembers();
     await updatePreview();
-    message(`Imported ${file.name}.`);
+    const ignored = result.warnings || [];
+    if (ignored.length) {
+      message(`Imported ${file.name}. Ignored unsupported setting(s): ${ignored.join(", ")}.`);
+    } else {
+      message(`Imported ${file.name}.`);
+    }
   } catch (error) {
     message(error.message, true);
   } finally {

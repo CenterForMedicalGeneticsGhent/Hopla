@@ -100,7 +100,4 @@ regions.flanking.size=2000000
 limit.baf.to.P=F
 limit.pm.to.P=T
 value.of.P=.15
-color.palette=
 dot.factor=
-self.contained=T
-cairo=

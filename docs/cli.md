@@ -41,7 +41,8 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   and `igv-session.xml` under the same export directory (default: on). Details:
   [exports.md](exports.md).
 - `convert` maps a legacy `key=value` settings file to schema-validated YAML.
-  `OUTPUT` defaults to the input path with a `.yaml` extension.
+  Unsupported keys are omitted after a warning. `OUTPUT` defaults to the input
+  path with a `.yaml` extension.
 - `concordance` compares two haplotype flow tables. `-r` compares each flow
   relative to its first retained marker.
 - `transform` rewrites a flow table relative to another. `MODE` is `1` for

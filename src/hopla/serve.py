@@ -69,7 +69,8 @@ async def import_settings(request: Request) -> JSONResponse:
     """Import uploaded configuration text into browser form state."""
     try:
         data = await _json_body(request)
-        return JSONResponse({"form": import_config(str(data["name"]), str(data["content"]))})
+        form, ignored = import_config(str(data["name"]), str(data["content"]))
+        return JSONResponse({"form": form, "warnings": ignored})
     except (KeyError, TypeError, ValueError) as error:
         return JSONResponse({"error": str(error)}, status_code=422)
 
