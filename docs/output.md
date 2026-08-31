@@ -2,8 +2,9 @@
 
 The analysis writes an interactive HTML file (`{family.id}-output.html`). Hovering,
 dragging, and related Plotly controls manipulate the figures, and raw data can
-often be inspected. By default the same run also writes portable Parquet tables
-and IGV desktop tracks under `{family.id}-export/`; see [exports.md](exports.md).
+often be inspected. Pass `--export-parquet` and `--export-bigwig` to also write
+portable Parquet tables and IGV desktop tracks under `{family.id}-export/`; see
+[exports.md](exports.md).
 
 The report is always a single offline document: the offline `plotly.js` bundle
 is inlined once, analysis tables are serialized column-wise and gzip-compressed

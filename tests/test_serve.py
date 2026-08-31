@@ -193,8 +193,8 @@ def test_stream_vcf_run_and_download_report(
         out_dir: Path,
         *,
         cytoband_path: Path | None = None,
-        export_parquet_data: bool = True,
-        export_bigwig: bool = True,
+        export_parquet_data: bool = False,
+        export_bigwig: bool = False,
         progress: ProgressCallback | None = None,
     ) -> Path:
         del cytoband_path
@@ -280,8 +280,8 @@ def test_analysis_surfaces_pipeline_failure(monkeypatch: pytest.MonkeyPatch) -> 
         out_dir: Path,
         *,
         cytoband_path: Path | None = None,
-        export_parquet_data: bool = True,
-        export_bigwig: bool = True,
+        export_parquet_data: bool = False,
+        export_bigwig: bool = False,
         progress: ProgressCallback | None = None,
     ) -> Path:
         del (

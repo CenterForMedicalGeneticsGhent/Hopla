@@ -44,7 +44,7 @@ The package manual is [docs/README.md](docs/README.md).
   - `hopla transform FLOW1 FLOW2 MODE [OUTPUT]`
   - `hopla serve [--host HOST] [--port PORT] [--no-open] [--no-analysis]`
 - `vcf_file`, `out_dir`, and `cytoband_file` are CLI paths, not settings properties. Validate that supplied paths exist. `OUT_DIR` defaults to the current working directory; an omitted cytoband table is downloaded from UCSC.
-- Default `run` also writes `{family.id}-export/` Parquet and IGV sidecars unless disabled with `--no-export-parquet` / `--no-export-bigwig`.
+- `run` writes `{family.id}-export/` Parquet and IGV sidecars only when `--export-parquet` / `--export-bigwig` are given.
 - `convert` maps the legacy `key=value` settings format to schema-validated YAML.
 - Return zero for help, version, and successful commands; return status 2 for invalid usage and status 1 for runtime failures.
 - Global options are `-h`, `-V` (not `-v`), and `-L LEVEL` (`error`, `warn`, `info`, `debug`; default `info`). Use `--` to terminate option parsing. Options must precede operands. `concordance` accepts `-r` for relative comparison. `run` also accepts `-L` before its operands.

@@ -73,8 +73,8 @@ Details: [install.md](install.md).
 - `vcf_file`, `out_dir`, and `cytoband_file` are CLI paths, not settings
   properties. Validate that supplied paths exist. `OUT_DIR` defaults to the
   current working directory; an omitted cytoband table is downloaded from UCSC.
-- Default `run` also writes `{family.id}-export/` Parquet and IGV sidecars unless
-  disabled with `--no-export-parquet` / `--no-export-bigwig`.
+- `run` writes `{family.id}-export/` Parquet and IGV sidecars only when
+  `--export-parquet` / `--export-bigwig` are given.
 - `convert` maps the legacy `key=value` settings format to schema-validated
   YAML.
 - Return zero for help, version, and successful commands; return status 2 for

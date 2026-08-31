@@ -12,7 +12,7 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Added columnar VCF loading with cyvcf2 into shared site tables and sample-by-site NumPy matrices.
 - Added filter 1 / filter 2 masks, variant statistics, ADO/ADI, BAF, Mendelian errors, parent mapping, and Merlin haplotyping with neighbourhood voting and short-segment correction.
 - Added a self-contained offline HTML report that inlines `plotly.js`, gzip-compresses columnar payloads, and draws SVG panels lazily on scroll.
-- Added default `{family.id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, with `--no-export-parquet` and `--no-export-bigwig` toggles.
+- Added optional `{family.id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, enabled with `--export-parquet` and `--export-bigwig`.
 - Added `hopla serve`, a loopback-only-by-default Starlette and Jinja settings editor packaged with the Python wheel.
 - Added schema-validated YAML preview/download and legacy `.txt`, YAML, and JSON imports with pedigree reconstruction.
 - Added browser-driven analysis to `hopla serve`: it runs the current configuration with an uploaded VCF and returns a temporary self-contained HTML report, with a live step log and a `--no-analysis` flag that serves settings editing only.
@@ -21,6 +21,7 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ### Changed
 
+- `hopla run` writes Parquet and IGV desktop sidecars only when `--export-parquet` or `--export-bigwig` is given.
 - Replaced order-aligned pedigree arrays in generated YAML/JSON with structured
   `family.id` and `family.members` objects. Existing parallel-array settings
   are remapped when loaded; the engine also uses member-by-ID lookup directly.

@@ -102,14 +102,14 @@ def run_command(
             "--export-parquet/--no-export-parquet",
             help="Write portable Parquet tables for visualized data.",
         ),
-    ] = True,
+    ] = False,
     export_bigwig: Annotated[
         bool,
         typer.Option(
             "--export-bigwig/--no-export-bigwig",
             help="Write BigWig, BED, SEG, and an IGV desktop session.",
         ),
-    ] = True,
+    ] = False,
 ) -> None:
     """Run the complete family analysis and write its report."""
     if log_level is not None:

@@ -1,7 +1,7 @@
 # Portable analysis exports
 
-`hopla run` writes `{family.id}-export/` by default. Use
-`--no-export-parquet` when only the HTML report is needed.
+Pass `--export-parquet` so `hopla run` writes `{family.id}-export/`. The HTML
+report is still written when the flag is omitted.
 
 Each visualized dataset is stored in its own Apache Parquet file with zstd
 compression. `manifest.json` records the genome, coordinate convention, row
@@ -16,7 +16,8 @@ not duplicate the input VCF.
 
 ## IGV tracks
 
-By default, the same export directory also contains:
+Pass `--export-bigwig` to write IGV desktop tracks in the same export
+directory:
 
 - one `{sample}-baf.bw` track per sample;
 - normalized copy-number and Mendelian-error BigWigs when data exists;
@@ -26,5 +27,4 @@ By default, the same export directory also contains:
 
 Open the session with IGV desktop against hg38. BigWig coordinates are
 converted to zero-based half-open intervals internally, while the Parquet
-tables retain their documented one-based inclusive coordinates. Disable track
-generation with `--no-export-bigwig`.
+tables retain their documented one-based inclusive coordinates.

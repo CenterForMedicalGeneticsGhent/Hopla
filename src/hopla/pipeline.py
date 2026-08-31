@@ -25,8 +25,8 @@ def run_analysis(
     out_dir: Path,
     *,
     cytoband_path: Path | None = None,
-    export_parquet_data: bool = True,
-    export_bigwig: bool = True,
+    export_parquet_data: bool = False,
+    export_bigwig: bool = False,
     progress: ProgressCallback | None = None,
 ) -> Path:
     """Run an analysis and return the generated HTML report path."""

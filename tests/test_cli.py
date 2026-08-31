@@ -97,3 +97,37 @@ def test_run_writes_report(tmp_path: Path, family_vcf: Path, settings_file: Path
     assert "<h4>Number of variants table</h4>" in html
     assert "application/gzip+json" in html
     assert "Plotly" in html
+    assert not (tmp_path / "hopla-export").exists()
+
+
+def test_run_export_flags_write_parquet_and_igv(
+    tmp_path: Path, family_vcf: Path, settings_file: Path
+) -> None:
+    """Opt in to Parquet tables and IGV desktop sidecars from the CLI."""
+    cytobands = tmp_path / "cyto.txt"
+    cytobands.write_text(
+        "\n".join(
+            f"chr{chrom}\t0\t1000000\tp1\tgneg"
+            for chrom in [str(index) for index in range(1, 23)] + ["X"]
+        ),
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--export-parquet",
+            "--export-bigwig",
+            "-o",
+            str(tmp_path),
+            "-c",
+            str(cytobands),
+            str(settings_file),
+            str(family_vcf),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    export_dir = tmp_path / "hopla-export"
+    assert (export_dir / "manifest.json").exists()
+    assert (export_dir / "baf.parquet").exists()
+    assert (export_dir / "igv-session.xml").exists()
