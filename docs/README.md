@@ -15,6 +15,7 @@ This manual documents the Python package at the repository root. Start from the
 
 - [Install and dependencies](install.md)
 - [Command line](cli.md)
+- [Galaxy](galaxy.md)
 - [Local settings editor](serve.md)
 - [Settings](settings.md)
 - [HTML output](output.md)

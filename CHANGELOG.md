@@ -5,6 +5,11 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Added
+
+- Added a Galaxy tool wrapper for `hopla run` and `hopla convert`, including
+  optional tabix or CSI indexes for bgzip-compressed VCF input.
+
 ## [3.0.0] - 2026-08-28
 
 ### Added
