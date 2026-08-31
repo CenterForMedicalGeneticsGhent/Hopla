@@ -116,7 +116,7 @@ def run_command(
             "-t",
             "--threads",
             min=1,
-            help="VCF reader threads (default: all CPUs).",
+            help="VCF contig workers (default: all CPUs).",
         ),
     ] = None,
 ) -> None:

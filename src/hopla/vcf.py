@@ -38,7 +38,7 @@ class _CollectedSites:
 
 @dataclass(slots=True, frozen=True)
 class _ContigTable:
-    """Hold one contig as stacked arrays for process-pool return values."""
+    """Stacked site and genotype columns for one contig."""
 
     chrom: np.ndarray
     pos: np.ndarray
@@ -128,9 +128,18 @@ def _load_contig(contig: str, path: Path, samples: tuple[str, ...]) -> _ContigTa
     """Stream one contig through an independent cyvcf2 reader."""
     reader = VCF(str(path), samples=list(samples), lazy=True)
     try:
-        collected = _collect_variants(reader(contig), len(samples))
+        return _stack_sites(_collect_variants(reader(contig), len(samples)))
     finally:
         reader.close()
+
+
+def _supported_contigs(seqnames: Iterable[object]) -> list[str]:
+    """Keep header contig names that map onto Hopla chromosomes, in header order."""
+    return [str(name) for name in seqnames if _canonical_chrom(name) is not None]
+
+
+def _stack_sites(collected: _CollectedSites) -> _ContigTable | None:
+    """Stack retained columns for one contig, or None when nothing was kept."""
     if not collected.pos:
         return None
     return _ContigTable(
@@ -143,36 +152,6 @@ def _load_contig(contig: str, path: Path, samples: tuple[str, ...]) -> _ContigTa
         ad_ref=np.stack(collected.ref_depths, axis=1),
         ad_alt=np.stack(collected.alt_depths, axis=1),
     )
-
-
-def _supported_contigs(seqnames: Iterable[object]) -> list[str]:
-    """Keep header contig names that map onto Hopla chromosomes, in header order."""
-    return [str(name) for name in seqnames if _canonical_chrom(name) is not None]
-
-
-def _assemble(
-    collected: _CollectedSites,
-    samples: tuple[str, ...],
-    permutation: np.ndarray,
-) -> tuple[SiteTable, GenotypeMatrix]:
-    """Stack retained columns into the shared site table and genotype matrices."""
-    if not collected.pos:
-        raise ValueError("VCF contains no supported biallelic SNVs.")
-    sites = SiteTable(
-        chrom=np.asarray(collected.chrom, dtype=np.uint8),
-        pos=np.asarray(collected.pos, dtype=np.uint32),
-        ref=np.asarray(collected.ref, dtype=np.str_),
-        alt=np.asarray(collected.alt, dtype=np.str_),
-    )
-    matrix = GenotypeMatrix(
-        gt=np.stack(collected.genotypes, axis=1)[permutation],
-        dp=np.stack(collected.depths, axis=1)[permutation],
-        ad_ref=np.stack(collected.ref_depths, axis=1)[permutation],
-        ad_alt=np.stack(collected.alt_depths, axis=1)[permutation],
-        samples=samples,
-        sample_index={sample: index for index, sample in enumerate(samples)},
-    )
-    return sites, matrix
 
 
 def _concat_contigs(
@@ -230,7 +209,7 @@ def load_vcf(
             collected = _collect_variants(reader, len(samples))
         finally:
             reader.close()
-        return _assemble(collected, samples, permutation)
+        return _concat_contigs((_stack_sites(collected),), samples, permutation)
     reader.close()
     with ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn")) as pool:
         return _concat_contigs(
