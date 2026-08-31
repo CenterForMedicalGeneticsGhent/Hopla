@@ -331,9 +331,9 @@ def _body(
 ) -> str:
     """Assemble every report section in documented filter order."""
     parts: list[str] = []
-    if settings.info:
+    if settings.info.strip():
         parts.append("<h2>Family/disease information</h2>")
-        parts.extend(f"<p>{escape(line)}</p>" for line in settings.info)
+        parts.append(f'<p class="family-info">{escape(settings.info)}</p>')
     if len(samples) > 1:
         parts.append("<h2>Family tree</h2>")
         parts.append(f'<div class="pedigree">{pedigree_svg(settings)}</div>')
@@ -459,6 +459,7 @@ h3{font-size:16px;margin:28px 0 8px}
 h4{font-size:14px;margin:20px 0 6px;color:#334155}
 h5{font-size:13px;margin:12px 0 2px;color:#475569}
 p{margin:2px 0;font-size:13px}
+.family-info{white-space:pre-wrap}
 .grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px;margin:8px 0 4px}
 .fig{min-width:0;background:#fff}
 .pedigree{margin:12px 0 8px;overflow-x:auto}

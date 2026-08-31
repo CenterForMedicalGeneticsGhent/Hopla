@@ -11,7 +11,7 @@ from hopla.cytobands import chromosome_sizes, fetch_hg38, load_cytobands
 from hopla.export import export_igv_tracks, export_parquet
 from hopla.filters import apply_filter1, apply_filter2
 from hopla.merlin import run_merlin
-from hopla.pedigree import add_ghosts, predict_genders
+from hopla.pedigree import add_ghosts, predict_sexes
 from hopla.report import render_report
 from hopla.settings import Settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
@@ -37,8 +37,8 @@ def run_analysis(
 
     update("Loading VCF")
     sites, matrix = load_vcf(vcf_path, settings.real_samples)
-    settings.genders = predict_genders(settings, sites, matrix)
-    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.genders)
+    settings.sexes = predict_sexes(settings, sites, matrix)
+    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.sexes)
     add_ghosts(settings)
     update("Applying filters")
     filtered1 = apply_filter1(sites, matrix, settings)

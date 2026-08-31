@@ -27,12 +27,12 @@ def _trio() -> Settings:
         sample_ids=["father", "mother", "child"],
         father_ids=[None, None, "father"],
         mother_ids=[None, None, "mother"],
-        genders=["M", "F", "M"],
+        sexes=["M", "F", "M"],
         affected_ids=["child"],
         nonaffected_ids=["father"],
         carrier_ids=["mother"],
         regions=["chr1:500000-900000"],
-        info=["Example family"],
+        info="Example family",
         run_merlin=False,
         baf_ids=["child"],
     )
@@ -73,7 +73,7 @@ def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
         sample_ids=["grandmother", "grandfather", "mother", "father", "child"],
         father_ids=[None, None, "grandfather", None, "father"],
         mother_ids=[None, None, "grandmother", None, "mother"],
-        genders=["F", "M", "F", "M", "F"],
+        sexes=["F", "M", "F", "M", "F"],
         run_merlin=False,
     )
     positions, depth = _layout(settings)

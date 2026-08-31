@@ -32,7 +32,8 @@ Deliberate report differences from earlier Hopla HTML layouts:
 
 ## Family/disease information
 
-Text supplied by `info` is printed at the top of the HTML.
+Text supplied by `info` is printed at the top of the HTML. Line breaks are
+preserved. The text is not interpreted as key-value pairs.
 
 ## Family tree
 
@@ -40,7 +41,7 @@ If two or more samples are provided, the family structure is shown as defined
 by `sample_ids`, `father_ids`, and `mother_ids`. Annotations follow
 `reference_ids`, `carrier_ids`, `affected_ids`, and `nonaffected_ids` (those
 labels are reused throughout the HTML). Squares are males and circles are
-females, from `genders`, or from `x_cutoff` / `y_cutoff` when gender is
+females, from `sexes`, or from `x_cutoff` / `y_cutoff` when sex is
 unknown. The pedigree is an inline SVG.
 
 ## Filter 0: single nucleotide variants

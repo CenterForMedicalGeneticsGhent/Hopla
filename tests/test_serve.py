@@ -66,7 +66,7 @@ def test_add_sibling_state_and_validation_error() -> None:
     sibling = {
         "role": "sibling",
         "sample_id": "CHILD",
-        "gender": "F",
+        "sex": "F",
         "disease_status": "affected",
         "hard_dp": False,
         "hard_af": False,
@@ -80,6 +80,10 @@ def test_add_sibling_state_and_validation_error() -> None:
     assert settings["father_ids"] == [None, "FATHER"]
     assert settings["affected_ids"] == ["CHILD"]
     assert settings["baf_ids"] == ["CHILD"]
+    assert settings["sexes"] == ["M", "F"]
+    assert "self_contained" not in settings
+    assert "color_palette" not in settings
+    assert "cairo" not in settings
 
     state["af_hard_limit"] = 2
     with TestClient(create_app()) as client:
@@ -91,18 +95,24 @@ def test_add_sibling_state_and_validation_error() -> None:
 def test_import_yaml_and_reconstruct_pedigree() -> None:
     """Reconstruct the youngest family from normal settings YAML."""
     path = Path(__file__).parents[1] / "example" / "settings.yaml"
-    state = import_config(path.name, path.read_text(encoding="utf-8"))
+    state, ignored = import_config(path.name, path.read_text(encoding="utf-8"))
+    assert ignored == []
     assert state["members"]["father"]["sample_id"] == "DNA052960"
     assert state["members"]["mother"]["sample_id"] == "DNA052959"
     assert state["members"]["maternal_grandfather"]["sample_id"] == "U1"
     assert state["members"]["maternal_grandmother"]["sample_id"] == "DNA052961"
     assert [member["sample_id"] for member in state["embryos"]] == ["DNA052963", "DNA052966"]
     assert state["siblings"] == []
-    validate_settings(yaml.safe_load(render_yaml(state)))
+    assert "Breast cancer" in state["info"]
+    assert "disease" not in state
+    assert "inheritance" not in state
+    generated = yaml.safe_load(render_yaml(state))
+    validate_settings(generated)
+    assert isinstance(generated["info"], str)
 
 
-def test_import_legacy_and_reject_unknown_setting() -> None:
-    """Import legacy text and reject unknown schema properties."""
+def test_import_legacy_and_ignore_unknown_setting() -> None:
+    """Import legacy text and ignore unknown schema properties."""
     legacy = "\n".join(
         [
             "sample.ids=FATHER,MOTHER,EMBRYO",
@@ -118,16 +128,28 @@ def test_import_legacy_and_reject_unknown_setting() -> None:
             "/api/import", json={"name": "family.txt", "content": legacy}
         )
         assert imported.status_code == 200
-        state = imported.json()["form"]
+        payload = imported.json()
+        state = payload["form"]
         assert state["members"]["father"]["sample_id"] == "FATHER"
+        assert state["members"]["father"]["sex"] == "M"
         assert [member["sample_id"] for member in state["embryos"]] == ["EMBRYO"]
+        assert payload["warnings"] == []
 
-        rejected = client.post(
+        ignored = client.post(
             "/api/import",
             json={"name": "bad.yaml", "content": "sample_ids: [A]\nunknown: true\n"},
         )
+        assert ignored.status_code == 200
+        assert ignored.json()["warnings"] == ["unknown"]
+        generated = yaml.safe_load(render_yaml(ignored.json()["form"]))
+        assert generated["sample_ids"] == ["A"]
+        assert "unknown" not in generated
+
+        rejected = client.post(
+            "/api/import",
+            json={"name": "bad.yaml", "content": "sample_ids: 1\n"},
+        )
         assert rejected.status_code == 422
-        assert "Additional properties" in rejected.json()["error"]
 
 
 def test_settings_to_form_preserves_unedited_schema_fields() -> None:
@@ -142,6 +164,9 @@ def test_settings_to_form_preserves_unedited_schema_fields() -> None:
     generated = yaml.safe_load(render_yaml(state))
     assert generated["run_merlin"] is False
     assert generated["dot_factor"] == 3
+    assert "self_contained" not in generated
+    assert "color_palette" not in generated
+    assert "cairo" not in generated
 
 
 def _wait_for_status(

@@ -111,7 +111,7 @@ def _write_inputs(
         )
         pedigree_rows = []
         for pedigree_index, sample in enumerate(settings.sample_ids):
-            gender = "1" if settings.genders[pedigree_index] == "M" else "2"
+            sex = "1" if settings.sexes[pedigree_index] == "M" else "2"
             father = settings.father_ids[pedigree_index] or "0"
             mother = settings.mother_ids[pedigree_index] or "0"
             calls = (
@@ -119,7 +119,7 @@ def _write_inputs(
                 if sample in matrix.sample_index
                 else ["N/N"] * selected_indices.size
             )
-            pedigree_rows.append("\t".join(["1", sample, father, mother, gender, *calls]))
+            pedigree_rows.append("\t".join(["1", sample, father, mother, sex, *calls]))
         (directory / f"merlin{suffix}.dat").write_text(dat, encoding="utf-8")
         (directory / f"merlin{suffix}.map").write_text(mapping, encoding="utf-8")
         (directory / f"merlin{suffix}.ped").write_text(

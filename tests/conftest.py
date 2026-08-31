@@ -44,11 +44,10 @@ def settings_file(tmp_path: Path) -> Path:
 sample_ids: [FATHER, MOTHER, CHILD]
 father_ids: [null, null, FATHER]
 mother_ids: [null, null, MOTHER]
-genders: [M, F, F]
+sexes: [M, F, F]
 run_merlin: false
 keep_informative_ids: [FATHER, MOTHER]
 baf_ids: [CHILD]
-self_contained: true
 """.lstrip(),
         encoding="utf-8",
     )

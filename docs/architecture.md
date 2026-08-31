@@ -12,7 +12,7 @@ src/hopla/pipeline.py       shared analysis orchestration
 src/hopla/settings.py       schema validation and pedigree defaults
 src/hopla/vcf.py            cyvcf2 streaming into SiteTable / matrices
 src/hopla/filters.py        filter 1 and filter 2 masks
-src/hopla/pedigree.py       gender prediction, ghosts, pedigree SVG
+src/hopla/pedigree.py       sex prediction, ghosts, pedigree SVG
 src/hopla/analysis.py       variant stats, BAF, CN, Mendelian, parent mapping
 src/hopla/merlin.py         Merlin I/O, parsing, haplotype correction
 src/hopla/flow.py           concordance / transform helpers
@@ -105,6 +105,4 @@ deterministic recursive circular-binary-segmentation change statistic and is
 therefore not bit-identical to permutation-based circular-binary-segmentation
 with resampling.
 
-Schema keys `color_palette`, `self_contained`, and `cairo` remain accepted for
-compatibility; the Python report always inlines Plotly assets and uses the
-Paired palette, and it does not use a cairo device.
+The report always inlines Plotly assets and uses the Paired palette.

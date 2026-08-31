@@ -56,11 +56,11 @@ def apply_filter2(
         informative = ((gt[first] == 1) & np.isin(gt[second], (0, 2))) | (
             (gt[second] == 1) & np.isin(gt[first], (0, 2))
         )
-        genders = [
-            settings.genders[settings.sample_ids.index(sample)]
+        sexes = [
+            settings.sexes[settings.sample_ids.index(sample)]
             for sample in settings.keep_informative_ids
         ]
-        if genders == ["M", "M"]:
+        if sexes == ["M", "M"]:
             informative[selected_chrom == CHROMOSOME_CODES["chrX"]] = True
         site_keep &= informative
     if settings.keep_hetero_ids:

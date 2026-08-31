@@ -7,12 +7,12 @@ from html import escape
 import numpy as np
 
 from hopla.models import CHROMOSOME_CODES, GenotypeMatrix, SiteTable
-from hopla.settings import Gender, Settings
+from hopla.settings import Settings, Sex
 
 
-def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> list[Gender]:
-    """Fill unknown genders from pedigree roles and chromosome depth ratios."""
-    result = list(settings.genders)
+def predict_sexes(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix) -> list[Sex]:
+    """Fill unknown sexes from pedigree roles and chromosome depth ratios."""
+    result = list(settings.sexes)
     autosomal = sites.chrom <= 22
     x_mask = sites.chrom == CHROMOSOME_CODES["chrX"]
     y_mask = (
@@ -54,20 +54,20 @@ def predict_genders(settings: Settings, sites: SiteTable, matrix: GenotypeMatrix
         else:
             matrix_index = matrix.sample_index[sample]
             x_value, y_value = x_copies[matrix_index], y_copies[matrix_index]
-            x_gender: Gender = (
+            x_sex: Sex = (
                 "M" if x_value < settings.x_cutoff else "F" if np.isfinite(x_value) else None
             )
-            y_gender: Gender = (
+            y_sex: Sex = (
                 "F" if y_value < settings.y_cutoff else "M" if np.isfinite(y_value) else None
             )
-            if x_gender is None and y_gender is None:
-                raise ValueError(f"Could not predict gender for sample {sample}.")
-            result[index] = y_gender if y_gender is not None else x_gender
+            if x_sex is None and y_sex is None:
+                raise ValueError(f"Could not predict sex for sample {sample}.")
+            result[index] = y_sex if y_sex is not None else x_sex
     unresolved = [
-        sample for sample, gender in zip(settings.sample_ids, result, strict=True) if gender is None
+        sample for sample, sex in zip(settings.sample_ids, result, strict=True) if sex is None
     ]
     if unresolved:
-        raise ValueError(f"Gender must be provided for ghost sample(s): {', '.join(unresolved)}")
+        raise ValueError(f"Sex must be provided for ghost sample(s): {', '.join(unresolved)}")
     return result
 
 
@@ -89,14 +89,14 @@ def add_ghosts(settings: Settings) -> Settings:
         ghost = f"U{counter}"
         if missing_father:
             settings.father_ids[index] = ghost
-            gender: Gender = "M"
+            sex: Sex = "M"
         else:
             settings.mother_ids[index] = ghost
-            gender = "F"
+            sex = "F"
         settings.sample_ids.append(ghost)
         settings.father_ids.append(None)
         settings.mother_ids.append(None)
-        settings.genders.append(gender)
+        settings.sexes.append(sex)
     return settings
 
 
@@ -260,15 +260,15 @@ def pedigree_svg(settings: Settings) -> str:
     symbols: list[str] = []
     for sample, x in positions.items():
         y = rows[sample]
-        gender = settings.genders[index[sample]]
+        sex = settings.sexes[index[sample]]
         affected = sample in settings.affected_ids
         fill = "#334155" if affected else "#ffffff"
-        if gender == "M":
+        if sex == "M":
             symbols.append(
                 f'<rect x="{x - half:.1f}" y="{y - half:.1f}" '
                 f'width="{_SYMBOL}" height="{_SYMBOL}" fill="{fill}"/>'
             )
-        elif gender == "F":
+        elif sex == "F":
             symbols.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{half}" fill="{fill}"/>')
         else:
             symbols.append(

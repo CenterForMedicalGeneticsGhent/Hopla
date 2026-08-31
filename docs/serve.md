@@ -20,8 +20,10 @@ and analysis views. It can import:
 - current `.yaml` and `.yml` settings;
 - current `.json` settings.
 
-Imports are limited to 1 MB. YAML downloads are validated against the packaged
-settings schema.
+Imports are limited to 1 MB. Unsupported keys are ignored after a warning.
+YAML downloads are validated against the packaged settings schema and omit
+unused compatibility keys. The editor maps pedigree `Sex` onto `sexes` and
+stores family notes as a single multiline `info` string.
 
 ## Run an analysis
 

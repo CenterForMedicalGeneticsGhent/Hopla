@@ -3,7 +3,7 @@ sample_ids: [DNA052961, U1, DNA052959, DNA052960, DNA052963, DNA052966]
 
 father_ids: [null, null, U1, null, DNA052960, DNA052960]
 mother_ids: [null, null, DNA052961, null, DNA052959, DNA052959]
-genders: [F, M, F, M, null, null]
+sexes: [F, M, F, M, null, null]
 run_merlin: true
 # Pass a cytoband table with -c; omit it to download hg38 cytoBand.txt.gz from UCSC.
 
@@ -23,10 +23,10 @@ reference_ids: []
 carrier_ids: []
 affected_ids: [DNA052961, DNA052959]
 nonaffected_ids: [DNA052960]
-info:
-  - "Disease: Breast cancer - BRCA1 (Chr17:43,044,294-43,125,363)"
-  - "Inheritance: Autosomal Dominant"
-  - "Sequencing note: Embryo V17-V18"
+info: |
+  Disease: Breast cancer - BRCA1 (Chr17:43,044,294-43,125,363)
+  Inheritance: Autosomal Dominant
+  Sequencing note: Embryo V17-V18
 
 baf_ids: [DNA052963, DNA052966]
 merlin_model: best
@@ -45,7 +45,4 @@ regions_flanking_size: 2000000
 limit_baf_to_p: false
 limit_pm_to_p: true
 value_of_p: 0.15
-color_palette: Paired
 dot_factor: 2
-self_contained: true
-cairo: false

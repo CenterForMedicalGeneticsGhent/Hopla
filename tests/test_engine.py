@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from hopla.analysis import _duo_errors, _trio_errors
 from hopla.filters import apply_filter1, apply_filter2
 from hopla.merlin import _marker_indices, _parse_blocks, correct_short_segments, weighted_vote
 from hopla.models import GenotypeMatrix, SiteTable
-from hopla.pedigree import predict_genders
-from hopla.settings import Settings, load_settings
+from hopla.pedigree import predict_sexes
+from hopla.settings import Settings, load_settings, validate_settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
 
@@ -21,7 +23,7 @@ def test_vcf_and_filters(family_vcf: Path, settings_file: Path) -> None:
     sites, matrix = load_vcf(family_vcf, settings.real_samples)
     assert sites.size == 46
     assert matrix.gt.shape == (3, 46)
-    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.genders)
+    mask_male_x_heterozygotes(sites, matrix, settings.sample_ids, settings.sexes)
     assert matrix.gt[matrix.sample_index["FATHER"], -1] == -1
     filtered1 = apply_filter1(sites, matrix, settings)
     filtered2 = apply_filter2(sites, matrix, filtered1, settings)
@@ -159,5 +161,21 @@ def test_af_rounding_and_y_model_conflict_resolution() -> None:
         sample_index={"sample": 0},
     )
     assert np.allclose(matrix.allele_fraction()[0], [0.333, 0.667, 0.667])
-    settings = Settings(sample_ids=["sample"], genders=[None], run_merlin=False)
-    assert predict_genders(settings, sites, matrix) == ["M"]
+    settings = Settings(sample_ids=["sample"], sexes=[None], run_merlin=False)
+    assert predict_sexes(settings, sites, matrix) == ["M"]
+
+
+def test_unsupported_settings_are_ignored(caplog: pytest.LogCaptureFixture) -> None:
+    """Remap historical `genders` and drop unused keys after a warning."""
+    with caplog.at_level(logging.WARNING):
+        settings = validate_settings(
+            {
+                "sample_ids": ["A"],
+                "genders": ["M"],
+                "self_contained": True,
+                "bogus": 1,
+            }
+        )
+    assert settings.sexes == ["M"]
+    assert "bogus" in caplog.text
+    assert "self_contained" in caplog.text

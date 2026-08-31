@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import shutil
 from pathlib import Path
@@ -12,18 +13,19 @@ import yaml
 from jsonschema import Draft7Validator
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-Gender = Literal["M", "F"] | None
+Sex = Literal["M", "F"] | None
+CLI_ONLY_KEYS = frozenset({"vcf_file", "out_dir", "cytoband_file"})
 
 
 class Settings(BaseModel):
-    """Model all supported analysis settings with strict unknown-key rejection."""
+    """Model all supported analysis settings."""
 
     model_config = ConfigDict(extra="forbid")
 
     sample_ids: list[str] = Field(min_length=1)
     father_ids: list[str | None] = Field(default_factory=list)
     mother_ids: list[str | None] = Field(default_factory=list)
-    genders: list[Gender] = Field(default_factory=list)
+    sexes: list[Sex] = Field(default_factory=list)
     run_merlin: bool = True
     dp_hard_limit_ids: list[str] = Field(default_factory=list)
     dp_hard_limit: float = Field(default=10, ge=0)
@@ -38,7 +40,7 @@ class Settings(BaseModel):
     carrier_ids: list[str] = Field(default_factory=list)
     affected_ids: list[str] = Field(default_factory=list)
     nonaffected_ids: list[str] = Field(default_factory=list)
-    info: list[str] = Field(default_factory=list)
+    info: str = ""
     baf_ids: list[str] = Field(default_factory=list)
     merlin_model: Literal["sample", "best"] = "best"
     min_seg_var: float = Field(default=5, ge=0)
@@ -56,16 +58,13 @@ class Settings(BaseModel):
     limit_baf_to_p: bool = False
     limit_pm_to_p: bool = False
     value_of_p: float = Field(default=0.25, gt=0, le=1)
-    color_palette: str = "Paired"
     dot_factor: float = Field(default=2, gt=0)
-    self_contained: bool = False
-    cairo: bool = False
 
     @model_validator(mode="after")
     def validate_family(self) -> Settings:
         """Validate parallel pedigree arrays, references, and regions."""
         size = len(self.sample_ids)
-        for name in ("father_ids", "mother_ids", "genders"):
+        for name in ("father_ids", "mother_ids", "sexes"):
             values = getattr(self, name)
             if not values:
                 setattr(self, name, [None] * size)
@@ -132,6 +131,35 @@ def schema_path() -> Path:
     return path
 
 
+def schema_properties() -> dict[str, Any]:
+    """Return the packaged schema property map."""
+    schema = json.loads(schema_path().read_text(encoding="utf-8"))
+    properties: dict[str, Any] = schema["properties"]
+    return properties
+
+
+def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Remap historical names, coerce `info`, and drop unsupported keys."""
+    prepared = dict(raw)
+    for key in CLI_ONLY_KEYS:
+        prepared.pop(key, None)
+    ignored: list[str] = []
+    if "genders" in prepared:
+        if "sexes" not in prepared:
+            prepared["sexes"] = prepared.pop("genders")
+        else:
+            prepared.pop("genders")
+            ignored.append("genders")
+    if isinstance(prepared.get("info"), list):
+        prepared["info"] = "\n".join(str(line) for line in prepared["info"])
+    allowed = set(schema_properties())
+    ignored.extend(key for key in prepared if key not in allowed)
+    ignored = sorted(set(ignored))
+    if ignored:
+        logging.warning("Ignoring unsupported setting(s): %s", ", ".join(ignored))
+    return {key: value for key, value in prepared.items() if key in allowed}, ignored
+
+
 def load_settings(path: Path) -> Settings:
     """Read and validate a YAML or JSON settings mapping."""
     if path.suffix.lower() not in {".yaml", ".yml", ".json"}:
@@ -146,10 +174,13 @@ def validate_settings(raw: object) -> Settings:
     """Validate an in-memory settings mapping against the packaged schema."""
     if not isinstance(raw, dict):
         raise ValueError("Settings must contain a mapping at the document root.")
+    prepared, _ignored = prepare_settings_mapping(raw)
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
-    errors = sorted(Draft7Validator(schema).iter_errors(raw), key=lambda error: list(error.path))
+    errors = sorted(
+        Draft7Validator(schema).iter_errors(prepared), key=lambda error: list(error.path)
+    )
     if errors:
         raise ValueError(
             "Settings validation failed:\n" + "\n".join(error.message for error in errors)
         )
-    return Settings.model_validate(raw).derive_filter_ids()
+    return Settings.model_validate(prepared).derive_filter_ids()

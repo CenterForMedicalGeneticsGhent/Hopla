@@ -60,11 +60,10 @@ Details: [install.md](install.md).
 - Encode every supported setting, type, default, and basic constraint in
   `src/hopla/schema/hopla.schema.json`.
 - Keep [settings.md](settings.md) aligned with that schema and with engine
-  defaults. Document intentional schema-compatibility settings that the Python
-  engine ignores or always overrides (`color_palette`, `self_contained`,
-  `cairo`).
-- Validate settings against the schema before loading a VCF. Reject unknown
-  properties.
+  defaults.
+- Validate settings against the schema before loading a VCF. Ignore
+  unsupported properties after a warning. Reject mistyped values. Generated
+  YAML must not include unused compatibility keys.
 - Keep the CLI as documented in [cli.md](cli.md):
   - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
@@ -108,8 +107,8 @@ Details: [install.md](install.md).
 - Run `pixi run -e dev lint-py`; CI lint and type-check failures must be
   fixed, not suppressed globally.
 - Run `pixi run -e dev test-py`.
-- Test YAML and JSON validation, including rejection of unknown or mistyped
-  settings.
+- Test YAML and JSON validation, including warnings for unsupported keys and
+  rejection of mistyped settings.
 - Test all CLI subtools and their failure exit statuses, including the export
   toggles.
 - Build a wheel when verifying packaging:

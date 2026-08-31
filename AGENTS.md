@@ -35,8 +35,8 @@ The package manual is [docs/README.md](docs/README.md).
 
 - Analysis configuration is accepted only as YAML or JSON.
 - Encode every supported setting, type, default, and basic constraint in `src/hopla/schema/hopla.schema.json`.
-- Keep [docs/settings.md](docs/settings.md) aligned with that schema and with engine defaults. Document intentional schema-compatibility settings that the Python engine ignores or always overrides (`color_palette`, `self_contained`, `cairo`).
-- Validate settings against the schema before loading a VCF. Reject unknown properties.
+- Keep [docs/settings.md](docs/settings.md) aligned with that schema and with engine defaults.
+- Validate settings against the schema before loading a VCF. Ignore unsupported properties after a warning. Reject mistyped values. Generated YAML must not include unused compatibility keys.
 - Keep the CLI as documented in [docs/cli.md](docs/cli.md):
   - `hopla [-L LEVEL] run [-o OUT_DIR] [-c CYTOBAND] SETTINGS VCF`
   - `hopla convert LEGACY [OUTPUT]`
@@ -68,7 +68,7 @@ The package manual is [docs/README.md](docs/README.md).
 - Run `pixi install --locked`.
 - Run `pixi run -e dev lint-py`; CI lint and type-check failures must be fixed, not suppressed globally.
 - Run `pixi run -e dev test-py`.
-- Test YAML and JSON validation, including rejection of unknown or mistyped settings.
+- Test YAML and JSON validation, including warnings for unsupported keys and rejection of mistyped settings.
 - Test all CLI subtools and their failure exit statuses, including the export toggles.
 - Build a wheel when verifying packaging: `pixi run -e dev python -m pip wheel --no-deps . -w dist`.
 - Build the Docker image when Docker is available.
