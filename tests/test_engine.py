@@ -166,7 +166,7 @@ def test_af_rounding_and_y_model_conflict_resolution() -> None:
 
 
 def test_unsupported_settings_are_ignored(caplog: pytest.LogCaptureFixture) -> None:
-    """Remap historical `genders` and drop unused keys after a warning."""
+    """Remap the historical pedigree arrays and drop unused keys."""
     with caplog.at_level(logging.WARNING):
         settings = validate_settings(
             {
@@ -177,5 +177,24 @@ def test_unsupported_settings_are_ignored(caplog: pytest.LogCaptureFixture) -> N
             }
         )
     assert settings.sexes == ["M"]
+    assert settings.family is not None
+    assert settings.family.members[0].id == "A"
     assert "bogus" in caplog.text
     assert "self_contained" in caplog.text
+
+
+def test_structured_family_wins_over_parallel_arrays(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Prefer the canonical family when both config representations exist."""
+    with caplog.at_level(logging.WARNING):
+        settings = validate_settings(
+            {
+                "family": {"members": [{"id": "CANONICAL"}]},
+                "sample_ids": ["LEGACY"],
+                "sexes": ["M"],
+            }
+        )
+    assert settings.sample_ids == ["CANONICAL"]
+    assert "sample_ids" in caplog.text
+    assert "sexes" in caplog.text

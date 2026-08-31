@@ -22,8 +22,9 @@ and analysis views. It can import:
 
 Imports are limited to 1 MB. Unsupported keys are ignored after a warning.
 YAML downloads are validated against the packaged settings schema and omit
-unused compatibility keys. The editor maps pedigree `Sex` onto `sexes` and
-stores family notes as a single multiline `info` string.
+unused compatibility keys. The editor writes each pedigree card as an entry in
+`family.members`, including its `sex`, and stores family notes as a single
+multiline `info` string.
 
 ## Run an analysis
 

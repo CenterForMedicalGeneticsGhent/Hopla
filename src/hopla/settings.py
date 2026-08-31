@@ -15,6 +15,29 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Sex = Literal["M", "F"] | None
 CLI_ONLY_KEYS = frozenset({"vcf_file", "out_dir", "cytoband_file"})
+LEGACY_FAMILY_KEYS = frozenset(
+    {"sample_ids", "father_ids", "mother_ids", "sexes", "genders", "fam_id"}
+)
+
+
+class FamilyMember(BaseModel):
+    """Describe one family member without positional cross-references."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1)
+    father: str | None = None
+    mother: str | None = None
+    sex: Sex = None
+
+
+class Family(BaseModel):
+    """Group a named family and its pedigree members."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(default="hopla", min_length=1)
+    members: list[FamilyMember] = Field(min_length=1)
 
 
 class Settings(BaseModel):
@@ -22,7 +45,8 @@ class Settings(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    sample_ids: list[str] = Field(min_length=1)
+    family: Family | None = None
+    sample_ids: list[str] = Field(default_factory=list)
     father_ids: list[str | None] = Field(default_factory=list)
     mother_ids: list[str | None] = Field(default_factory=list)
     sexes: list[Sex] = Field(default_factory=list)
@@ -62,7 +86,20 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def validate_family(self) -> Settings:
-        """Validate parallel pedigree arrays, references, and regions."""
+        """Expand and validate the structured pedigree and sample references."""
+        if self.family is not None:
+            self.sample_ids = [member.id for member in self.family.members]
+            self.father_ids = [member.father for member in self.family.members]
+            self.mother_ids = [member.mother for member in self.family.members]
+            self.sexes = [member.sex for member in self.family.members]
+            self.fam_id = self.family.id
+        if not self.sample_ids:
+            raise ValueError("family must contain at least one member")
+        duplicates = sorted(
+            sample for sample in set(self.sample_ids) if self.sample_ids.count(sample) > 1
+        )
+        if duplicates:
+            raise ValueError(f"family member IDs must be unique: {', '.join(duplicates)}")
         size = len(self.sample_ids)
         for name in ("father_ids", "mother_ids", "sexes"):
             values = getattr(self, name)
@@ -95,6 +132,8 @@ class Settings(BaseModel):
                 raise ValueError(f"invalid region: {region}")
         self.window_size_voting_x = self.window_size_voting_x or self.window_size_voting
         self.fam_id = re.sub(r"[^\w]", ".", self.fam_id)
+        if self.family is not None:
+            self.family.id = self.fam_id
         return self
 
     @property
@@ -144,12 +183,44 @@ def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[
     for key in CLI_ONLY_KEYS:
         prepared.pop(key, None)
     ignored: list[str] = []
-    if "genders" in prepared:
-        if "sexes" not in prepared:
-            prepared["sexes"] = prepared.pop("genders")
+    supplied_family = "family" in prepared
+    if supplied_family:
+        conflicting = sorted(LEGACY_FAMILY_KEYS.intersection(prepared))
+        ignored.extend(conflicting)
+        for key in conflicting:
+            prepared.pop(key)
+    elif "sample_ids" in prepared:
+        sample_ids = prepared.get("sample_ids")
+        if isinstance(sample_ids, list):
+            size = len(sample_ids)
+            aligned: dict[str, list[Any]] = {}
+            for key in ("father_ids", "mother_ids", "sexes"):
+                values = prepared.get(key)
+                if key == "sexes" and values is None:
+                    values = prepared.get("genders")
+                if values in (None, []):
+                    aligned[key] = [None] * size
+                elif not isinstance(values, list) or len(values) != size:
+                    raise ValueError(f"{key} must have the same length as sample_ids")
+                else:
+                    aligned[key] = values
+            members = [
+                {
+                    "id": sample_id,
+                    "father": aligned["father_ids"][index],
+                    "mother": aligned["mother_ids"][index],
+                    "sex": aligned["sexes"][index],
+                }
+                for index, sample_id in enumerate(sample_ids)
+            ]
         else:
-            prepared.pop("genders")
-            ignored.append("genders")
+            members = sample_ids
+        family: dict[str, Any] = {"members": members}
+        if "fam_id" in prepared:
+            family["id"] = prepared["fam_id"]
+        prepared["family"] = family
+        for key in LEGACY_FAMILY_KEYS:
+            prepared.pop(key, None)
     if isinstance(prepared.get("info"), list):
         prepared["info"] = "\n".join(str(line) for line in prepared["info"])
     allowed = set(schema_properties())

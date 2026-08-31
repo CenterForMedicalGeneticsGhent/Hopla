@@ -40,7 +40,7 @@ pixi install --locked
 pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
-By default `hopla run` also writes `{fam_id}-export/` with Parquet tables and
+By default `hopla run` also writes `{family.id}-export/` with Parquet tables and
 IGV desktop tracks. See [exports.md](docs/exports.md). Example settings and a
 legacy conversion fixture are in [`example/`](example/).
 

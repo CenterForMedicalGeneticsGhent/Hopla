@@ -86,16 +86,38 @@ def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
     """Coerce a parsed legacy mapping and drop unsupported keys."""
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
     properties = schema_properties()
-    prepared, _ignored = prepare_settings_mapping(raw)
-    converted = {
-        key: _coerce(prepared[key], properties[key]) for key in properties if key in prepared
+    legacy_arrays = {
+        "sample_ids": False,
+        "father_ids": True,
+        "mother_ids": True,
+        "sexes": True,
+        "genders": True,
     }
-    errors = list(Draft7Validator(schema).iter_errors(converted))
+    converted: dict[str, Any] = {}
+    for key, value in raw.items():
+        if key in legacy_arrays:
+            if isinstance(value, list):
+                converted[key] = value
+            else:
+                converted[key] = [
+                    None
+                    if token.strip() in {"", "NA"} and legacy_arrays[key]
+                    else token.strip()
+                    for token in value.split(",")
+                ]
+        elif key == "fam_id":
+            converted[key] = value
+        elif key in properties:
+            converted[key] = _coerce(value, properties[key])
+        else:
+            converted[key] = value
+    prepared, _ignored = prepare_settings_mapping(converted)
+    errors = list(Draft7Validator(schema).iter_errors(prepared))
     if errors:
         raise ValueError(
             "Converted settings failed validation:\n" + "\n".join(error.message for error in errors)
         )
-    return converted
+    return prepared
 
 
 def convert_settings(legacy: Path, output: Path | None = None) -> Path:

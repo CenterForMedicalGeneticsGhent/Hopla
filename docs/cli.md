@@ -36,7 +36,7 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz)
   into a temporary directory for that run.
 - `--export-parquet` / `--no-export-parquet` controls writing portable Parquet
-  tables under `{fam_id}-export/` (default: on).
+  tables under `{family.id}-export/` (default: on).
 - `--export-bigwig` / `--no-export-bigwig` controls writing BigWig, BED, SEG,
   and `igv-session.xml` under the same export directory (default: on). Details:
   [exports.md](exports.md).

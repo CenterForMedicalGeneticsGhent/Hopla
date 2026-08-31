@@ -1,9 +1,9 @@
 # HTML output
 
-The analysis writes an interactive HTML file (`{fam_id}-output.html`). Hovering,
+The analysis writes an interactive HTML file (`{family.id}-output.html`). Hovering,
 dragging, and related Plotly controls manipulate the figures, and raw data can
 often be inspected. By default the same run also writes portable Parquet tables
-and IGV desktop tracks under `{fam_id}-export/`; see [exports.md](exports.md).
+and IGV desktop tracks under `{family.id}-export/`; see [exports.md](exports.md).
 
 The report is always a single offline document: the offline `plotly.js` bundle
 is inlined once, analysis tables are serialized column-wise and gzip-compressed
@@ -15,7 +15,7 @@ number of samples and plotted variants. Restrict `baf_ids`, enable
 `limit_baf_to_p` or `limit_pm_to_p`, and use the haplotyping region controls when
 further reduction is needed.
 
-Output names use `fam_id` (default `hopla`). Haplotyping colours are relative
+Output names use `family.id` (default `hopla`). Haplotyping colours are relative
 within a family: the same haplotype colour is not stable across different HTML
 files.
 
@@ -38,10 +38,10 @@ preserved. The text is not interpreted as key-value pairs.
 ## Family tree
 
 If two or more samples are provided, the family structure is shown as defined
-by `sample_ids`, `father_ids`, and `mother_ids`. Annotations follow
+by `family.members` and each member's `father` and `mother`. Annotations follow
 `reference_ids`, `carrier_ids`, `affected_ids`, and `nonaffected_ids` (those
 labels are reused throughout the HTML). Squares are males and circles are
-females, from `sexes`, or from `x_cutoff` / `y_cutoff` when sex is
+females, from each member's `sex`, or from `x_cutoff` / `y_cutoff` when sex is
 unknown. The pedigree is an inline SVG.
 
 ## Filter 0: single nucleotide variants
@@ -122,7 +122,7 @@ ADO/ADI is not calculated.
 
 ### Haplotyping by Merlin
 
-Merlin runs when more than one real sample is in `sample_ids`, `run_merlin` is
+Merlin runs when more than one real sample is in `family.members`, `run_merlin` is
 `true`, and the `merlin` / `minx` executables are on `$PATH`. There is no
 haplotyping when the family structure does not allow it (no reference sample
 means no breakpoints in the haplotyping strands).

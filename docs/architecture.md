@@ -35,8 +35,9 @@ There is no runtime fallback to another package tree.
 
 The Python engine is explicit and columnar:
 
-1. `settings.py` validates YAML/JSON against the Hopla schema and derives
-   pedigree defaults before VCF loading.
+1. `settings.py` validates the structured `family.members` YAML/JSON model,
+   expands it to the engine's pedigree arrays, and derives defaults before VCF
+   loading.
 2. `vcf.py` streams selected biallelic SNVs with cyvcf2 into one `SiteTable`
    and compact sample-by-site NumPy matrices.
 3. `filters.py`, `analysis.py`, and `merlin.py` operate on masks and matrices;

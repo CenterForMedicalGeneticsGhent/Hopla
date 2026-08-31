@@ -41,10 +41,11 @@ def settings_file(tmp_path: Path) -> Path:
     path = tmp_path / "settings.yaml"
     path.write_text(
         """
-sample_ids: [FATHER, MOTHER, CHILD]
-father_ids: [null, null, FATHER]
-mother_ids: [null, null, MOTHER]
-sexes: [M, F, F]
+family:
+  members:
+    - {id: FATHER, sex: M}
+    - {id: MOTHER, sex: F}
+    - {id: CHILD, father: FATHER, mother: MOTHER, sex: F}
 run_merlin: false
 keep_informative_ids: [FATHER, MOTHER]
 baf_ids: [CHILD]
