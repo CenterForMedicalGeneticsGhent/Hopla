@@ -269,9 +269,22 @@ async function pollAnalysis(identifier) {
   }
 }
 
+function isVcfName(name) {
+  const lower = name.toLowerCase();
+  return lower.endsWith(".vcf") || lower.endsWith(".vcf.gz") || lower.endsWith(".vcf.bgz");
+}
+
 document.querySelector("#vcf-upload").addEventListener("change", (event) => {
   const file = event.target.files[0];
-  analysisState(file ? `Selected ${file.name}.` : "Select a VCF to begin.");
+  if (!file) {
+    analysisState("Select a VCF to begin.");
+    return;
+  }
+  if (!isVcfName(file.name)) {
+    analysisState("Choose a .vcf, .vcf.gz, or .vcf.bgz file.", true);
+    return;
+  }
+  analysisState(`Selected ${file.name}.`);
 });
 
 document.querySelector("#run-analysis").addEventListener("click", async () => {
@@ -280,6 +293,10 @@ document.querySelector("#run-analysis").addEventListener("click", async () => {
   const file = picker.files[0];
   if (!file) {
     analysisState("Choose a VCF before running the analysis.", true);
+    return;
+  }
+  if (!isVcfName(file.name)) {
+    analysisState("Choose a .vcf, .vcf.gz, or .vcf.bgz file.", true);
     return;
   }
   readFields();
