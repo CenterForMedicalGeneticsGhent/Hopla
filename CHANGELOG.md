@@ -8,7 +8,7 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 ### Added
 
 - Added `hopla run -t` / `--threads` for contig-parallel VCF loading (default:
-  all CPUs). Indexed VCFs (tabix or CSI) are read per contig in a thread pool;
+  all CPUs). Indexed VCFs (tabix or CSI) are read per contig in a process pool;
   a missing index logs a warning and falls back to a single sequential scan.
 
 ## [3.0.0] - 2026-08-28

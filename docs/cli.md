@@ -35,10 +35,10 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   Hopla downloads and decompresses
   [hg38 `cytoBand.txt.gz`](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBand.txt.gz)
   into a temporary directory for that run.
-- `-t THREADS` / `--threads THREADS` is the number of VCF reader threads
-  (default: all CPUs). Indexed VCFs (tabix `.tbi` or CSI `.csi`) load contigs
-  in parallel. A missing index logs a warning and falls back to a single
-  sequential scan. `-t 1` stays single-threaded without that warning.
+- `-t THREADS` / `--threads THREADS` is the number of parallel VCF contig
+  workers (default: all CPUs). Indexed VCFs (tabix `.tbi` or CSI `.csi`) load
+  contigs in a process pool. A missing index logs a warning and falls back to a
+  single sequential scan. `-t 1` stays sequential without that warning.
 - `--export-parquet` / `--no-export-parquet` controls writing portable Parquet
   tables under `{family.id}-export/` (default: off).
 - `--export-bigwig` / `--no-export-bigwig` controls writing BigWig, BED, SEG,

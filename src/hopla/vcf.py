@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 import os
 from collections.abc import Iterable
-from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field, fields
+from concurrent.futures import ProcessPoolExecutor
+from dataclasses import dataclass, field
 from functools import partial
+from multiprocessing import get_context
 from pathlib import Path
 from typing import Any
 
@@ -34,10 +35,19 @@ class _CollectedSites:
     ref_depths: list[np.ndarray] = field(default_factory=list)
     alt_depths: list[np.ndarray] = field(default_factory=list)
 
-    def extend(self, other: _CollectedSites) -> None:
-        """Append another contig's retained sites in order."""
-        for item in fields(self):
-            getattr(self, item.name).extend(getattr(other, item.name))
+
+@dataclass(slots=True, frozen=True)
+class _ContigTable:
+    """Hold one contig as stacked arrays for process-pool return values."""
+
+    chrom: np.ndarray
+    pos: np.ndarray
+    ref: np.ndarray
+    alt: np.ndarray
+    gt: np.ndarray
+    dp: np.ndarray
+    ad_ref: np.ndarray
+    ad_alt: np.ndarray
 
 
 def _format_matrix(variant: Any, key: str, samples: int, columns: int = 1) -> np.ndarray:
@@ -114,13 +124,25 @@ def _collect_variants(variants: Iterable[Any], sample_count: int) -> _CollectedS
     return collected
 
 
-def _load_contig(contig: str, path: Path, samples: tuple[str, ...]) -> _CollectedSites:
+def _load_contig(contig: str, path: Path, samples: tuple[str, ...]) -> _ContigTable | None:
     """Stream one contig through an independent cyvcf2 reader."""
     reader = VCF(str(path), samples=list(samples), lazy=True)
     try:
-        return _collect_variants(reader(contig), len(samples))
+        collected = _collect_variants(reader(contig), len(samples))
     finally:
         reader.close()
+    if not collected.pos:
+        return None
+    return _ContigTable(
+        chrom=np.asarray(collected.chrom, dtype=np.uint8),
+        pos=np.asarray(collected.pos, dtype=np.uint32),
+        ref=np.asarray(collected.ref, dtype=np.str_),
+        alt=np.asarray(collected.alt, dtype=np.str_),
+        gt=np.stack(collected.genotypes, axis=1),
+        dp=np.stack(collected.depths, axis=1),
+        ad_ref=np.stack(collected.ref_depths, axis=1),
+        ad_alt=np.stack(collected.alt_depths, axis=1),
+    )
 
 
 def _supported_contigs(seqnames: Iterable[object]) -> list[str]:
@@ -147,6 +169,32 @@ def _assemble(
         dp=np.stack(collected.depths, axis=1)[permutation],
         ad_ref=np.stack(collected.ref_depths, axis=1)[permutation],
         ad_alt=np.stack(collected.alt_depths, axis=1)[permutation],
+        samples=samples,
+        sample_index={sample: index for index, sample in enumerate(samples)},
+    )
+    return sites, matrix
+
+
+def _concat_contigs(
+    tables: Iterable[_ContigTable | None],
+    samples: tuple[str, ...],
+    permutation: np.ndarray,
+) -> tuple[SiteTable, GenotypeMatrix]:
+    """Join per-contig arrays in header order."""
+    present = [table for table in tables if table is not None]
+    if not present:
+        raise ValueError("VCF contains no supported biallelic SNVs.")
+    sites = SiteTable(
+        chrom=np.concatenate([table.chrom for table in present]),
+        pos=np.concatenate([table.pos for table in present]),
+        ref=np.concatenate([table.ref for table in present]),
+        alt=np.concatenate([table.alt for table in present]),
+    )
+    matrix = GenotypeMatrix(
+        gt=np.concatenate([table.gt for table in present], axis=1)[permutation],
+        dp=np.concatenate([table.dp for table in present], axis=1)[permutation],
+        ad_ref=np.concatenate([table.ad_ref for table in present], axis=1)[permutation],
+        ad_alt=np.concatenate([table.ad_alt for table in present], axis=1)[permutation],
         samples=samples,
         sample_index={sample: index for index, sample in enumerate(samples)},
     )
@@ -184,11 +232,12 @@ def load_vcf(
             reader.close()
         return _assemble(collected, samples, permutation)
     reader.close()
-    collected = _CollectedSites()
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        for chunk in pool.map(partial(_load_contig, path=path, samples=samples), contigs):
-            collected.extend(chunk)
-    return _assemble(collected, samples, permutation)
+    with ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn")) as pool:
+        return _concat_contigs(
+            pool.map(partial(_load_contig, path=path, samples=samples), contigs),
+            samples,
+            permutation,
+        )
 
 
 def mask_male_x_heterozygotes(
