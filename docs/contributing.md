@@ -51,8 +51,7 @@ Details: [install.md](install.md).
 - Keep this manual in `docs/` in sync with the schema, engine defaults, and
   CLI. Keep [`example/`](../example/) fixtures aligned with documented
   settings and convert behaviour.
-- Do not overwrite [exports.md](exports.md) or
-  [igvjs-evaluation.md](igvjs-evaluation.md) when updating architecture notes.
+- Do not overwrite [exports.md](exports.md) when updating architecture notes.
 
 ## Settings and command line
 

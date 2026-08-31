@@ -49,8 +49,7 @@ The Python engine is explicit and columnar:
    figure.
 5. `export/parquet.py` and `export/igv.py` optionally write the same visualized
    tables as portable Parquet plus BigWig / BED / SEG / `igv-session.xml`
-   sidecars. See [exports.md](exports.md) and
-   [igvjs-evaluation.md](igvjs-evaluation.md).
+   sidecars. See [exports.md](exports.md).
 
 All functions are typed and documented. Polars owns tabular joins and
 aggregation; NumPy owns dense genotype operations. Merlin 1.1.2 remains an

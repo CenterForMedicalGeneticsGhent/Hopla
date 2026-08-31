@@ -20,7 +20,6 @@ This manual documents the Python package at the repository root. Start from the
 - [HTML output](output.md)
 - [Portable and IGV exports](exports.md)
 - [Package and engine structure](architecture.md)
-- [igv.js feasibility evaluation](igvjs-evaluation.md)
 - [Contributing](contributing.md)
 - [Changelog](../CHANGELOG.md)
 
