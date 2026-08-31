@@ -1,9 +1,13 @@
 # Complete Hopla YAML settings example.
-sample_ids: [DNA052961, U1, DNA052959, DNA052960, DNA052963, DNA052966]
-
-father_ids: [null, null, U1, null, DNA052960, DNA052960]
-mother_ids: [null, null, DNA052961, null, DNA052959, DNA052959]
-sexes: [F, M, F, M, null, null]
+family:
+  id: hopla
+  members:
+    - {id: DNA052961, sex: F}
+    - {id: U1, sex: M}
+    - {id: DNA052959, father: U1, mother: DNA052961, sex: F}
+    - {id: DNA052960, sex: M}
+    - {id: DNA052963, father: DNA052960, mother: DNA052959}
+    - {id: DNA052966, father: DNA052960, mother: DNA052959}
 run_merlin: true
 # Pass a cytoband table with -c; omit it to download hg38 cytoBand.txt.gz from UCSC.
 

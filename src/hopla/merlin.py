@@ -110,10 +110,11 @@ def _write_inputs(
             for index in selected_indices
         )
         pedigree_rows = []
-        for pedigree_index, sample in enumerate(settings.sample_ids):
-            sex = "1" if settings.sexes[pedigree_index] == "M" else "2"
-            father = settings.father_ids[pedigree_index] or "0"
-            mother = settings.mother_ids[pedigree_index] or "0"
+        for member in settings.family.members:
+            sample = member.id
+            sex = "1" if member.sex == "M" else "2"
+            father = member.father or "0"
+            mother = member.mother or "0"
             calls = (
                 [alleles[matrix.sample_index[sample]][index] for index in selected_indices]
                 if sample in matrix.sample_index

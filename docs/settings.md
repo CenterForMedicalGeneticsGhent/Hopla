@@ -48,10 +48,12 @@ A complete example is [`example/settings.yaml`](../example/settings.yaml).
   contain exactly two.
 
 ```yaml
-sample_ids: [sample_C, sample_B, sample_A]
-father_ids: [null, null, sample_C]
-mother_ids: [null, null, sample_B]
-sexes: [M, F, null]
+family:
+  id: example
+  members:
+    - {id: sample_C, sex: M}
+    - {id: sample_B, sex: F}
+    - {id: sample_A, father: sample_C, mother: sample_B}
 run_merlin: true
 regions:
   - chr7:117480025-117668665
@@ -62,35 +64,42 @@ info: |
 
 Equivalent JSON is accepted. Types and constraints are identical.
 
+Files using the former parallel `sample_ids`, `father_ids`, `mother_ids`,
+`sexes`, and `fam_id` properties are remapped when loaded. New and generated
+configurations use `family`; if both representations are present, `family`
+wins and the parallel properties are ignored with a warning.
+
 ## Mandatory settings
 
-- **`sample_ids`** (`string` array) Sample IDs to analyze. They must be present
-  in the VCF given on the CLI. Example: `[sample_C, sample_B, sample_A]`. Missing
-  pedigree members can be added with unknown IDs `U1`, `U2`, …, which is useful
-  to define uncle/niece/… relations by reusing those IDs in `father_ids` and
-  `mother_ids`. Ghost IDs matching `U[0-9]+` are not loaded from the VCF.
+- **`family`** (`object`) Family description containing a `members` array and
+  optional `id`.
+- **`family.members`** (`object` array) Samples and pedigree members. Every
+  member requires a unique, non-empty `id`. VCF-backed IDs must be present in
+  the VCF given on the CLI. Missing pedigree members can use IDs `U1`, `U2`, …;
+  IDs matching `U[0-9]+` are pedigree ghosts and are not loaded from the VCF.
+  A member can name its `father` and `mother` by ID, independent of where either
+  member appears in the array.
 
 The VCF file is the `VCF` operand to `hopla run`. The output directory is
 optional `-o OUT_DIR` (default `$PWD`) and the cytoband table is optional
 `-c CYTOBAND`. Supplied paths are checked for existence before analysis starts.
 The engine does not create a missing output directory.
 
-When more than one sample is listed, at least one of `father_ids` or
-`mother_ids` must contain a non-null parent reference.
+When more than one member is listed, at least one member must name a non-null
+`father` or `mother`.
 
 ## Optional settings
 
 ### Important optional settings
 
-- **`father_ids`** (`string | null` array, no default) Father sample IDs. Use
-  `null` when not available. Order matches `sample_ids`. Example:
-  `[null, null, sample_C]`.
-- **`mother_ids`** (`string | null` array, no default) Mother sample IDs. Use
-  `null` when not available. Order matches `sample_ids`. Example:
-  `[null, null, sample_B]`.
-- **`sexes`** (`M` / `F` / `null` array, no default) Sample sex. Use
-  `null` when not available; the model then predicts sex (see `x_cutoff` and
-  `y_cutoff`). Order matches `sample_ids`. Example: `[M, F, null]`.
+- **`family.id`** (`string`, default `hopla`) Family ID used in output file
+  names. Non-word characters are replaced with `.` after load.
+- **`family.members[].father`** / **`family.members[].mother`**
+  (`string | null`, default `null`) Parent IDs. A named parent must be another
+  member of the same family.
+- **`family.members[].sex`** (`M` / `F` / `null`, default `null`) Sample sex.
+  When omitted or `null`, the model predicts sex (see `x_cutoff` and
+  `y_cutoff`).
 - **`run_merlin`** (`boolean`, default `true`) Whether Merlin haplotyping should
   run. The Merlin executables directory (`path/to/merlin-1.1.2/executables`)
   must be on `$PATH`, which is automatic with the pixi default environment.
@@ -100,22 +109,21 @@ When more than one sample is listed, at least one of `father_ids` or
 The cytoband table is a CLI path (`-c CYTOBAND`), not a settings property. See
 [cli.md](cli.md).
 
-If `father_ids`, `mother_ids`, or `sexes` are omitted, they are filled with
-`null` for every entry in `sample_ids`.
+Omitted `father`, `mother`, and `sex` properties are treated as `null`.
 
 ### Important optional variant inclusion settings: filter 1
 
 - Every sample in **`dp_hard_limit_ids`** (`string` array, default all but last
-  line children/embryos from `sample_ids`) should have variants with coverage
+  line children/embryos from `family.members`) should have variants with coverage
   of at least **`dp_hard_limit`** (`number ≥ 0`, default `10`). This is a hard
   filter: variants that do not comply are removed from all samples.
 - At least one sample in **`af_hard_limit_ids`** (`string` array, default all
-  but last line children/embryos from `sample_ids`) should have variants with
+  but last line children/embryos from `family.members`) should have variants with
   an allele fraction of at least **`af_hard_limit`** (`number` in `[0, 1)`,
   default `0`). This is a hard filter: variants that do not comply are removed
   from all samples.
 - Variants from samples in **`dp_soft_limit_ids`** (`string` array, default last
-  line children/embryos from `sample_ids`) should have coverage of at least
+  line children/embryos from `family.members`) should have coverage of at least
   **`dp_soft_limit`** (`number ≥ 0`, default `10`). This is a soft filter:
   variants that do not comply are removed from the given samples only.
 
@@ -209,8 +217,6 @@ raw uncorrected genotypes remain available on hover.
 
 ### Remaining features
 
-- **`fam_id`** (`string`, default `hopla`) Family ID, used in output file names.
-  Non-word characters are replaced with `.` after load.
 - **`x_cutoff`** (`number`, default `1.5`) X chromosome copy-number cutoff for
   sex prediction (one copy assumed in males, two in females).
 - **`y_cutoff`** (`number`, default `0.6`) Y chromosome copy-number cutoff for
@@ -266,17 +272,17 @@ Conversion rules:
 - The converted document is validated before it is written.
 - Unsupported keys are omitted after a warning. Missing mandatory fields fail
   the conversion.
-- Legacy `genders` is written as `sexes`. The `start.info` … `end.info` block
-  becomes a multiline `info` string.
+- Legacy parallel pedigree fields are written as structured `family.members`.
+  The `start.info` … `end.info` block becomes a multiline `info` string.
 
 | Legacy key | YAML / JSON key |
 | --- | --- |
 | `vcf.file` | *(CLI `VCF` operand; omitted from YAML)* |
 | `out.dir` | *(CLI `-o OUT_DIR`; omitted from YAML)* |
-| `sample.ids` | `sample_ids` |
-| `father.ids` | `father_ids` |
-| `mother.ids` | `mother_ids` |
-| `genders` | `sexes` |
+| `sample.ids` | `family.members[].id` |
+| `father.ids` | `family.members[].father` |
+| `mother.ids` | `family.members[].mother` |
+| `genders` | `family.members[].sex` |
 | `run.merlin` | `run_merlin` |
 | `cytoband.file` | *(CLI `-c CYTOBAND`; omitted from YAML)* |
 | `dp.hard.limit.ids` | `dp_hard_limit_ids` |
@@ -302,7 +308,7 @@ Conversion rules:
 | `keep.chromosomes.only` | `keep_chromosomes_only` |
 | `keep.regions.only` | `keep_regions_only` |
 | `concordance.table` | `concordance_table` |
-| `fam.id` / `fam.ID` | `fam_id` |
+| `fam.id` / `fam.ID` | `family.id` |
 | `X.cutoff` | `x_cutoff` |
 | `Y.cutoff` | `y_cutoff` |
 | `window.size` | `window_size` |

@@ -117,8 +117,8 @@ def _meta(
     sizes = chromosome_sizes(cytobands)
     parents = {
         sample: {
-            "father": settings.father_ids[settings.sample_ids.index(sample)],
-            "mother": settings.mother_ids[settings.sample_ids.index(sample)],
+            "father": settings.family.member(sample).father,
+            "mother": settings.family.member(sample).mother,
         }
         for sample in samples
     }
@@ -438,9 +438,9 @@ def render_report(
     ).decode("ascii")
     html = (
         "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
-        f"<title>{escape(settings.fam_id)}</title>"
+        f"<title>{escape(settings.family.id)}</title>"
         f"<style>{_STYLE}</style></head><body>"
-        f"<h1>{escape(settings.fam_id)}</h1>"
+        f"<h1>{escape(settings.family.id)}</h1>"
         + _body(settings, tables, samples, chromosomes)
         + f'<script id="hopla-data" type="application/gzip+json">{encoded}</script>'
         + f"<script>{_plotly_source()}</script>"

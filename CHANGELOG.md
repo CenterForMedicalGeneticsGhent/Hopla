@@ -12,7 +12,7 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Added columnar VCF loading with cyvcf2 into shared site tables and sample-by-site NumPy matrices.
 - Added filter 1 / filter 2 masks, variant statistics, ADO/ADI, BAF, Mendelian errors, parent mapping, and Merlin haplotyping with neighbourhood voting and short-segment correction.
 - Added a self-contained offline HTML report that inlines `plotly.js`, gzip-compresses columnar payloads, and draws SVG panels lazily on scroll.
-- Added default `{fam_id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, with `--no-export-parquet` and `--no-export-bigwig` toggles.
+- Added default `{family.id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, with `--no-export-parquet` and `--no-export-bigwig` toggles.
 - Added `hopla serve`, a loopback-only-by-default Starlette and Jinja settings editor packaged with the Python wheel.
 - Added schema-validated YAML preview/download and legacy `.txt`, YAML, and JSON imports with pedigree reconstruction.
 - Added browser-driven analysis to `hopla serve`: it runs the current configuration with an uploaded VCF and returns a temporary self-contained HTML report, with a live step log and a `--no-analysis` flag that serves settings editing only.
@@ -21,7 +21,10 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ### Changed
 
-- Renamed the `genders` setting to `sexes`. Legacy files still use `genders`; convert and import remap it.
+- Replaced order-aligned pedigree arrays in generated YAML/JSON with structured
+  `family.id` and `family.members` objects. Existing parallel-array settings
+  are remapped when loaded; the engine also uses member-by-ID lookup directly.
+- Renamed legacy `genders` values to member `sex` values during conversion and import.
 - `info` is multiline free text rather than a list of lines. The settings editor uses one text box instead of Disease / Inheritance / Sequencing note fields.
 - Import, convert, and `hopla run` ignore unsupported keys after a warning instead of failing. Generated YAML omits unused compatibility keys.
 - Flattened the repository so the installable Python package lives at the root (`src/hopla/`, `tests/`, `docs/`, `example/`) instead of the `hopla-r/` / `hopla-ui/` monorepo.

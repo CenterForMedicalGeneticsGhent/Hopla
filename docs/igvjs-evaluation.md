@@ -47,7 +47,7 @@ categorical data as BED, copy-number segments as SEG, and a relative-path
 existing BAM/CRAM tracks without copying those sensitive, large files into the
 Hopla report.
 
-This keeps the HTML a single offline file. The `{fam_id}-export/` directory is
+This keeps the HTML a single offline file. The `{family.id}-export/` directory is
 an optional interoperability export, not a required multi-file web
 application.
 

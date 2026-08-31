@@ -44,7 +44,13 @@ def test_convert_concordance_and_transform(tmp_path: Path) -> None:
     converted = runner.invoke(app, ["convert", str(legacy)])
     assert converted.exit_code == 0
     assert legacy.with_suffix(".yaml").read_text(encoding="utf-8") == (
-        "sample_ids:\n- A\nsexes:\n- null\nrun_merlin: false\n"
+        "run_merlin: false\n"
+        "family:\n"
+        "  members:\n"
+        "  - id: A\n"
+        "    father: null\n"
+        "    mother: null\n"
+        "    sex: null\n"
     )
     first, second = tmp_path / "one-flow.txt", tmp_path / "two-flow.txt"
     _flow(first)

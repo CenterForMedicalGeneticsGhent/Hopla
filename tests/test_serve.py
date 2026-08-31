@@ -34,7 +34,9 @@ def test_editor_and_validated_download() -> None:
         assert preview.status_code == 200
         settings = yaml.safe_load(preview.json()["yaml"])
         validate_settings(settings)
-        assert settings["sample_ids"] == ["FATHER"]
+        assert settings["family"]["members"] == [
+            {"id": "FATHER", "father": None, "mother": None, "sex": "M"}
+        ]
         assert "vcf_file" not in settings
         assert "cytoband_file" not in settings
 
@@ -77,10 +79,10 @@ def test_add_sibling_state_and_validation_error() -> None:
     }
     state["siblings"].append(sibling)
     settings = yaml.safe_load(render_yaml(state))
-    assert settings["father_ids"] == [None, "FATHER"]
+    assert settings["family"]["members"][1]["father"] == "FATHER"
     assert settings["affected_ids"] == ["CHILD"]
     assert settings["baf_ids"] == ["CHILD"]
-    assert settings["sexes"] == ["M", "F"]
+    assert [member["sex"] for member in settings["family"]["members"]] == ["M", "F"]
     assert "self_contained" not in settings
     assert "color_palette" not in settings
     assert "cairo" not in settings
@@ -142,7 +144,7 @@ def test_import_legacy_and_ignore_unknown_setting() -> None:
         assert ignored.status_code == 200
         assert ignored.json()["warnings"] == ["unknown"]
         generated = yaml.safe_load(render_yaml(ignored.json()["form"]))
-        assert generated["sample_ids"] == ["A"]
+        assert generated["family"]["members"][0]["id"] == "A"
         assert "unknown" not in generated
 
         rejected = client.post(
@@ -156,7 +158,7 @@ def test_settings_to_form_preserves_unedited_schema_fields() -> None:
     """Carry settings without form controls through an import/export cycle."""
     state = settings_to_form(
         {
-            "sample_ids": ["A"],
+            "family": {"members": [{"id": "A"}]},
             "run_merlin": False,
             "dot_factor": 3,
         }
@@ -196,13 +198,13 @@ def test_stream_vcf_run_and_download_report(
         progress: ProgressCallback | None = None,
     ) -> Path:
         del cytoband_path
-        assert settings.sample_ids == ["FATHER"]
+        assert settings.family.member_ids == ("FATHER",)
         assert vcf_path.read_bytes() == b"VCF data"
         assert export_parquet_data is False
         assert export_bigwig is False
         assert progress is not None
         progress("Computing analyses")
-        report = out_dir / f"{settings.fam_id}-output.html"
+        report = out_dir / f"{settings.family.id}-output.html"
         report.write_text("<html>report</html>", encoding="utf-8")
         return report
 

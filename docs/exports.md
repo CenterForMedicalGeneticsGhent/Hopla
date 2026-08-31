@@ -1,6 +1,6 @@
 # Portable analysis exports
 
-`hopla run` writes `{fam_id}-export/` by default. Use
+`hopla run` writes `{family.id}-export/` by default. Use
 `--no-export-parquet` when only the HTML report is needed.
 
 Each visualized dataset is stored in its own Apache Parquet file with zstd

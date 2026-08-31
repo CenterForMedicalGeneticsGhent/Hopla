@@ -15,17 +15,70 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Sex = Literal["M", "F"] | None
 CLI_ONLY_KEYS = frozenset({"vcf_file", "out_dir", "cytoband_file"})
+LEGACY_FAMILY_KEYS = frozenset(
+    {"sample_ids", "father_ids", "mother_ids", "sexes", "genders", "fam_id"}
+)
 
+
+class FamilyMember(BaseModel):
+    """One pedigree member."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1)
+    father: str | None = None
+    mother: str | None = None
+    sex: Sex = None
+
+
+class Family(BaseModel):
+    """Named family and its members."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(default="hopla", min_length=1)
+    members: list[FamilyMember] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_members(self) -> Family:
+        """Reject duplicate IDs, dangling parents, and unrelated member lists."""
+        member_ids = [member.id for member in self.members]
+        duplicates = sorted(
+            sample for sample in set(member_ids) if member_ids.count(sample) > 1
+        )
+        if duplicates:
+            raise ValueError(f"family member IDs must be unique: {', '.join(duplicates)}")
+        parents = [
+            parent
+            for member in self.members
+            for parent in (member.father, member.mother)
+            if parent is not None
+        ]
+        unknown = sorted(set(parents) - set(member_ids))
+        if unknown:
+            raise ValueError(f"sample references not found in family members: {', '.join(unknown)}")
+        if len(self.members) > 1 and not parents:
+            raise ValueError("multiple family members require a father and/or mother")
+        return self
+
+    @property
+    def member_ids(self) -> tuple[str, ...]:
+        """Return member IDs in declaration order."""
+        return tuple(member.id for member in self.members)
+
+    def member(self, sample_id: str) -> FamilyMember:
+        """Return the member with this sample ID."""
+        for item in self.members:
+            if item.id == sample_id:
+                return item
+        raise KeyError(sample_id)
 
 class Settings(BaseModel):
     """Model all supported analysis settings."""
 
     model_config = ConfigDict(extra="forbid")
 
-    sample_ids: list[str] = Field(min_length=1)
-    father_ids: list[str | None] = Field(default_factory=list)
-    mother_ids: list[str | None] = Field(default_factory=list)
-    sexes: list[Sex] = Field(default_factory=list)
+    family: Family
     run_merlin: bool = True
     dp_hard_limit_ids: list[str] = Field(default_factory=list)
     dp_hard_limit: float = Field(default=10, ge=0)
@@ -50,7 +103,6 @@ class Settings(BaseModel):
     keep_chromosomes_only: bool = True
     keep_regions_only: bool = False
     concordance_table: bool = True
-    fam_id: str = Field(default="hopla", min_length=1)
     x_cutoff: float = 1.5
     y_cutoff: float = 0.6
     window_size: int = Field(default=1_000_000, gt=0)
@@ -62,16 +114,7 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def validate_family(self) -> Settings:
-        """Validate parallel pedigree arrays, references, and regions."""
-        size = len(self.sample_ids)
-        for name in ("father_ids", "mother_ids", "sexes"):
-            values = getattr(self, name)
-            if not values:
-                setattr(self, name, [None] * size)
-            elif len(values) != size:
-                raise ValueError(f"{name} must have the same length as sample_ids")
-        if size > 1 and not any(self.father_ids) and not any(self.mother_ids):
-            raise ValueError("multiple samples require father_ids and/or mother_ids")
+        """Validate top-level sample references and analysis regions."""
         referenced = (
             self.dp_hard_limit_ids
             + self.af_hard_limit_ids
@@ -83,30 +126,36 @@ class Settings(BaseModel):
             + self.affected_ids
             + self.nonaffected_ids
             + self.baf_ids
-            + [item for item in self.father_ids + self.mother_ids if item is not None]
         )
-        unknown = sorted(set(referenced) - set(self.sample_ids))
+        unknown = sorted(set(referenced) - set(self.family.member_ids))
         if unknown:
-            raise ValueError(f"sample references not found in sample_ids: {', '.join(unknown)}")
+            raise ValueError(f"sample references not found in family members: {', '.join(unknown)}")
         if len(self.keep_informative_ids) not in (0, 2):
             raise ValueError("keep_informative_ids must contain zero or two samples")
         for region in self.regions:
             if re.fullmatch(r"chr[^:]+:[0-9]+-[0-9]+", region) is None:
                 raise ValueError(f"invalid region: {region}")
         self.window_size_voting_x = self.window_size_voting_x or self.window_size_voting
-        self.fam_id = re.sub(r"[^\w]", ".", self.fam_id)
+        self.family.id = re.sub(r"[^\w]", ".", self.family.id)
         return self
 
     @property
     def real_samples(self) -> tuple[str, ...]:
         """Return samples backed by VCF columns rather than pedigree ghosts."""
         return tuple(
-            sample for sample in self.sample_ids if re.fullmatch(r"U[0-9]+", sample, re.I) is None
+            sample
+            for sample in self.family.member_ids
+            if re.fullmatch(r"U[0-9]+", sample, re.I) is None
         )
 
     def derive_filter_ids(self) -> Settings:
         """Fill filter sample lists using the original pedigree-derived defaults."""
-        parents = {item for item in self.father_ids + self.mother_ids if item in self.real_samples}
+        parents = {
+            parent
+            for member in self.family.members
+            for parent in (member.father, member.mother)
+            if parent in self.real_samples
+        }
         terminal = [sample for sample in self.real_samples if sample not in parents]
         if len(self.real_samples) == 1:
             parents = set(self.real_samples)
@@ -138,18 +187,67 @@ def schema_properties() -> dict[str, Any]:
     return properties
 
 
+def _aligned_column(name: str, values: object, size: int) -> list[Any]:
+    if values in (None, []):
+        return [None] * size
+    if not isinstance(values, list) or len(values) != size:
+        raise ValueError(f"{name} must have the same length as sample_ids")
+    return values
+
+
+def family_from_parallel_arrays(
+    sample_ids: list[Any],
+    *,
+    father_ids: object = None,
+    mother_ids: object = None,
+    sexes: object = None,
+    fam_id: object = None,
+) -> dict[str, Any]:
+    """Zip historical parallel pedigree arrays into a family object."""
+    size = len(sample_ids)
+    fathers = _aligned_column("father_ids", father_ids, size)
+    mothers = _aligned_column("mother_ids", mother_ids, size)
+    sexes_column = _aligned_column("sexes", sexes, size)
+    family: dict[str, Any] = {
+        "members": [
+            {
+                "id": sample_id,
+                "father": fathers[index],
+                "mother": mothers[index],
+                "sex": sexes_column[index],
+            }
+            for index, sample_id in enumerate(sample_ids)
+        ]
+    }
+    if fam_id is not None:
+        family["id"] = fam_id
+    return family
+
+
 def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     """Remap historical names, coerce `info`, and drop unsupported keys."""
     prepared = dict(raw)
     for key in CLI_ONLY_KEYS:
         prepared.pop(key, None)
     ignored: list[str] = []
-    if "genders" in prepared:
-        if "sexes" not in prepared:
-            prepared["sexes"] = prepared.pop("genders")
-        else:
-            prepared.pop("genders")
-            ignored.append("genders")
+    if "family" in prepared:
+        conflicting = sorted(LEGACY_FAMILY_KEYS.intersection(prepared))
+        ignored.extend(conflicting)
+        for key in conflicting:
+            prepared.pop(key)
+    elif isinstance(prepared.get("sample_ids"), list):
+        sexes = prepared.get("sexes")
+        if sexes is None:
+            sexes = prepared.get("genders")
+        prepared["family"] = family_from_parallel_arrays(
+            prepared["sample_ids"],
+            father_ids=prepared.get("father_ids"),
+            mother_ids=prepared.get("mother_ids"),
+            sexes=sexes,
+            fam_id=prepared.get("fam_id"),
+        )
+        for key in LEGACY_FAMILY_KEYS:
+            prepared.pop(key, None)
     if isinstance(prepared.get("info"), list):
         prepared["info"] = "\n".join(str(line) for line in prepared["info"])
     allowed = set(schema_properties())

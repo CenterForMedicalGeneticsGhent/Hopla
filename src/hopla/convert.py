@@ -9,7 +9,13 @@ from typing import Any
 import yaml
 from jsonschema import Draft7Validator
 
-from hopla.settings import prepare_settings_mapping, schema_path, schema_properties
+from hopla.settings import (
+    LEGACY_FAMILY_KEYS,
+    family_from_parallel_arrays,
+    prepare_settings_mapping,
+    schema_path,
+    schema_properties,
+)
 
 
 def parse_legacy_text(text: str) -> dict[str, str | list[str]]:
@@ -82,20 +88,49 @@ def _coerce(value: str | list[str], specification: dict[str, Any]) -> Any:
     return value
 
 
+def _csv_tokens(value: str | list[str], *, nullable: bool) -> list[Any]:
+    tokens = value if isinstance(value, list) else value.split(",")
+    return [
+        None if str(token).strip() in {"", "NA"} and nullable else str(token).strip()
+        for token in tokens
+    ]
+
+
 def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
     """Coerce a parsed legacy mapping and drop unsupported keys."""
     schema = json.loads(schema_path().read_text(encoding="utf-8"))
     properties = schema_properties()
-    prepared, _ignored = prepare_settings_mapping(raw)
-    converted = {
-        key: _coerce(prepared[key], properties[key]) for key in properties if key in prepared
-    }
-    errors = list(Draft7Validator(schema).iter_errors(converted))
+    converted: dict[str, Any] = {}
+    family: dict[str, Any] | None = None
+    if "sample_ids" in raw:
+        sexes = raw.get("sexes", raw.get("genders"))
+        family = family_from_parallel_arrays(
+            _csv_tokens(raw["sample_ids"], nullable=False),
+            father_ids=(
+                _csv_tokens(raw["father_ids"], nullable=True) if "father_ids" in raw else None
+            ),
+            mother_ids=(
+                _csv_tokens(raw["mother_ids"], nullable=True) if "mother_ids" in raw else None
+            ),
+            sexes=_csv_tokens(sexes, nullable=True) if sexes is not None else None,
+            fam_id=raw.get("fam_id"),
+        )
+    for key, value in raw.items():
+        if key in LEGACY_FAMILY_KEYS:
+            continue
+        if key in properties:
+            converted[key] = _coerce(value, properties[key])
+        else:
+            converted[key] = value
+    if family is not None:
+        converted["family"] = family
+    prepared, _ignored = prepare_settings_mapping(converted)
+    errors = list(Draft7Validator(schema).iter_errors(prepared))
     if errors:
         raise ValueError(
             "Converted settings failed validation:\n" + "\n".join(error.message for error in errors)
         )
-    return converted
+    return prepared
 
 
 def convert_settings(legacy: Path, output: Path | None = None) -> Path:

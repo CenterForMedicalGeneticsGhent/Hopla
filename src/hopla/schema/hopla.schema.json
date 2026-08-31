@@ -4,12 +4,31 @@
   "title": "Hopla settings",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sample_ids"],
+  "required": ["family"],
   "properties": {
-    "sample_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-    "father_ids": {"type": "array", "items": {"type": ["string", "null"]}},
-    "mother_ids": {"type": "array", "items": {"type": ["string", "null"]}},
-    "sexes": {"type": "array", "items": {"enum": ["M", "F", null]}},
+    "family": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["members"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "default": "hopla"},
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "father": {"type": ["string", "null"]},
+              "mother": {"type": ["string", "null"]},
+              "sex": {"enum": ["M", "F", null]}
+            }
+          }
+        }
+      }
+    },
     "run_merlin": {"type": "boolean", "default": true},
     "dp_hard_limit_ids": {"type": "array", "items": {"type": "string"}},
     "dp_hard_limit": {"type": "number", "minimum": 0, "default": 10},
@@ -34,7 +53,6 @@
     "keep_chromosomes_only": {"type": "boolean", "default": true},
     "keep_regions_only": {"type": "boolean", "default": false},
     "concordance_table": {"type": "boolean", "default": true},
-    "fam_id": {"type": "string", "minLength": 1, "default": "hopla"},
     "x_cutoff": {"type": "number", "default": 1.5},
     "y_cutoff": {"type": "number", "default": 0.6},
     "window_size": {"type": "number", "exclusiveMinimum": 0, "default": 1000000},

@@ -19,10 +19,7 @@ PLACEHOLDERS = {
     "maternal_grandmother": "U6",
 }
 CONTROLLED_KEYS = {
-    "sample_ids",
-    "father_ids",
-    "mother_ids",
-    "sexes",
+    "family",
     "dp_hard_limit_ids",
     "af_hard_limit_ids",
     "af_hard_limit",
@@ -38,7 +35,6 @@ CONTROLLED_KEYS = {
     "window_size_voting",
     "keep_chromosomes_only",
     "keep_regions_only",
-    "fam_id",
     "regions_flanking_size",
     "limit_baf_to_p",
     "limit_pm_to_p",
@@ -99,15 +95,16 @@ def default_form() -> dict[str, Any]:
 
 
 def _pedigree_mapping(settings: dict[str, Any]) -> dict[str, Any]:
-    sample_ids = [str(value) for value in settings["sample_ids"]]
-    fathers = list(settings.get("father_ids") or [None] * len(sample_ids))
-    mothers = list(settings.get("mother_ids") or [None] * len(sample_ids))
-    fathers.extend([None] * (len(sample_ids) - len(fathers)))
-    mothers.extend([None] * (len(sample_ids) - len(mothers)))
+    family_members = settings["family"]["members"]
     members = {
-        sample_id: {"father": fathers[index], "mother": mothers[index], "index": index}
-        for index, sample_id in enumerate(sample_ids)
+        str(member["id"]): {
+            "father": member.get("father"),
+            "mother": member.get("mother"),
+            "index": index,
+        }
+        for index, member in enumerate(family_members)
     }
+    sample_ids = list(members)
 
     def depth(sample_id: str, visiting: set[str]) -> int:
         if sample_id in visiting or sample_id not in members:
@@ -160,9 +157,8 @@ def settings_to_form(settings: dict[str, Any]) -> dict[str, Any]:
     validate_settings(settings)
     state = default_form()
     mapping = _pedigree_mapping(settings)
-    sample_ids = list(settings["sample_ids"])
-    sexes = list(settings.get("sexes") or [None] * len(sample_ids))
-    sex_by_id = dict(zip(sample_ids, sexes, strict=False))
+    family_members = settings["family"]["members"]
+    sex_by_id = {member["id"]: member.get("sex") for member in family_members}
     fixed: dict[str, Any] = {}
     for role, placeholder in PLACEHOLDERS.items():
         sample_id = mapping.get(role) or placeholder
@@ -179,7 +175,7 @@ def settings_to_form(settings: dict[str, Any]) -> dict[str, Any]:
         _member("embryo", sample_id, sex_by_id.get(sample_id), settings)
         for sample_id in mapping.get("embryos", [])
     ]
-    state["fam_id"] = settings.get("fam_id", state["fam_id"])
+    state["fam_id"] = settings["family"].get("id", "hopla")
     for key in (
         "af_hard_limit",
         "regions",
@@ -242,8 +238,7 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             else None,
         ),
     }
-    father_ids: list[str | None] = []
-    mother_ids: list[str | None] = []
+    family_members: list[dict[str, Any]] = []
     for member in selected:
         role = member["role"]
         if role in parent_by_role:
@@ -252,8 +247,14 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             member_father, member_mother = father, mother
         else:
             member_father, member_mother = None, None
-        father_ids.append(member_father)
-        mother_ids.append(member_mother)
+        family_members.append(
+            {
+                "id": member["sample_id"],
+                "father": member_father,
+                "mother": member_mother,
+                "sex": None if member.get("sex") == "NA" else member.get("sex"),
+            }
+        )
 
     def ids(flag: str) -> list[str]:
         return [str(member["sample_id"]) for member in selected if member.get(flag, False)]
@@ -273,13 +274,7 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
     result: dict[str, Any] = dict(state.get("extras", {}))
     result.update(
         {
-            "sample_ids": [member["sample_id"] for member in selected],
-            "father_ids": father_ids,
-            "mother_ids": mother_ids,
-            "sexes": [
-                None if member.get("sex") == "NA" else member.get("sex")
-                for member in selected
-            ],
+            "family": {"id": str(state["fam_id"]), "members": family_members},
             "dp_hard_limit_ids": ids("hard_dp"),
             "af_hard_limit_ids": ids("hard_af"),
             "af_hard_limit": float(state["af_hard_limit"]),
@@ -293,7 +288,6 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             "window_size_voting": float(state["window_size_voting"]),
             "keep_chromosomes_only": bool(state["keep_chromosomes_only"]),
             "keep_regions_only": bool(state["keep_regions_only"]),
-            "fam_id": str(state["fam_id"]),
             "regions_flanking_size": int(state["regions_flanking_size"]),
             "limit_baf_to_p": bool(state["limit_baf_to_p"]),
             "limit_pm_to_p": bool(state["limit_pm_to_p"]),

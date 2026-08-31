@@ -24,10 +24,13 @@ CYTOBANDS = (
 def _trio() -> Settings:
     """Build a father, mother, and affected child."""
     return Settings(
-        sample_ids=["father", "mother", "child"],
-        father_ids=[None, None, "father"],
-        mother_ids=[None, None, "mother"],
-        sexes=["M", "F", "M"],
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                {"id": "child", "father": "father", "mother": "mother", "sex": "M"},
+            ]
+        },
         affected_ids=["child"],
         nonaffected_ids=["father"],
         carrier_ids=["mother"],
@@ -42,7 +45,7 @@ def test_pedigree_places_children_below_and_between_their_parents() -> None:
     """Draw generations as rows with the sibship centred under the parent couple."""
     settings = _trio()
     positions, depth = _layout(settings)
-    assert depth == [0, 0, 1]
+    assert depth == {"father": 0, "mother": 0, "child": 1}
     assert positions["child"] == (positions["father"] + positions["mother"]) / 2
     assert positions["father"] != positions["mother"]
 
@@ -70,18 +73,27 @@ def test_pedigree_styles_never_reach_the_plotly_figures() -> None:
 def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
     """Keep couples on one row so their relationship line never spans generations."""
     settings = Settings(
-        sample_ids=["grandmother", "grandfather", "mother", "father", "child"],
-        father_ids=[None, None, "grandfather", None, "father"],
-        mother_ids=[None, None, "grandmother", None, "mother"],
-        sexes=["F", "M", "F", "M", "F"],
+        family={
+            "members": [
+                {"id": "grandmother", "sex": "F"},
+                {"id": "grandfather", "sex": "M"},
+                {
+                    "id": "mother",
+                    "father": "grandfather",
+                    "mother": "grandmother",
+                    "sex": "F",
+                },
+                {"id": "father", "sex": "M"},
+                {"id": "child", "father": "father", "mother": "mother", "sex": "F"},
+            ]
+        },
         run_merlin=False,
     )
     positions, depth = _layout(settings)
-    generation = dict(zip(settings.sample_ids, depth, strict=True))
-    assert generation["grandmother"] == generation["grandfather"] == 0
+    assert depth["grandmother"] == depth["grandfather"] == 0
     # The father has no parents but marries into the second generation.
-    assert generation["mother"] == generation["father"] == 1
-    assert generation["child"] == 2
+    assert depth["mother"] == depth["father"] == 1
+    assert depth["child"] == 2
     assert positions["child"] == (positions["mother"] + positions["father"]) / 2
 
 
