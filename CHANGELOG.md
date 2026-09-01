@@ -5,6 +5,11 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Added
+
+- Added a GitHub Actions check that runs `planemo lint` through the pixi `dev`
+  environment when files under `galaxy/` change.
+
 ## [3.0.0] - 2026-08-28
 
 ### Added
