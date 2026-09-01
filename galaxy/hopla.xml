@@ -4,14 +4,13 @@
         <container type="docker">quay.io/cmgg/hopla:3.0.0</container>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
-set -eu
+set -eu &&
 #if str($operation.subcommand) == 'run'
     #if str($operation.vcf_input.input_type) == 'vcf'
 ln -s '$operation.vcf_input.vcf' input.vcf &&
-vcf_path='input.vcf'
+vcf_path='input.vcf' &&
     #else
 ln -s '$operation.vcf_input.vcf_bgzip' input.vcf.gz &&
-vcf_path='input.vcf.gz'
         #if str($operation.vcf_input.index_input.index_type) != 'none'
             #if str($operation.vcf_input.index_input.index_type) == 'csi'
 ln -s '$operation.vcf_input.index_input.index' input.vcf.gz.csi &&
@@ -19,27 +18,28 @@ ln -s '$operation.vcf_input.index_input.index' input.vcf.gz.csi &&
 ln -s '$operation.vcf_input.index_input.index' input.vcf.gz.tbi &&
             #end if
         #end if
+vcf_path='input.vcf.gz' &&
     #end if
-report_path="$(
-    hopla -L '$log_level' run \
-        -o . \
-        -t "\${GALAXY_SLOTS:-1}" \
+report_path="\$(
+    hopla -L '$log_level' run
+        -o .
+        -t "\${GALAXY_SLOTS:-1}"
         #if $operation.cytoband
-        -c '$operation.cytoband' \
+        -c '$operation.cytoband'
         #end if
         #if $operation.export_parquet
-        --export-parquet \
+        --export-parquet
         #end if
         #if $operation.export_bigwig
-        --export-bigwig \
+        --export-bigwig
         #end if
-        '$operation.settings' \
+        '$operation.settings'
         "\$vcf_path"
 )" &&
 mv "\$report_path" '$run_report'
     #if $operation.export_parquet or $operation.export_bigwig
-export_dir="\${report_path%-output.html}-export" &&
-tar -czf '$run_exports' -C "\$export_dir" .
+&& export_dir="\${report_path%-output.html}-export"
+&& tar -czf '$run_exports' -C "\$export_dir" .
     #end if
 #else
 hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
@@ -181,7 +181,7 @@ For compressed input, select **bgzip-compressed VCF** and optionally supply its
 tabix or CSI index. Indexed VCFs can use all Galaxy job slots; unindexed VCFs
 fall back to a sequential scan.
 
-The report requires JavaScript. Galaxy administrators must add the ``hopla``
+The report requires JavaScript. Galaxy administrators must add the ``hopla3``
 tool id to ``sanitize_allowlist.txt`` (or configure the equivalent
 ``sanitize_allowlist_file`` setting) so Galaxy serves the report without HTML
 sanitization.
