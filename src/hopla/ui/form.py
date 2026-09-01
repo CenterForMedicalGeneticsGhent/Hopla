@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 
 from hopla.convert import convert_legacy_data
-from hopla.settings import prepare_settings_mapping, validate_settings
+from hopla.settings import prepare_settings_mapping, sanitize_region, validate_settings
 
 PLACEHOLDERS = {
     "father": "U1",
@@ -281,7 +281,11 @@ def form_to_settings(state: dict[str, Any]) -> dict[str, Any]:
             "dp_soft_limit_ids": ids("soft_dp"),
             "keep_informative_ids": ids("informative"),
             "keep_hetero_ids": ids("hetero"),
-            "regions": [str(region).strip() for region in state.get("regions", []) if region],
+            "regions": [
+                sanitize_region(str(region).strip())
+                for region in state.get("regions", [])
+                if region
+            ],
             **disease_lists,
             "info": str(state.get("info") or ""),
             "baf_ids": ids("baf"),

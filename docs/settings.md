@@ -43,7 +43,9 @@ A complete example is [`example/settings.yaml`](../example/settings.yaml).
   optional ID lists.
 - Boolean values are `true` / `false`.
 - `regions` entries must match `chrNAME:start-end` (for example
-  `chr7:117480025-117668665`).
+  `chr7:117480025-117668665`). Load and the settings editor strip commas,
+  spaces, and a missing `chr` prefix, so `17:43,044,295-43,170,327` becomes
+  `chr17:43044295-43170327`.
 - `keep_informative_ids` accepts at most two sample IDs, and when set must
   contain exactly two.
 
@@ -150,7 +152,9 @@ cover that sample.
 - **`regions`** (`string` array, no default) Region(s) of interest as
   `chr:start-end` in base pairs. When given, regions are marked throughout the
   output, detailed B-allele frequency (BAF) profiles are generated, and
-  corresponding raw data is kept. Example: `[chr7:117480025-117668665]`.
+  corresponding raw data is kept. Copy-pasted intervals with commas or a
+  missing `chr` prefix are normalized on load. Example:
+  `[chr7:117480025-117668665]`.
 - **`reference_ids`** (`string` array, no default) When given, the family tree
   and sample names are colored/annotated accordingly. None or more expected.
 - **`carrier_ids`** (`string` array, no default) When given, the family tree and

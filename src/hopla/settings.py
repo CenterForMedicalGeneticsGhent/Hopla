@@ -11,13 +11,33 @@ from typing import Any, Literal
 
 import yaml
 from jsonschema import Draft7Validator
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 Sex = Literal["M", "F"] | None
 CLI_ONLY_KEYS = frozenset({"vcf_file", "out_dir", "cytoband_file"})
 LEGACY_FAMILY_KEYS = frozenset(
     {"sample_ids", "father_ids", "mother_ids", "sexes", "genders", "fam_id"}
 )
+_REGION_SEPARATORS = re.compile(r"[\s,\u00a0\u202f\uff0c\u066c]+")
+
+
+def sanitize_region(region: str) -> str:
+    """Normalize a copy-pasted interval to schema form ``chrNAME:start-end``.
+
+    Strips whitespace, thousand separators, a missing ``chr`` prefix, and
+    mixed-case ``chr`` / ``X`` / ``Y``. Strings that are not an interval
+    (no ``:`` after cleaning) are returned unchanged so later validation
+    can reject them.
+    """
+    original = str(region)
+    text = _REGION_SEPARATORS.sub("", original)
+    if ":" not in text:
+        return original
+    chrom, interval = text.split(":", 1)
+    name = chrom[3:] if chrom.lower().startswith("chr") else chrom
+    if name.upper() in {"X", "Y"}:
+        name = name.upper()
+    return f"chr{name}:{interval}"
 
 
 class FamilyMember(BaseModel):
@@ -111,6 +131,16 @@ class Settings(BaseModel):
     limit_pm_to_p: bool = False
     value_of_p: float = Field(default=0.25, gt=0, le=1)
     dot_factor: float = Field(default=2, gt=0)
+
+    @field_validator("regions", mode="before")
+    @classmethod
+    def _sanitize_regions(cls, value: object) -> object:
+        """Normalize copy-pasted region strings before type checks."""
+        if not isinstance(value, list):
+            return value
+        return [
+            sanitize_region(item) if isinstance(item, str) else item for item in value
+        ]
 
     @model_validator(mode="after")
     def validate_family(self) -> Settings:
@@ -225,7 +255,7 @@ def family_from_parallel_arrays(
 
 
 def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
-    """Remap historical names, coerce `info`, and drop unsupported keys."""
+    """Remap historical names, coerce `info`, sanitize `regions`, and drop unsupported keys."""
     prepared = dict(raw)
     for key in CLI_ONLY_KEYS:
         prepared.pop(key, None)
@@ -250,6 +280,11 @@ def prepare_settings_mapping(raw: dict[str, Any]) -> tuple[dict[str, Any], list[
             prepared.pop(key, None)
     if isinstance(prepared.get("info"), list):
         prepared["info"] = "\n".join(str(line) for line in prepared["info"])
+    regions = prepared.get("regions")
+    if isinstance(regions, list):
+        prepared["regions"] = [
+            sanitize_region(item) if isinstance(item, str) else item for item in regions
+        ]
     allowed = set(schema_properties())
     ignored.extend(key for key in prepared if key not in allowed)
     ignored = sorted(set(ignored))

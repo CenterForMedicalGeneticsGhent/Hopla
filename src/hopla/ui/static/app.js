@@ -226,6 +226,17 @@ const checkboxFields = [
   "limit_baf_to_p",
 ];
 
+function sanitizeRegion(value) {
+  const text = value.replace(/[\s,\u00a0\u202f\uff0c\u066c]/g, "");
+  if (!text.includes(":")) return value;
+  const colon = text.indexOf(":");
+  const chrom = text.slice(0, colon);
+  const interval = text.slice(colon + 1);
+  let name = /^chr/i.test(chrom) ? chrom.slice(3) : chrom;
+  if (/^[xy]$/i.test(name)) name = name.toUpperCase();
+  return `chr${name}:${interval}`;
+}
+
 function fillFields() {
   scalarFields.forEach((key) => { document.querySelector(`#${key}`).value = state[key]; });
   checkboxFields.forEach((key) => { document.querySelector(`#${key}`).checked = state[key]; });
@@ -239,7 +250,8 @@ function readFields() {
   });
   checkboxFields.forEach((key) => { state[key] = document.querySelector(`#${key}`).checked; });
   state.regions = document.querySelector("#regions").value
-    .split("\n").map((value) => value.trim()).filter(Boolean);
+    .split("\n").map((value) => value.trim()).filter(Boolean).map(sanitizeRegion);
+  document.querySelector("#regions").value = state.regions.join("\n");
 }
 
 async function api(path, payload) {

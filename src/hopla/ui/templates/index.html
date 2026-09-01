@@ -56,8 +56,9 @@
         <label>Merlin voting window
           <input id="window_size_voting" type="number" min="0" step="1">
         </label>
-        <label class="wide">Regions (one <code>chr:start-end</code> per line)
+        <label class="wide"><span>Regions (one <code>chr:start-end</code> per line)</span>
           <textarea id="regions" rows="5"></textarea>
+          <small>Commas and a missing <code>chr</code> prefix are normalized.</small>
         </label>
         <label class="wide">Family information
           <textarea id="info" rows="6" placeholder="Free text printed at the top of the report"></textarea>

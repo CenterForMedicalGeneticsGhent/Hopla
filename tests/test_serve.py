@@ -45,6 +45,15 @@ def test_editor_and_validated_download() -> None:
         assert 'filename="famID.yaml"' in download.headers["content-disposition"]
 
 
+def test_editor_sanitizes_copy_pasted_regions() -> None:
+    """Rewrite comma-formatted intervals in generated YAML."""
+    state = _single_sample_form()
+    state["regions"] = ["17:43,044,295-43,170,327"]
+    settings = yaml.safe_load(render_yaml(state))
+    assert settings["regions"] == ["chr17:43044295-43170327"]
+    validate_settings(settings)
+
+
 def test_no_analysis_hides_tab_and_endpoints() -> None:
     """Serve settings only when the analysis runner is disabled."""
     with TestClient(create_app(analysis=False)) as client:
