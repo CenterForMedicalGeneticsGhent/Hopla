@@ -1,11 +1,10 @@
-FROM ghcr.io/prefix-dev/pixi:0.77.1 AS build
+FROM ghcr.io/prefix-dev/pixi:0.78.0 AS build
 
 WORKDIR /app
-COPY pixi.lock pyproject.toml LICENSE README.md ./
+COPY pixi.lock pyproject.toml LICENSE README.md .
 COPY src ./src
 RUN pixi install --locked \
-    && pixi shell-hook -s bash > /app/entrypoint.sh \
-    && printf '\nexec "$@"\n' >> /app/entrypoint.sh \
+    && echo "#!/bin/bash\n$(pixi shell-hook -e default -s bash)\nexec \"\$@\"" > /app/entrypoint.sh \
     && chmod 0755 /app/entrypoint.sh \
     && /app/.pixi/envs/default/bin/python -m pip uninstall -y hopla \
     && /app/.pixi/envs/default/bin/python -m pip install --no-deps .
@@ -20,5 +19,4 @@ RUN printf '#!/bin/sh\nexec /app/.pixi/envs/default/bin/hopla "$@"\n' \
     && chmod 0755 /usr/local/bin/hopla
 
 EXPOSE 8080
-ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
-CMD ["hopla", "-h"]
+ENTRYPOINT ["/app/entrypoint.sh"]
