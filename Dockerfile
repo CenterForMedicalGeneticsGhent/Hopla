@@ -9,7 +9,7 @@ RUN pixi install --locked \
     && /app/.pixi/envs/default/bin/python -m pip uninstall -y hopla \
     && /app/.pixi/envs/default/bin/python -m pip install --no-deps .
 
-FROM ubuntu:24.04 AS production
+FROM ubuntu:26.04 AS production
 
 WORKDIR /app
 COPY --from=build /app/.pixi/envs/default /app/.pixi/envs/default
@@ -19,4 +19,4 @@ RUN printf '#!/bin/sh\nexec /app/.pixi/envs/default/bin/hopla "$@"\n' \
     && chmod 0755 /usr/local/bin/hopla
 
 EXPOSE 8080
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh", "bash"]
