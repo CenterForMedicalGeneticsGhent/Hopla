@@ -13,6 +13,10 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   **Add sibling** and **Add embryo** refuse the member that would cross it, and
   a modal dialog explains why; the same dialog appears when an import or a newly
   named parent pushes an existing family past the limit.
+- Added a Galaxy tool wrapper for `hopla run` and `hopla convert`, including
+  optional tabix or CSI indexes for bgzip-compressed VCF input.
+- Added `galaxy/.shed.yml` so the wrapper can be published to a Galaxy ToolShed
+  and installed from there.
 
 ### Changed
 

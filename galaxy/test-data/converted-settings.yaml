@@ -1,0 +1,15 @@
+run_merlin: false
+family:
+  members:
+  - id: FATHER
+    father: null
+    mother: null
+    sex: M
+  - id: MOTHER
+    father: null
+    mother: null
+    sex: F
+  - id: CHILD
+    father: FATHER
+    mother: MOTHER
+    sex: F

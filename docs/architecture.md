@@ -6,6 +6,8 @@ manual under `docs/`.
 
 ```text
 pyproject.toml              package metadata, console script, tool config
+galaxy/hopla.xml            Galaxy wrapper for run and convert
+galaxy/.shed.yml            ToolShed repository metadata for that wrapper
 src/hopla/__init__.py       package version
 src/hopla/cli.py            Typer command-line dispatcher
 src/hopla/pipeline.py       shared analysis orchestration

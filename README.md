@@ -14,6 +14,7 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
 
 - [Install and dependencies](docs/install.md)
 - [Command line](docs/cli.md)
+- [Galaxy](docs/galaxy.md)
 - [Local settings editor](docs/serve.md)
 - [Settings](docs/settings.md)
 - [HTML output](docs/output.md)
