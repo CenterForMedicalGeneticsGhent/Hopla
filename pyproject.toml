@@ -107,7 +107,7 @@ httpx2 = ">=2.12.0,<3"
 
 [tool.pixi.feature.dev.tasks]
 lint-py = "ruff check src tests && mypy src"
-lint-galaxy = "planemo lint galaxy/hopla.xml"
+lint-galaxy = "planemo lint galaxy/"
 test-py = "pytest tests"
 
 [tool.pixi.environments]

@@ -17,4 +17,5 @@ remote_repository_url: https://github.com/CenterForMedicalGeneticsGhent/Hopla/tr
 type: unrestricted
 include:
   - hopla.xml
+  - hopla_convert.xml
   - test-data/**
