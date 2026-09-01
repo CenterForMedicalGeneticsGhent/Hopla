@@ -14,10 +14,6 @@ FROM ubuntu:24.04 AS production
 WORKDIR /app
 COPY --from=build /app/.pixi/envs/default /app/.pixi/envs/default
 COPY --from=build /app/entrypoint.sh /app/entrypoint.sh
-# Runtimes that ignore ENTRYPOINT (Apptainer/Singularity exec, Galaxy job
-# scripts) never run the pixi shell hook, so the environment must also be on
-# PATH through the image configuration.
-ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
 RUN printf '#!/bin/sh\nexec /app/.pixi/envs/default/bin/hopla "$@"\n' \
     > /usr/local/bin/hopla \
     && chmod 0755 /usr/local/bin/hopla

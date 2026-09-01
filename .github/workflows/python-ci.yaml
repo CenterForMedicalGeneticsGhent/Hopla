@@ -83,11 +83,6 @@ jobs:
       - name: Test Docker image
         run: docker run --rm hopla:${GITHUB_SHA} hopla -V
 
-      - name: Test Docker image without entrypoint
-        run: |
-          docker run --rm --entrypoint /bin/sh hopla:${GITHUB_SHA} -c \
-            'set -e; for tool in python python3 hopla merlin minx; do command -v "$tool"; done; hopla -V'
-
       - name: Save Docker image artifact
         run: |
           mkdir -p dist
