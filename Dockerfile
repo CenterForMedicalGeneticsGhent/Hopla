@@ -17,4 +17,3 @@ WORKDIR /app
 COPY --from=build /usr/local /usr/local
 
 EXPOSE 8080
-CMD ["hopla", "--help"]
