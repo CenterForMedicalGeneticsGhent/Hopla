@@ -1,4 +1,4 @@
-<tool id="hopla3" name="Hopla" version="3.0.0+galaxy0" profile="23.0">
+<tool id="hopla3" name="Hopla 3" version="3.0.0+galaxy0" profile="23.0">
     <description>run genomic family analysis or convert legacy settings</description>
     <requirements>
         <container type="docker">quay.io/cmgg/hopla:3.0.0</container>
@@ -46,7 +46,7 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
 #end if
     ]]></command>
     <inputs>
-        <param name="log_level" type="hidden" value="debug" />
+        <param name="log_level" type="hidden" value="debug"/>
         <!-- <param name="log_level" type="select" label="Log level">
             <option value="error">Error</option>
             <option value="warn">Warning</option>
@@ -59,48 +59,39 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
                 <option value="convert">Convert legacy settings</option>
             </param>
             <when value="run">
-                <param name="settings" type="data" format="yaml,json" label="Analysis settings" />
+                <param name="settings" type="data" format="yaml,json" label="Analysis settings"/>
                 <conditional name="vcf_input">
                     <param name="input_type" type="select" label="VCF compression">
                         <option value="vcf" selected="true">Uncompressed VCF</option>
                         <option value="vcf_bgzip">bgzip-compressed VCF</option>
                     </param>
                     <when value="vcf">
-                        <param name="vcf" type="data" format="vcf" label="VCF" />
+                        <param name="vcf" type="data" format="vcf" label="VCF"/>
                     </when>
                     <when value="vcf_bgzip">
-                        <param name="vcf_bgzip" type="data" format="vcf_bgzip"
-                               label="bgzip-compressed VCF" />
+                        <param name="vcf_bgzip" type="data" format="vcf_bgzip" label="bgzip-compressed VCF"/>
                         <conditional name="index_input">
                             <param name="index_type" type="select" label="VCF index">
                                 <option value="none" selected="true">No index</option>
                                 <option value="tabix">Tabix index (.tbi)</option>
                                 <option value="csi">CSI index (.csi)</option>
                             </param>
-                            <when value="none" />
+                            <when value="none"/>
                             <when value="tabix">
-                                <param name="index" type="data" format="tabix"
-                                       label="Tabix index" />
+                                <param name="index" type="data" format="tabix" label="Tabix index"/>
                             </when>
                             <when value="csi">
-                                <param name="index" type="data" format="data"
-                                       label="CSI index"
-                                       help="Galaxy 23.0 has no standalone CSI history datatype; upload the .csi file as generic data." />
+                                <param name="index" type="data" format="data" label="CSI index" help="Galaxy 23.0 has no standalone CSI history datatype; upload the .csi file as generic data."/>
                             </when>
                         </conditional>
                     </when>
                 </conditional>
-                <param name="cytoband" type="data" format="tabular,txt" optional="true"
-                       label="UCSC hg38 cytoband table"
-                       help="If omitted, Hopla downloads the hg38 table from UCSC." />
-                <param name="export_parquet" type="boolean" checked="false"
-                       label="Export portable Parquet tables" />
-                <param name="export_bigwig" type="boolean" checked="false"
-                       label="Export IGV tracks" />
+                <param name="cytoband" type="data" format="tabular,txt" optional="true" label="UCSC hg38 cytoband table" help="If omitted, Hopla downloads the hg38 table from UCSC."/>
+                <param name="export_parquet" type="boolean" checked="false" label="Export portable Parquet tables"/>
+                <param name="export_bigwig" type="boolean" checked="false" label="Export IGV tracks"/>
             </when>
             <when value="convert">
-                <param name="legacy" type="data" format="txt"
-                       label="Legacy key=value settings" />
+                <param name="legacy" type="data" format="txt" label="Legacy key=value settings"/>
             </when>
         </conditional>
     </inputs>
@@ -118,56 +109,56 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
     </outputs>
     <tests>
         <test expect_num_outputs="1">
-            <param name="log_level" value="info" />
+            <param name="log_level" value="info"/>
             <conditional name="operation">
-                <param name="subcommand" value="run" />
-                <param name="settings" value="settings.yaml" />
+                <param name="subcommand" value="run"/>
+                <param name="settings" value="settings.yaml"/>
                 <conditional name="vcf_input">
-                    <param name="input_type" value="vcf" />
-                    <param name="vcf" value="family.vcf" />
+                    <param name="input_type" value="vcf"/>
+                    <param name="vcf" value="family.vcf"/>
                 </conditional>
-                <param name="cytoband" value="cytoband.hg38.txt" />
-                <param name="export_parquet" value="false" />
-                <param name="export_bigwig" value="false" />
+                <param name="cytoband" value="cytoband.hg38.txt"/>
+                <param name="export_parquet" value="false"/>
+                <param name="export_bigwig" value="false"/>
             </conditional>
             <output name="run_report">
                 <assert_contents>
-                    <has_text text="galaxy.test" />
-                    <has_text text="FATHER" />
+                    <has_text text="galaxy.test"/>
+                    <has_text text="FATHER"/>
                 </assert_contents>
             </output>
         </test>
         <test expect_num_outputs="1">
-            <param name="log_level" value="info" />
+            <param name="log_level" value="info"/>
             <conditional name="operation">
-                <param name="subcommand" value="run" />
-                <param name="settings" value="settings.yaml" />
+                <param name="subcommand" value="run"/>
+                <param name="settings" value="settings.yaml"/>
                 <conditional name="vcf_input">
-                    <param name="input_type" value="vcf_bgzip" />
-                    <param name="vcf_bgzip" value="family.vcf.gz" />
+                    <param name="input_type" value="vcf_bgzip"/>
+                    <param name="vcf_bgzip" value="family.vcf.gz"/>
                     <conditional name="index_input">
-                        <param name="index_type" value="tabix" />
-                        <param name="index" value="family.vcf.gz.tbi" />
+                        <param name="index_type" value="tabix"/>
+                        <param name="index" value="family.vcf.gz.tbi"/>
                     </conditional>
                 </conditional>
-                <param name="cytoband" value="cytoband.hg38.txt" />
-                <param name="export_parquet" value="false" />
-                <param name="export_bigwig" value="false" />
+                <param name="cytoband" value="cytoband.hg38.txt"/>
+                <param name="export_parquet" value="false"/>
+                <param name="export_bigwig" value="false"/>
             </conditional>
             <output name="run_report">
                 <assert_contents>
-                    <has_text text="galaxy.test" />
-                    <has_text text="FATHER" />
+                    <has_text text="galaxy.test"/>
+                    <has_text text="FATHER"/>
                 </assert_contents>
             </output>
         </test>
         <test expect_num_outputs="1">
-            <param name="log_level" value="info" />
+            <param name="log_level" value="info"/>
             <conditional name="operation">
-                <param name="subcommand" value="convert" />
-                <param name="legacy" value="legacy-settings.txt" />
+                <param name="subcommand" value="convert"/>
+                <param name="legacy" value="legacy-settings.txt"/>
             </conditional>
-            <output name="converted_settings" file="converted-settings.yaml" />
+            <output name="converted_settings" file="converted-settings.yaml"/>
         </test>
     </tests>
     <help><![CDATA[
