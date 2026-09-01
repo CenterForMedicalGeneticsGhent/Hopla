@@ -49,6 +49,25 @@ To skip a ToolShed, copy the wrapper and its `test-data` directory into a
 Galaxy tool directory and register `hopla.xml` in the instance's tool panel
 configuration.
 
+## Container runtimes and job metadata
+
+Apptainer / Singularity `exec` and Galaxy job scripts run the container
+without its `ENTRYPOINT`, so the pixi shell hook that activates the
+environment never runs. The image therefore also places
+`/app/.pixi/envs/default/bin` on `PATH` through its own configuration, which
+keeps `hopla`, `python`, `merlin`, and `minx` resolvable under every runtime.
+Without that, a destination using `exec` finds only the `/usr/local/bin/hopla`
+shim: unqualified `python` fails, and the missing `merlin` and `minx` silently
+disable haplotyping.
+
+A job that still fails with `python: command not found` is failing in Galaxy's
+own metadata step rather than in the tool command, which never invokes
+`python`. Check the reported line of the generated `galaxy_<id>.sh`. Galaxy
+embeds that step in the job by default, so on a container destination it runs
+inside the tool image with Galaxy's library paths. Set
+`embed_metadata_in_job: false` on the destination to run metadata with
+Galaxy's own virtual environment instead.
+
 ## Report sanitization and indexed VCFs
 
 The report includes JavaScript and a compressed columnar payload. Add the

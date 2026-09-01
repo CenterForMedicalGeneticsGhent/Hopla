@@ -9,6 +9,17 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Added a GitHub Actions check that runs `planemo lint` through the pixi `dev`
   environment when files under `galaxy/` change.
+- Added a container check that runs the image with its entrypoint bypassed, so
+  CI fails when `python`, `hopla`, `merlin`, or `minx` is not on `PATH`.
+
+### Fixed
+
+- Fixed the container image placing the pixi environment on `PATH` only
+  through its entrypoint. Runtimes that ignore the entrypoint, such as
+  Apptainer / Singularity `exec` and Galaxy job scripts, resolved neither
+  `python` nor `merlin`, which failed Galaxy jobs with
+  `python: command not found` and silently disabled Merlin haplotyping. The
+  image now sets `PATH` in its own configuration.
 
 ## [3.0.0] - 2026-08-28
 

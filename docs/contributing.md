@@ -103,6 +103,10 @@ Details: [install.md](install.md).
   non-editable `pip install --no-deps .` so the runtime stage does not
   need `src/`.
 - Do not ship the pixi binary in the runtime stage.
+- Put the pixi environment on `PATH` in the runtime stage image configuration,
+  not only through the entrypoint. Runtimes that ignore `ENTRYPOINT`, such as
+  Apptainer / Singularity `exec` and Galaxy job scripts, must still resolve
+  `hopla`, `python`, `merlin`, and `minx`.
 
 ## Verification
 
