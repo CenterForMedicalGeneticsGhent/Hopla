@@ -30,6 +30,7 @@ const placeholders = {
 // 2 x non-founders - founders. Mirrors add_ghosts() in hopla/pedigree.py, which
 // gives every half-orphan its own ghost founder.
 const MERLIN_BIT_LIMIT = 24;
+let overMemberLimit = false;
 let previewTimer;
 let analysisTimer;
 
@@ -57,19 +58,37 @@ function pedigreeBits(childCount) {
   return 2 * nonFounders - founders;
 }
 
-function updateMemberLimit() {
+function showMemberLimit(text) {
+  document.querySelector("#member-limit-text").textContent = text;
+  document.querySelector("#member-limit").showModal();
+}
+
+function blockedByMemberLimit() {
   const children = state.siblings.length + state.embryos.length;
-  const full = pedigreeBits(children + 1) > MERLIN_BIT_LIMIT;
-  document.querySelector("#add-sibling").disabled = full;
-  document.querySelector("#add-embryo").disabled = full;
-  const note = document.querySelector("#member-limit");
-  note.hidden = !full;
-  if (full) {
-    note.textContent =
-      `This family has ${children} children and scores ${pedigreeBits(children)} of Merlin's ` +
-      `${MERLIN_BIT_LIMIT} complexity bits. Adding another would make Merlin skip every ` +
-      "autosome, leaving the report without haplotype panels.";
+  if (pedigreeBits(children + 1) <= MERLIN_BIT_LIMIT) return false;
+  showMemberLimit(
+    `This family already has ${children} children and scores ${pedigreeBits(children)} of ` +
+    `Merlin's ${MERLIN_BIT_LIMIT} complexity bits. Adding another would make Merlin skip ` +
+    "every autosome, leaving the report without haplotype panels, so this member was not " +
+    "added. Remove a member, or run without Merlin haplotyping."
+  );
+  return true;
+}
+
+// Naming a parent or grandparent can push an existing family past the limit, so warn on each
+// crossing rather than on every edit.
+function warnIfOverMemberLimit() {
+  const children = state.siblings.length + state.embryos.length;
+  const bits = pedigreeBits(children);
+  const over = bits > MERLIN_BIT_LIMIT;
+  if (over && !overMemberLimit) {
+    showMemberLimit(
+      `This family has ${children} children and scores ${bits} of Merlin's ${MERLIN_BIT_LIMIT} ` +
+      "complexity bits. Merlin will skip every autosome, so the report will have no haplotype " +
+      "panels. Remove members to bring the family back within the limit."
+    );
   }
+  overMemberLimit = over;
 }
 
 function message(text, error = false) {
@@ -78,10 +97,25 @@ function message(text, error = false) {
   node.classList.toggle("error", error);
 }
 
-function newMember(role, index) {
+function usedSampleIds() {
+  return new Set([
+    ...Object.values(state.members).map((member) => member.sample_id),
+    ...state.siblings.map((member) => member.sample_id),
+    ...state.embryos.map((member) => member.sample_id),
+  ]);
+}
+
+function nextSampleId(prefix) {
+  const used = usedSampleIds();
+  let n = 1;
+  while (used.has(`${prefix}-${n}`)) n += 1;
+  return `${prefix}-${n}`;
+}
+
+function newMember(role, sampleId) {
   return {
     role,
-    sample_id: role === "embryo" ? `embryo-${index + 1}` : `sibling-${index + 1}`,
+    sample_id: sampleId,
     sex: "NA",
     disease_status: "NA",
     hard_dp: role === "sibling",
@@ -113,6 +147,7 @@ function bindMemberCard(card, member, remove) {
       member[key] = input[property];
       schedulePreview();
     });
+    input.addEventListener("change", warnIfOverMemberLimit);
   });
   card.querySelector(".remove").addEventListener("click", remove);
 }
@@ -125,8 +160,7 @@ function renderMembers() {
       const card = document.querySelector("#member-template").content.firstElementChild.cloneNode(true);
       bindMemberCard(card, state.members[role], () => {
         const sex = role.includes("father") ? "M" : "F";
-        state.members[role] = newMember(role, 0);
-        state.members[role].sample_id = placeholders[role];
+        state.members[role] = newMember(role, placeholders[role]);
         state.members[role].sex = sex;
         renderMembers();
         schedulePreview();
@@ -147,7 +181,7 @@ function renderMembers() {
       container.append(card);
     });
   });
-  updateMemberLimit();
+  warnIfOverMemberLimit();
 }
 
 const scalarFields = [
@@ -211,7 +245,6 @@ async function updatePreview() {
 }
 
 function schedulePreview() {
-  updateMemberLimit();
   clearTimeout(previewTimer);
   previewTimer = setTimeout(updatePreview, 250);
 }
@@ -226,12 +259,14 @@ document.querySelectorAll("[data-tab]").forEach((button) => {
 });
 
 document.querySelector("#add-sibling").addEventListener("click", () => {
-  state.siblings.push(newMember("sibling", state.siblings.length));
+  if (blockedByMemberLimit()) return;
+  state.siblings.push(newMember("sibling", nextSampleId("sibling")));
   renderMembers();
   schedulePreview();
 });
 document.querySelector("#add-embryo").addEventListener("click", () => {
-  state.embryos.push(newMember("embryo", state.embryos.length));
+  if (blockedByMemberLimit()) return;
+  state.embryos.push(newMember("embryo", nextSampleId("embryo")));
   renderMembers();
   schedulePreview();
 });

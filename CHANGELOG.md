@@ -9,6 +9,10 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Added a contents list at the top of the HTML report with links to each
   section.
+- Added a settings-editor guard for Merlin's 24-bit pedigree complexity limit.
+  **Add sibling** and **Add embryo** refuse the member that would cross it, and
+  a modal dialog explains why; the same dialog appears when an import or a newly
+  named parent pushes an existing family past the limit.
 
 ### Changed
 
@@ -31,6 +35,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   skips chromosomes whose pedigree complexity exceeds its 24-bit limit, so
   large families produced a report with missing haplotype panels and no
   explanation.
+- Name newly added siblings and embryos with the next unused sample ID instead
+  of the current list length, so removing a middle member no longer reuses an
+  existing ID.
 
 ## [3.0.0] - 2026-08-28
 
