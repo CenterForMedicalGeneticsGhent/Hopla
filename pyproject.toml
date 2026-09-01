@@ -77,7 +77,7 @@ channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
 conda-pypi-map = { bioconda = { mapping = { pybigwig = "pybigwig" } } }
 
-[tool.pixi.pypi-dependencies]
+[tool.pixi.feature.local.pypi-dependencies]
 hopla = { path = ".", editable = true }
 
 [tool.pixi.dependencies]
@@ -111,5 +111,6 @@ lint-galaxy = "planemo lint galaxy/hopla.xml"
 test-py = "pytest tests"
 
 [tool.pixi.environments]
-default = { features = [], solve-group = "default" }
-dev = { features = ["dev"], solve-group = "default" }
+default = { features = ["local"], solve-group = "default" }
+dev = { features = ["local", "dev"], solve-group = "default" }
+prod = { features = [], solve-group = "default" }
