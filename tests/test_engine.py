@@ -26,7 +26,7 @@ from hopla.merlin import (
     weighted_vote,
 )
 from hopla.models import FilteredGenotypes, GenotypeMatrix, SiteTable
-from hopla.pedigree import add_ghosts, predict_sexes
+from hopla.pedigree import MERLIN_BIT_LIMIT, add_ghosts, merlin_bit_score, predict_sexes
 from hopla.settings import Settings, load_settings, validate_settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
@@ -183,10 +183,38 @@ def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
     assert _marker_indices(map_path)["chrX"].tolist() == [20]
 
 
+def test_merlin_bit_score_matches_merlin_formula() -> None:
+    """Score 2 x descendants - founders, including ghosts for half-orphans."""
+    parents = [{"id": "father", "sex": "M"}, {"id": "mother", "sex": "F"}]
+    children = [
+        {"id": f"child{index}", "father": "father", "mother": "mother"} for index in range(13)
+    ]
+    nuclear = Settings(family={"members": [*parents, *children]}, run_merlin=False)
+    assert merlin_bit_score(nuclear) == MERLIN_BIT_LIMIT
+    over = Settings(
+        family={
+            "members": [
+                *parents,
+                *children,
+                {"id": "child13", "father": "father", "mother": "mother"},
+            ]
+        },
+        run_merlin=False,
+    )
+    assert merlin_bit_score(over) == 26
+
+    half = Settings(
+        family={"members": [{"id": "father", "sex": "M"}, {"id": "child", "father": "father"}]},
+        run_merlin=False,
+    )
+    add_ghosts(half)
+    assert merlin_bit_score(half) == 0
+
+
 def test_warn_when_merlin_skips_complex_pedigree_chromosomes(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """Explain the bit limit when Merlin emits no haplotypes for a chromosome."""
+    """Blame the bit limit only when the pedigree is actually over it."""
     settings = Settings(
         family={
             "members": [
@@ -209,11 +237,29 @@ def test_warn_when_merlin_skips_complex_pedigree_chromosomes(
         _warn_skipped_chromosomes(flow, markers, settings)
     assert "chr1" in caplog.text
     assert "26 bits" in caplog.text
+    assert f"{MERLIN_BIT_LIMIT}-bit limit" in caplog.text
 
     caplog.clear()
     with caplog.at_level(logging.WARNING):
         _warn_skipped_chromosomes(flow, {"chrX": markers["chrX"]}, settings)
     assert caplog.text == ""
+
+    trio = Settings(
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                {"id": "child", "father": "father", "mother": "mother"},
+            ]
+        },
+        run_merlin=False,
+    )
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _warn_skipped_chromosomes(flow, markers, trio)
+    assert "chr1" in caplog.text
+    assert "within the" in caplog.text
+    assert "above" not in caplog.text
 
 
 def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:

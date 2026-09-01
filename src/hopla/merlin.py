@@ -11,6 +11,7 @@ import numpy as np
 import polars as pl
 
 from hopla.models import CHROMOSOMES, FilteredGenotypes, GenotypeMatrix, SiteTable
+from hopla.pedigree import MERLIN_BIT_LIMIT, merlin_bit_score
 from hopla.settings import Settings
 
 
@@ -225,16 +226,23 @@ def _warn_skipped_chromosomes(
     missing = [chrom for chrom in marker_indices if chrom not in flow]
     if not missing:
         return
-    descendants = sum(1 for member in settings.family.members if member.father or member.mother)
-    founders = len(settings.family.members) - descendants
+    names = ", ".join(missing)
+    score = merlin_bit_score(settings)
+    if score > MERLIN_BIT_LIMIT:
+        logging.warning(
+            "Merlin produced no haplotypes for %s. Pedigree complexity is %d bits, above "
+            "Merlin's default %d-bit limit; those chromosomes have no haplotype panel.",
+            names,
+            score,
+            MERLIN_BIT_LIMIT,
+        )
+        return
     logging.warning(
-        "Merlin produced no haplotypes for %s. Merlin skips a chromosome when pedigree "
-        "complexity exceeds its default 24-bit limit; this family scores %d bits "
-        "(2 x %d descendants - %d founders). Those chromosomes have no haplotype panel.",
-        ", ".join(missing),
-        2 * descendants - founders,
-        descendants,
-        founders,
+        "Merlin produced no haplotypes for %s (pedigree scores %d bits, within the %d-bit "
+        "limit). Those chromosomes have no haplotype panel.",
+        names,
+        score,
+        MERLIN_BIT_LIMIT,
     )
 
 

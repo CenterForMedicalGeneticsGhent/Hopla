@@ -501,8 +501,6 @@ def copy_number_table(
         windows.append(frame)
         segment_rows = []
         for chrom in CHROMOSOMES:
-            # Windows without a finite ratio would otherwise collapse the whole
-            # chromosome into one unplottable segment.
             chromosome_frame = frame.filter((pl.col("chrom") == chrom) & pl.col("mask"))
             values = chromosome_frame["log2_ratio"].to_numpy()
             if values.size == 0:

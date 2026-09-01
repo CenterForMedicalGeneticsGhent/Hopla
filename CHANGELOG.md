@@ -5,44 +5,6 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
-### Added
-
-- Added a contents list at the top of the HTML report with links to each
-  section.
-- Added a settings-editor guard for Merlin's 24-bit pedigree complexity limit.
-  **Add sibling** and **Add embryo** refuse the member that would cross it, and
-  a modal dialog explains why; the same dialog appears when an import or a newly
-  named parent pushes an existing family past the limit.
-- Added a Galaxy tool wrapper for `hopla run` and `hopla convert`, including
-  optional tabix or CSI indexes for bgzip-compressed VCF input.
-- Added `galaxy/.shed.yml` so the wrapper can be published to a Galaxy ToolShed
-  and installed from there.
-
-### Changed
-
-- Replaced verbose variant-total and ADO/ADI report lists with compact,
-  horizontally scrollable HTML tables.
-- Capped shared variant-depth histogram bins at the pooled 99.5th percentile,
-  retaining higher observations in the final bin.
-- Moved report CSS and JS into packaged sibling files and inlined plotly.js
-  basic instead of the full library, shrinking typical HTML by about 3.7 MB.
-
-### Fixed
-
-- Render male chromosome-X Merlin results as one haplotype strand while
-  preserving the absent second strand as `X` in compatibility outputs.
-- Segment copy number from covered windows only. A single window without
-  coverage produced an infinite ratio that suppressed segmentation and left
-  whole chromosomes without a visible segment. Uncovered windows are now
-  flagged in the `mask` column.
-- Warn when Merlin returns no haplotypes for a chromosome. Merlin silently
-  skips chromosomes whose pedigree complexity exceeds its 24-bit limit, so
-  large families produced a report with missing haplotype panels and no
-  explanation.
-- Name newly added siblings and embryos with the next unused sample ID instead
-  of the current list length, so removing a middle member no longer reuses an
-  existing ID.
-
 ## [3.0.0] - 2026-08-28
 
 ### Added
@@ -54,11 +16,23 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   all CPUs). Indexed VCFs (tabix or CSI) are read per contig in a process pool;
   a missing index logs a warning and falls back to a single sequential scan.
 - Added filter 1 / filter 2 masks, variant statistics, ADO/ADI, BAF, Mendelian errors, parent mapping, and Merlin haplotyping with neighbourhood voting and short-segment correction.
-- Added a self-contained offline HTML report that inlines `plotly.js`, gzip-compresses columnar payloads, and draws SVG panels lazily on scroll.
+- Added a self-contained offline HTML report that inlines packaged CSS, JS, and
+  plotly.js basic, gzip-compresses columnar payloads, and draws SVG panels
+  lazily on scroll.
+- Added a contents list at the top of the HTML report with links to each
+  section.
 - Added optional `{family.id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, enabled with `--export-parquet` and `--export-bigwig`.
 - Added `hopla serve`, a loopback-only-by-default Starlette and Jinja settings editor packaged with the Python wheel.
 - Added schema-validated YAML preview/download and legacy `.txt`, YAML, and JSON imports with pedigree reconstruction.
 - Added browser-driven analysis to `hopla serve`: it runs the current configuration with an uploaded VCF and returns a temporary self-contained HTML report, with a live step log and a `--no-analysis` flag that serves settings editing only.
+- Added a settings-editor guard for Merlin's 24-bit pedigree complexity limit.
+  **Add sibling** and **Add embryo** refuse the member that would cross it, and
+  a modal dialog explains why; the same dialog appears when an import or a newly
+  named parent pushes an existing family past the limit.
+- Added a Galaxy tool wrapper for `hopla run` and `hopla convert`, including
+  optional tabix or CSI indexes for bgzip-compressed VCF input.
+- Added `galaxy/.shed.yml` so the wrapper can be published to a Galaxy ToolShed
+  and installed from there.
 - Added the default and `dev` pixi environments, pytest coverage, and ruff / mypy lint tasks.
 - Added the Python user and contributor manual under `docs/`.
 
@@ -84,6 +58,28 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Locked `default` and `dev` in one solve group. After the shell hook, the
   image replaces the editable path install with a non-editable `pip install`
   so the runtime stage does not need `src/`.
+- Replaced verbose variant-total and ADO/ADI report lists with compact,
+  horizontally scrollable HTML tables.
+- Capped shared variant-depth histogram bins at the pooled 99.5th percentile,
+  retaining higher observations in the final bin.
+- Moved report CSS and JS into packaged sibling files and inlined plotly.js
+  basic instead of the full library, shrinking typical HTML by about 3.7 MB.
+
+### Fixed
+
+- Render male chromosome-X Merlin results as one haplotype strand while
+  preserving the absent second strand as `X` in compatibility outputs.
+- Segment copy number from covered windows only. A single window without
+  coverage produced an infinite ratio that suppressed segmentation and left
+  whole chromosomes without a visible segment. Uncovered windows are now
+  flagged in the `mask` column.
+- Warn when Merlin returns no haplotypes for a chromosome. Merlin silently
+  skips chromosomes whose pedigree complexity exceeds its 24-bit limit, so
+  large families produced a report with missing haplotype panels and no
+  explanation.
+- Name newly added siblings and embryos with the next unused sample ID instead
+  of the current list length, so removing a middle member no longer reuses an
+  existing ID.
 
 ### Removed
 

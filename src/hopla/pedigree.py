@@ -96,6 +96,15 @@ def add_ghosts(settings: Settings) -> Settings:
     return settings
 
 
+MERLIN_BIT_LIMIT = 24
+
+
+def merlin_bit_score(settings: Settings) -> int:
+    """Merlin pedigree complexity after ghosts: 2 x descendants - founders."""
+    descendants = sum(1 for member in settings.family.members if member.father or member.mother)
+    return 2 * descendants - (len(settings.family.members) - descendants)
+
+
 _SYMBOL = 34.0
 _COLUMN = 74.0
 _GENERATION = 122.0

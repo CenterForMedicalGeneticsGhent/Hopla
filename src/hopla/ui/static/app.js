@@ -38,24 +38,59 @@ function isActiveMember(role) {
   return state.members[role].sample_id !== placeholders[role];
 }
 
-function pedigreeBits(childCount) {
-  let founders = 0;
-  let nonFounders = 0;
-  const tally = (parents, count) => {
-    if (count <= 0) return;
-    if (parents === 0) founders += count;
-    else nonFounders += count;
-    if (parents === 1) founders += count;
+function activeId(role) {
+  return isActiveMember(role) ? state.members[role].sample_id : null;
+}
+
+function pedigreeMembers(extraChildren) {
+  const father = activeId("father");
+  const mother = activeId("mother");
+  const paternalGrandfather = activeId("paternal_grandfather");
+  const paternalGrandmother = activeId("paternal_grandmother");
+  const maternalGrandfather = activeId("maternal_grandfather");
+  const maternalGrandmother = activeId("maternal_grandmother");
+  const members = [];
+  if (paternalGrandfather) members.push({id: paternalGrandfather, father: null, mother: null});
+  if (paternalGrandmother) members.push({id: paternalGrandmother, father: null, mother: null});
+  if (maternalGrandfather) members.push({id: maternalGrandfather, father: null, mother: null});
+  if (maternalGrandmother) members.push({id: maternalGrandmother, father: null, mother: null});
+  if (father) members.push({id: father, father: paternalGrandfather, mother: paternalGrandmother});
+  if (mother) members.push({id: mother, father: maternalGrandfather, mother: maternalGrandmother});
+  const children = state.siblings.length + state.embryos.length + extraChildren;
+  for (let index = 0; index < children; index += 1) {
+    members.push({id: `child-${index}`, father, mother});
+  }
+  return members;
+}
+
+function addGhosts(members) {
+  const used = new Set(members.map((member) => member.id));
+  let counter = 0;
+  const ghostId = () => {
+    let identifier;
+    do {
+      counter += 1;
+      identifier = `U${counter}`;
+    } while (used.has(identifier));
+    used.add(identifier);
+    return identifier;
   };
-  tally(0, fixedGroups.grandparents.filter(isActiveMember).length);
-  if (isActiveMember("father")) {
-    tally(["paternal_grandfather", "paternal_grandmother"].filter(isActiveMember).length, 1);
+  for (const member of [...members]) {
+    const missingFather = member.father == null;
+    const missingMother = member.mother == null;
+    if (missingFather === missingMother) continue;
+    const ghost = ghostId();
+    if (missingFather) member.father = ghost;
+    else member.mother = ghost;
+    members.push({id: ghost, father: null, mother: null});
   }
-  if (isActiveMember("mother")) {
-    tally(["maternal_grandfather", "maternal_grandmother"].filter(isActiveMember).length, 1);
-  }
-  tally(["father", "mother"].filter(isActiveMember).length, childCount);
-  return 2 * nonFounders - founders;
+  return members;
+}
+
+function merlinBitScore(extraChildren = 0) {
+  const members = addGhosts(pedigreeMembers(extraChildren));
+  const descendants = members.filter((member) => member.father || member.mother).length;
+  return 2 * descendants - (members.length - descendants);
 }
 
 function showMemberLimit(text) {
@@ -64,10 +99,10 @@ function showMemberLimit(text) {
 }
 
 function blockedByMemberLimit() {
+  if (merlinBitScore(1) <= MERLIN_BIT_LIMIT) return false;
   const children = state.siblings.length + state.embryos.length;
-  if (pedigreeBits(children + 1) <= MERLIN_BIT_LIMIT) return false;
   showMemberLimit(
-    `This family already has ${children} children and scores ${pedigreeBits(children)} of ` +
+    `This family already has ${children} children and scores ${merlinBitScore()} of ` +
     `Merlin's ${MERLIN_BIT_LIMIT} complexity bits. Adding another would make Merlin skip ` +
     "every autosome, leaving the report without haplotype panels, so this member was not " +
     "added. Remove a member, or run without Merlin haplotyping."
@@ -75,13 +110,11 @@ function blockedByMemberLimit() {
   return true;
 }
 
-// Naming a parent or grandparent can push an existing family past the limit, so warn on each
-// crossing rather than on every edit.
 function warnIfOverMemberLimit() {
-  const children = state.siblings.length + state.embryos.length;
-  const bits = pedigreeBits(children);
+  const bits = merlinBitScore();
   const over = bits > MERLIN_BIT_LIMIT;
   if (over && !overMemberLimit) {
+    const children = state.siblings.length + state.embryos.length;
     showMemberLimit(
       `This family has ${children} children and scores ${bits} of Merlin's ${MERLIN_BIT_LIMIT} ` +
       "complexity bits. Merlin will skip every autosome, so the report will have no haplotype " +
@@ -147,8 +180,8 @@ function bindMemberCard(card, member, remove) {
       member[key] = input[property];
       schedulePreview();
     });
-    input.addEventListener("change", warnIfOverMemberLimit);
   });
+  card.querySelector(".sample-id").addEventListener("change", warnIfOverMemberLimit);
   card.querySelector(".remove").addEventListener("click", remove);
 }
 
