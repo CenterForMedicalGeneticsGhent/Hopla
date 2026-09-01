@@ -1,4 +1,4 @@
-<tool id="hopla" name="Hopla" version="3.0.0+galaxy0" profile="23.0">
+<tool id="hopla3" name="Hopla" version="3.0.0+galaxy0" profile="23.0">
     <description>run genomic family analysis or convert legacy settings</description>
     <requirements>
         <container type="docker">quay.io/cmgg/hopla:3.0.0</container>
@@ -46,12 +46,13 @@ hopla -L '$log_level' convert '$operation.legacy' '$converted_settings'
 #end if
     ]]></command>
     <inputs>
-        <param name="log_level" type="select" label="Log level">
+        <param name="log_level" type="hidden" value="debug" />
+        <!-- <param name="log_level" type="select" label="Log level">
             <option value="error">Error</option>
             <option value="warn">Warning</option>
             <option value="info" selected="true">Information</option>
             <option value="debug">Debug</option>
-        </param>
+        </param> -->
         <conditional name="operation">
             <param name="subcommand" type="select" label="Operation">
                 <option value="run" selected="true">Run family analysis</option>

@@ -11,7 +11,7 @@ long_description: |
   destinations must resolve Docker containers, and administrators must add
   the hopla tool id to sanitize_allowlist.txt so the report is served without
   HTML sanitization.
-name: hopla
+name: hopla3
 owner: ict
 remote_repository_url: https://github.com/CenterForMedicalGeneticsGhent/Hopla/tree/main/galaxy
 type: unrestricted
