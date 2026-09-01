@@ -9,6 +9,26 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Added a GitHub Actions check that runs `planemo lint` through the pixi `dev`
   environment when files under `galaxy/` change.
+- Added a container check that runs the image on a bare `PATH` with the
+  environment cleared, so CI fails when `python`, `hopla`, `merlin`, or `minx`
+  is not resolvable the way Galaxy and Apptainer invoke it.
+- Added a conda-only `prod` pixi environment for the container image. The
+  editable local package moved to a `local` feature that `default` and `dev`
+  include, so both keep `hopla` on their `PATH`.
+
+### Changed
+
+- The image installs the `prod` environment into `/usr/local` with
+  `pixi-install-to-prefix` instead of copying a pixi environment into `/app`.
+  The activation entrypoint and the `/usr/local/bin/hopla` shim are gone.
+
+### Fixed
+
+- Fixed the image exposing its environment only through an activation
+  entrypoint. Galaxy job scripts and Apptainer / Singularity `exec` ignore
+  `ENTRYPOINT`, and Apptainer replaces `PATH`, so neither `python` nor
+  `merlin` resolved: Galaxy jobs failed with `python: command not found`, and
+  a missing `merlin` silently disabled haplotyping.
 
 ## [3.0.0] - 2026-08-28
 

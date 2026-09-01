@@ -19,7 +19,10 @@ lock entries are conda packages; the local package is the editable pixi path
 dependency, so `pixi install` puts `hopla` on the environment `PATH`.
 
 The default environment holds analysis dependencies and Merlin. The `dev`
-environment adds pytest, ruff, mypy, and typing stubs.
+environment adds pytest, ruff, mypy, and typing stubs. Both include the
+editable local package through the `local` feature. The `prod` environment
+holds the same conda dependencies without that pypi entry; the container image
+installs it into `/usr/local` and adds `hopla` with pip.
 
 Pixi tasks (from the repository root):
 

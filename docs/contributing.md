@@ -8,8 +8,8 @@ An agent-discoverable copy of this material lives in
 
 ## Runtime and dependencies
 
-- Use the root pixi environments (`default` and `dev`) and the committed
-  `pixi.lock`.
+- Use the root pixi environments (`default`, `dev`, and the container-only
+  `prod`) and the committed `pixi.lock`.
 - Keep `linux-64`, `linux-aarch64`, and `osx-arm64` supported. Merlin 1.1.2 is
   available on each of those platforms in the default environment.
 - Require Python 3.12 or newer.
@@ -21,7 +21,7 @@ An agent-discoverable copy of this material lives in
   source build.
 - Keep `pixi.lock` free of third-party PyPI source dependencies. Every locked
   third-party dependency is a conda package; the local package is the
-  editable `[tool.pixi.pypi-dependencies]` path entry.
+  editable `[tool.pixi.feature.local.pypi-dependencies]` path entry.
 - Prefer the pixi editable path install over unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines packaged
   `report.css`, `report.js`, and plotly.js basic, and compresses the columnar
@@ -98,11 +98,20 @@ Details: [install.md](install.md).
 ## Containers
 
 - Build `Dockerfile` from the repository-root context and `pixi.lock`.
-- Resolve every third-party dependency through `pixi install --locked`; the
-  image then uninstalls the editable path package and overlays a
-  non-editable `pip install --no-deps .` so the runtime stage does not
+- Resolve every third-party dependency from `pixi.lock`. The image installs
+  the conda-only `prod` environment with `pixi-install-to-prefix` and overlays
+  a non-editable `pip install --no-deps .` so the runtime stage does not
   need `src/`.
-- Do not ship the pixi binary in the runtime stage.
+- Install that environment into `/usr/local` so `hopla`, `python`, `merlin`,
+  and `minx` sit on the default `PATH`. Galaxy job scripts and Apptainer /
+  Singularity `exec` ignore `ENTRYPOINT`, and Apptainer replaces `PATH`, so
+  the image must not rely on an entrypoint, an activation hook, or its own
+  `PATH` to expose the environment.
+- Keep `prod` free of pypi dependencies; `pixi-install-to-prefix` rejects
+  them. The editable local package belongs to the `local` feature used by
+  `default` and `dev`.
+- Do not ship the pixi binary in the runtime stage. The build stage's pixi
+  lives in `/usr/local/bin`, which becomes the runtime prefix.
 
 ## Verification
 
