@@ -7,8 +7,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ### Added
 
-- Added a GitHub Actions check that runs `planemo lint` through the pixi `dev`
-  environment when files under `galaxy/` change.
+- Added `sanitize_region` so settings load and the settings editor accept
+  copy-pasted intervals such as `17:43,044,295-43,170,327` and store
+  `chr17:43044295-43170327`.
 
 ## [3.0.0] - 2026-08-28
 

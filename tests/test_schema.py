@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from hopla.settings import schema_path, validate_settings
+from hopla.settings import sanitize_region, schema_path, validate_settings
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 LOCAL_SCHEMA = PACKAGE_ROOT / "src" / "hopla" / "schema" / "hopla.schema.json"
@@ -76,3 +76,43 @@ def test_structured_family_rejects_invalid_members(
     """Reject duplicate IDs, unknown properties, and dangling parents."""
     with pytest.raises(ValueError, match=message):
         validate_settings({"family": family})
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("17:43,044,295-43,170,327", "chr17:43044295-43170327"),
+        ("chr17:43044295-43170327", "chr17:43044295-43170327"),
+        ("Chr17: 43,044,295 - 43,170,327", "chr17:43044295-43170327"),
+        ("x:100-200", "chrX:100-200"),
+        ("chrY:1-2", "chrY:1-2"),
+        ("not-a-region", "not-a-region"),
+    ],
+)
+def test_sanitize_region(raw: str, expected: str) -> None:
+    """Strip commas, spaces, and a missing chr prefix from copy-pasted intervals."""
+    assert sanitize_region(raw) == expected
+
+
+def test_validate_settings_accepts_copy_pasted_region() -> None:
+    """Normalize internet-style intervals before schema validation."""
+    settings = validate_settings(
+        {
+            "family": {"members": [{"id": "A"}]},
+            "regions": ["17:43,044,295-43,170,327"],
+            "run_merlin": False,
+        }
+    )
+    assert settings.regions == ["chr17:43044295-43170327"]
+
+
+def test_validate_settings_rejects_invalid_region() -> None:
+    """Reject region strings that are not an interval after sanitization."""
+    with pytest.raises(ValueError, match="does not match|invalid region"):
+        validate_settings(
+            {
+                "family": {"members": [{"id": "A"}]},
+                "regions": ["not-a-region"],
+                "run_merlin": False,
+            }
+        )
