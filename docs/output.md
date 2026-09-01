@@ -6,15 +6,16 @@ often be inspected. Pass `--export-parquet` and `--export-bigwig` to also write
 portable Parquet tables and IGV desktop tracks under `{family.id}-export/`; see
 [exports.md](exports.md).
 
-The report is always a single offline document: the offline `plotly.js` bundle
-is inlined once, analysis tables are serialized column-wise and gzip-compressed
-inside the HTML, and the browser expands them with `DecompressionStream` before
-drawing. Figures are built in the browser from that single payload and drawn
-only when they scroll into view. The file requires JavaScript and a current
-browser with `DecompressionStream` support. Report size still grows with the
-number of samples and plotted variants. Restrict `baf_ids`, enable
-`limit_baf_to_p` or `limit_pm_to_p`, and use the haplotyping region controls when
-further reduction is needed.
+The report is always a single offline document: packaged `report.css`,
+`report.js`, and plotly.js basic are inlined, analysis tables are serialized
+column-wise and gzip-compressed inside the HTML, and the browser expands them
+with `DecompressionStream` before drawing. A contents list at the top links to
+each `h2` and `h3` section. Figures are built in the browser from that single
+payload and drawn only when they scroll into view. The file requires JavaScript
+and a current browser with `DecompressionStream` support. Report size still
+grows with the number of samples and plotted variants. Restrict `baf_ids`,
+enable `limit_baf_to_p` or `limit_pm_to_p`, and use the haplotyping region
+controls when further reduction is needed.
 
 Output names use `family.id` (default `hopla`). Haplotyping colours are relative
 within a family: the same haplotype colour is not stable across different HTML
@@ -53,7 +54,9 @@ Tables and plots applied to all raw single nucleotide variants.
 
 Includes variant tables, allelic drop-out (ADO) and allelic drop-in (ADI) for
 every child/embryo, variant depth histograms, and a genome-wide
-number-of-variants profile.
+number-of-variants profile. Total counts use scopes as rows and samples as
+columns. ADO and ADI use one row per sample. Both tables scroll horizontally
+when a family is wider than the report.
 
 - ADO uses variants that are `0/0` in the mother and `1/1` in the father, or
   vice versa: (homozygous variants in the child) / (total variants in the
@@ -61,12 +64,21 @@ number-of-variants profile.
 - ADI uses variants that are `1/1` in both mother and father: (heterozygous
   variants in the child) / (total variants in the child).
 
+Variant-depth histograms share bins and axis ranges across every sample in one
+filter section. The upper edge is the pooled 99.5th depth percentile so an
+extreme depth does not flatten the useful range; higher values are counted in
+the final bin.
+
 ### VCF-based copy number
 
 The quality of these copy-number profiles depends on how the VCF files were
 generated. A BAM-based tool such as
 [WisecondorX](https://github.com/CenterForMedicalGeneticsGhent/WisecondorX/)
 is strongly recommended to verify copy number.
+
+Windows without coverage have no finite log2 ratio. They are excluded from
+segmentation and from IGV tracks, and are flagged as `mask = false` in the
+portable `copy_number` table. Segments span across such gaps.
 
 ## Filter 1: filter 0 plus `dp_hard_limit`, `af_hard_limit`, and `dp_soft_limit`
 
@@ -128,6 +140,14 @@ Merlin runs when more than one real sample is in `family.members`, `run_merlin` 
 haplotyping when the family structure does not allow it (no reference sample
 means no breakpoints in the haplotyping strands).
 
+Merlin refuses chromosomes whose pedigree complexity exceeds its built-in
+24-bit limit, scored as `2 x descendants - founders`. A family with two parents
+and fourteen children scores 26 bits, so Merlin skips every autosome and only
+chromosome X is haplotyped, because `minx` treats males as hemizygous and
+scores the same family lower. Hopla logs a warning naming the skipped
+chromosomes and still writes the report; those chromosomes simply have no
+haplotype panel.
+
 Haplotypes are coloured. Colours are relative between individuals and strands
 within a family. Hover a variant for details.
 
@@ -151,7 +171,9 @@ Corrected haplotypes are drawn as circles instead of squares. Raw uncorrected
 genotypes remain available on hover.
 
 When the raw genotype is `NA`, it was removed by soft filtering and no symbol
-is shown.
+is shown. Male chromosome X is hemizygous and is therefore drawn as one
+haplotype strand. The absent second minx strand is retained as `X` in portable
+tables and compatibility flow files, but is not drawn.
 
 `keep_chromosomes_only` (default `true`) drops raw haplotyping points except
 complete chromosomes that contain the region(s) of interest.
@@ -163,5 +185,6 @@ HTML.
 If `concordance_table` is `true`, a pairwise HTML table compares haplotyping
 patterns between strands of different family members. Concordance per strand is
 (same-haplotype variants between strands) / (total evaluated variants). The
+absent `X` sentinel strand is ignored. The
 `concordance` subtool can compare two flow tables the same way, including a
 relative (`-r`) mode.

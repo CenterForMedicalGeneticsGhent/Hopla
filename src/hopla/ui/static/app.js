@@ -26,8 +26,103 @@ const placeholders = {
   father: "U1",
   mother: "U2",
 };
+// Merlin skips any chromosome whose pedigree scores above 24 bits, counted as
+// 2 x non-founders - founders. Mirrors add_ghosts() in hopla/pedigree.py, which
+// gives every half-orphan its own ghost founder.
+const MERLIN_BIT_LIMIT = 24;
+let overMemberLimit = false;
 let previewTimer;
 let analysisTimer;
+
+function isActiveMember(role) {
+  return state.members[role].sample_id !== placeholders[role];
+}
+
+function activeId(role) {
+  return isActiveMember(role) ? state.members[role].sample_id : null;
+}
+
+function pedigreeMembers(extraChildren) {
+  const father = activeId("father");
+  const mother = activeId("mother");
+  const paternalGrandfather = activeId("paternal_grandfather");
+  const paternalGrandmother = activeId("paternal_grandmother");
+  const maternalGrandfather = activeId("maternal_grandfather");
+  const maternalGrandmother = activeId("maternal_grandmother");
+  const members = [];
+  if (paternalGrandfather) members.push({id: paternalGrandfather, father: null, mother: null});
+  if (paternalGrandmother) members.push({id: paternalGrandmother, father: null, mother: null});
+  if (maternalGrandfather) members.push({id: maternalGrandfather, father: null, mother: null});
+  if (maternalGrandmother) members.push({id: maternalGrandmother, father: null, mother: null});
+  if (father) members.push({id: father, father: paternalGrandfather, mother: paternalGrandmother});
+  if (mother) members.push({id: mother, father: maternalGrandfather, mother: maternalGrandmother});
+  const children = state.siblings.length + state.embryos.length + extraChildren;
+  for (let index = 0; index < children; index += 1) {
+    members.push({id: `child-${index}`, father, mother});
+  }
+  return members;
+}
+
+function addGhosts(members) {
+  const used = new Set(members.map((member) => member.id));
+  let counter = 0;
+  const ghostId = () => {
+    let identifier;
+    do {
+      counter += 1;
+      identifier = `U${counter}`;
+    } while (used.has(identifier));
+    used.add(identifier);
+    return identifier;
+  };
+  for (const member of [...members]) {
+    const missingFather = member.father == null;
+    const missingMother = member.mother == null;
+    if (missingFather === missingMother) continue;
+    const ghost = ghostId();
+    if (missingFather) member.father = ghost;
+    else member.mother = ghost;
+    members.push({id: ghost, father: null, mother: null});
+  }
+  return members;
+}
+
+function merlinBitScore(extraChildren = 0) {
+  const members = addGhosts(pedigreeMembers(extraChildren));
+  const descendants = members.filter((member) => member.father || member.mother).length;
+  return 2 * descendants - (members.length - descendants);
+}
+
+function showMemberLimit(text) {
+  document.querySelector("#member-limit-text").textContent = text;
+  document.querySelector("#member-limit").showModal();
+}
+
+function blockedByMemberLimit() {
+  if (merlinBitScore(1) <= MERLIN_BIT_LIMIT) return false;
+  const children = state.siblings.length + state.embryos.length;
+  showMemberLimit(
+    `This family already has ${children} children and scores ${merlinBitScore()} of ` +
+    `Merlin's ${MERLIN_BIT_LIMIT} complexity bits. Adding another would make Merlin skip ` +
+    "every autosome, leaving the report without haplotype panels, so this member was not " +
+    "added. Remove a member, or run without Merlin haplotyping."
+  );
+  return true;
+}
+
+function warnIfOverMemberLimit() {
+  const bits = merlinBitScore();
+  const over = bits > MERLIN_BIT_LIMIT;
+  if (over && !overMemberLimit) {
+    const children = state.siblings.length + state.embryos.length;
+    showMemberLimit(
+      `This family has ${children} children and scores ${bits} of Merlin's ${MERLIN_BIT_LIMIT} ` +
+      "complexity bits. Merlin will skip every autosome, so the report will have no haplotype " +
+      "panels. Remove members to bring the family back within the limit."
+    );
+  }
+  overMemberLimit = over;
+}
 
 function message(text, error = false) {
   const node = document.querySelector("#message");
@@ -35,10 +130,25 @@ function message(text, error = false) {
   node.classList.toggle("error", error);
 }
 
-function newMember(role, index) {
+function usedSampleIds() {
+  return new Set([
+    ...Object.values(state.members).map((member) => member.sample_id),
+    ...state.siblings.map((member) => member.sample_id),
+    ...state.embryos.map((member) => member.sample_id),
+  ]);
+}
+
+function nextSampleId(prefix) {
+  const used = usedSampleIds();
+  let n = 1;
+  while (used.has(`${prefix}-${n}`)) n += 1;
+  return `${prefix}-${n}`;
+}
+
+function newMember(role, sampleId) {
   return {
     role,
-    sample_id: role === "embryo" ? `embryo-${index + 1}` : `sibling-${index + 1}`,
+    sample_id: sampleId,
     sex: "NA",
     disease_status: "NA",
     hard_dp: role === "sibling",
@@ -71,6 +181,7 @@ function bindMemberCard(card, member, remove) {
       schedulePreview();
     });
   });
+  card.querySelector(".sample-id").addEventListener("change", warnIfOverMemberLimit);
   card.querySelector(".remove").addEventListener("click", remove);
 }
 
@@ -82,8 +193,7 @@ function renderMembers() {
       const card = document.querySelector("#member-template").content.firstElementChild.cloneNode(true);
       bindMemberCard(card, state.members[role], () => {
         const sex = role.includes("father") ? "M" : "F";
-        state.members[role] = newMember(role, 0);
-        state.members[role].sample_id = placeholders[role];
+        state.members[role] = newMember(role, placeholders[role]);
         state.members[role].sex = sex;
         renderMembers();
         schedulePreview();
@@ -104,6 +214,7 @@ function renderMembers() {
       container.append(card);
     });
   });
+  warnIfOverMemberLimit();
 }
 
 const scalarFields = [
@@ -181,12 +292,14 @@ document.querySelectorAll("[data-tab]").forEach((button) => {
 });
 
 document.querySelector("#add-sibling").addEventListener("click", () => {
-  state.siblings.push(newMember("sibling", state.siblings.length));
+  if (blockedByMemberLimit()) return;
+  state.siblings.push(newMember("sibling", nextSampleId("sibling")));
   renderMembers();
   schedulePreview();
 });
 document.querySelector("#add-embryo").addEventListener("click", () => {
-  state.embryos.push(newMember("embryo", state.embryos.length));
+  if (blockedByMemberLimit()) return;
+  state.embryos.push(newMember("embryo", nextSampleId("embryo")));
   renderMembers();
   schedulePreview();
 });

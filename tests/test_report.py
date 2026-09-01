@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 from html import unescape
 from pathlib import Path
 
@@ -11,7 +12,7 @@ import polars as pl
 
 from hopla.models import Cytoband
 from hopla.pedigree import _layout, pedigree_svg
-from hopla.report import render_report
+from hopla.report import _ado_adi, _variant_totals, render_report
 from hopla.settings import Settings
 
 CYTOBANDS = (
@@ -97,6 +98,59 @@ def test_pedigree_pulls_a_founder_partner_down_to_their_spouse_row() -> None:
     assert positions["child"] == (positions["mother"] + positions["father"]) / 2
 
 
+def test_large_family_statistics_use_compact_tables() -> None:
+    """Use rows and columns instead of repeated headings that grow the report."""
+    children = [f"child-{index}" for index in range(1, 9)]
+    samples = ("father", "mother", *children)
+    settings = Settings(
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                *[
+                    {
+                        "id": child,
+                        "father": "father",
+                        "mother": "mother",
+                        "sex": "F",
+                    }
+                    for child in children
+                ],
+            ]
+        },
+        regions=["chr1:500000-900000"],
+        run_merlin=False,
+    )
+    variant_stats = pl.DataFrame(
+        {
+            "filter_level": [0] * len(samples),
+            "sample": list(samples),
+            "region": ["genome"] * len(samples),
+            "metric": ["variants"] * len(samples),
+            "value": [float(index) for index in range(len(samples))],
+        }
+    )
+    ado_adi = pl.DataFrame(
+        {
+            "filter_level": [0] * (len(children) * 2),
+            "sample": [child for child in children for _ in range(2)],
+            "metric": ["ADO", "ADI"] * len(children),
+            "value": [1.25, 2.5] * len(children),
+        }
+    )
+
+    totals_html = _variant_totals({"variant_stats": variant_stats}, settings, samples, 0)
+    ado_html = _ado_adi({"ado_adi": ado_adi}, samples, 0)
+
+    assert '<div class="table-scroll"><table class="matrix">' in totals_html
+    assert totals_html.count("<tr>") == 5  # header, overall, region, and two flanks
+    assert ">father</th>" in totals_html
+    assert '<div class="table-scroll"><table class="matrix">' in ado_html
+    assert ado_html.count("<tr>") == len(samples) + 1
+    assert "<h5>" not in ado_html
+    assert '<td colspan="2">no two parents provided</td>' in ado_html
+
+
 def test_report_restores_every_original_section() -> None:
     """Emit the documented section order, one figure per panel, and an offline Plotly bundle."""
     settings = _trio()
@@ -150,8 +204,13 @@ def test_report_restores_every_original_section() -> None:
     finally:
         output.unlink(missing_ok=True)
 
-    titles = [match for match in re.findall(r"<h[234]>(.*?)</h[234]>", html)]
+    titles = [match for match in re.findall(r"<h[234][^>]*>(.*?)</h[234]>", html)]
     assert titles.index("Family/disease information") < titles.index("Family tree")
+    assert html.index('class="toc"') < html.index("Family/disease information")
+    assert 'href="#family-disease-information"' in html
+    assert 'id="family-disease-information"' in html
+    assert html.count('href="#variant-statistics') == 3
+    assert "Mendelian errors" not in html.split("</nav>", 1)[0]
     for expected in (
         "Filter 0: single nucleotide variants",
         "Vcf-based copy number (bam-based verification recommended)",
@@ -174,3 +233,27 @@ def test_report_restores_every_original_section() -> None:
     assert kinds.count("gbaf") == 2  # one panel per chromosome that has cytobands
     assert "Plotly" in html
     assert "application/gzip+json" in html
+
+
+def test_report_inlines_packaged_assets(tmp_path: Path) -> None:
+    """Inline sibling CSS, JS, and the vendored plotly.js basic file."""
+    package = Path(__file__).resolve().parents[1]
+    css = (package / "src/hopla/report.css").read_text(encoding="utf-8")
+    js = (package / "src/hopla/report.js").read_text(encoding="utf-8")
+    with (package / "src/hopla/plotly-basic.min.js").open(encoding="utf-8") as handle:
+        plotly_head = handle.read(80)
+    force_include = tomllib.loads((package / "pyproject.toml").read_text(encoding="utf-8"))[
+        "tool"
+    ]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+    assert force_include["src/hopla/report.css"] == "hopla/report.css"
+    assert force_include["src/hopla/report.js"] == "hopla/report.js"
+    assert force_include["src/hopla/plotly-basic.min.js"] == "hopla/plotly-basic.min.js"
+
+    output = tmp_path / "family-output.html"
+    render_report(output, _trio(), {}, ("father",), CYTOBANDS)
+    html = output.read_text(encoding="utf-8")
+    assert "table.matrix th.block0" in css
+    assert "table.matrix th.block0" in html
+    assert "BUILD.depth" in js
+    assert "BUILD.depth" in html
+    assert plotly_head in html

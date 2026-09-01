@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 import subprocess
 from pathlib import Path
@@ -10,6 +11,7 @@ import numpy as np
 import polars as pl
 
 from hopla.models import CHROMOSOMES, FilteredGenotypes, GenotypeMatrix, SiteTable
+from hopla.pedigree import MERLIN_BIT_LIMIT, merlin_bit_score
 from hopla.settings import Settings
 
 
@@ -63,6 +65,17 @@ def correct_haplotypes(
         )
         corrected[:, strand] = weighted_vote(corrected[:, strand], positions, window_size / 2)
     return corrected, corrected != flow
+
+
+def _mark_haploid_x(
+    flow: np.ndarray, genotypes: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Mark the absent second male chromosome-X strand in parsed minx output."""
+    marked_flow = flow.astype(object, copy=True)
+    marked_genotypes = genotypes.astype(object, copy=True)
+    marked_flow[:, 1] = "X"
+    marked_genotypes[:, 1] = "NA"
+    return marked_flow, marked_genotypes
 
 
 def _alleles(
@@ -206,6 +219,33 @@ def _parse_blocks(
     return parsed
 
 
+def _warn_skipped_chromosomes(
+    flow: dict[str, np.ndarray], marker_indices: dict[str, np.ndarray], settings: Settings
+) -> None:
+    """Warn when Merlin produced no haplotypes for chromosomes it was given."""
+    missing = [chrom for chrom in marker_indices if chrom not in flow]
+    if not missing:
+        return
+    names = ", ".join(missing)
+    score = merlin_bit_score(settings)
+    if score > MERLIN_BIT_LIMIT:
+        logging.warning(
+            "Merlin produced no haplotypes for %s. Pedigree complexity is %d bits, above "
+            "Merlin's default %d-bit limit; those chromosomes have no haplotype panel.",
+            names,
+            score,
+            MERLIN_BIT_LIMIT,
+        )
+        return
+    logging.warning(
+        "Merlin produced no haplotypes for %s (pedigree scores %d bits, within the %d-bit "
+        "limit). Those chromosomes have no haplotype panel.",
+        names,
+        score,
+        MERLIN_BIT_LIMIT,
+    )
+
+
 def _marker_indices(path: Path) -> dict[str, np.ndarray]:
     """Read retained source-site indices from a Merlin map file."""
     indices: dict[str, list[int]] = {}
@@ -236,6 +276,7 @@ def run_merlin(
     geno.update(_parse_blocks(output_directory / "merlinX.chr", matrix.samples, ("chrX",)))
     marker_indices = _marker_indices(output_directory / "merlin.map")
     marker_indices.update(_marker_indices(output_directory / "merlinX.map"))
+    _warn_skipped_chromosomes(flow, marker_indices, settings)
     rows: list[dict[str, object]] = []
     for chrom, flow_matrix in flow.items():
         genotype_values = geno.get(chrom)
@@ -256,6 +297,8 @@ def run_merlin(
             genotype_strands = np.asarray(
                 [value.split("|", 1) for value in genotype_values[:, sample_index]]
             )
+            if chrom == "chrX" and settings.family.member(sample).sex == "M":
+                strands, genotype_strands = _mark_haploid_x(strands, genotype_strands)
             window = (
                 settings.window_size_voting_x if chrom == "chrX" else settings.window_size_voting
             )

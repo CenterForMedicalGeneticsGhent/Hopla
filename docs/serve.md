@@ -26,6 +26,21 @@ unused compatibility keys. The editor writes each pedigree card as an entry in
 `family.members`, including its `sex`, and stores family notes as a single
 multiline `info` string.
 
+**Add sibling** and **Add embryo** refuse to add a member once the pedigree
+reaches Merlin's 24-bit complexity limit, scored as
+`2 x descendants - founders`: thirteen children for a two-parent family, or
+twelve once grandparents are added. A modal dialog explains why the member was
+not added and has to be dismissed before editing continues. Merlin would
+otherwise skip every autosome and the report would have no haplotype panels, as
+described in [HTML output](output.md).
+
+The same dialog appears when an import, or naming a placeholder parent or
+grandparent, pushes an existing family past the limit. It appears once per
+crossing rather than on every edit, and it does not undo the change; remove
+members to come back within the limit. Placeholder parents leave children as
+unrelated founders, which costs no complexity, so the limit only bites once real
+parents are named.
+
 ## Run an analysis
 
 Create a configuration in the form or import an existing configuration, then:

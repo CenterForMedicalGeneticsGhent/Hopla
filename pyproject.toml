@@ -21,7 +21,6 @@ dependencies = [
   "jsonschema",
   "jinja2",
   "numpy",
-  "plotly",
   "polars",
   "pydantic>=2",
   "pyarrow",
@@ -48,6 +47,9 @@ packages = ["src/hopla"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/hopla/schema/hopla.schema.json" = "hopla/schema/hopla.schema.json"
+"src/hopla/report.css" = "hopla/report.css"
+"src/hopla/report.js" = "hopla/report.js"
+"src/hopla/plotly-basic.min.js" = "hopla/plotly-basic.min.js"
 
 [tool.ruff]
 line-length = 100
@@ -59,7 +61,7 @@ ignore = ["D203", "D213"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/hopla/convert.py" = ["ANN401"]
-"src/hopla/report.py" = ["ANN401", "E501"]
+"src/hopla/report.py" = ["ANN401"]
 "src/hopla/vcf.py" = ["ANN401"]
 
 [tool.mypy]
@@ -86,7 +88,6 @@ jsonschema = "*"
 numpy = "*"
 polars = "*"
 pydantic = ">=2"
-plotly = "*"
 pyarrow = "*"
 pybigwig = "*"
 pyyaml = "*"

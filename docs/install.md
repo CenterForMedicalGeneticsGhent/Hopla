@@ -53,7 +53,6 @@ editable pip install:
   - Jinja2
   - jsonschema
   - numpy
-  - plotly
   - polars
   - pydantic (v2 or newer)
   - pyarrow
@@ -72,10 +71,10 @@ Merlin’s version should be exactly as given. The Merlin executables folder
 with the pixi default environment. If `merlin` or `minx` is missing, or only
 one real sample is analyzed, the engine sets `run_merlin` to `false`.
 
-Hopla must not invoke Pandoc. The HTML report always inlines the offline
-`plotly.js` bundle shipped with the plotly package and gzip-compresses the
-columnar analysis payload for the browser to expand with
-`DecompressionStream`.
+Hopla must not invoke Pandoc. The HTML report always inlines packaged
+`report.css`, `report.js`, and plotly.js basic (not the full plotly.js
+library) and gzip-compresses the columnar analysis payload for the browser
+to expand with `DecompressionStream`.
 
 Prefer adding Python dependencies in `pyproject.toml` under both `[project]`
 and `[tool.pixi.dependencies]` (or the `dev` extra / `[tool.pixi.feature.dev]`),

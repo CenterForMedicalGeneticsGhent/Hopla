@@ -238,12 +238,12 @@ raw uncorrected genotypes remain available on hover.
 - **`dot_factor`** (`number > 0`, default `2`) Multiplier for the size of every
   dot in the visualizations.
 
-The report is always a single offline HTML file: local `plotly.js` is inlined
-and analysis data is gzip-compressed for the browser to expand before
-rendering. The report requires JavaScript and a current browser with
-`DecompressionStream` support. Hopla does not invoke Pandoc. Unused historical
-keys (`color_palette`, `self_contained`, `cairo`) are ignored with a warning
-and are not written when generating YAML.
+The report is always a single offline HTML file: packaged `report.css`,
+`report.js`, and plotly.js basic are inlined and analysis data is
+gzip-compressed for the browser to expand before rendering. The report requires
+JavaScript and a current browser with `DecompressionStream` support. Hopla does
+not invoke Pandoc. Unused historical keys (`color_palette`, `self_contained`,
+`cairo`) are ignored with a warning and are not written when generating YAML.
 
 ## Legacy `key=value` files
 

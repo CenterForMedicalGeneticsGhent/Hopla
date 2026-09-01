@@ -10,11 +10,23 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from hopla.analysis import _duo_errors, _trio_errors
+from hopla.analysis import (
+    _duo_errors,
+    _trio_errors,
+    copy_number_table,
+    variant_depth_table,
+)
 from hopla.filters import apply_filter1, apply_filter2
-from hopla.merlin import _marker_indices, _parse_blocks, correct_short_segments, weighted_vote
-from hopla.models import GenotypeMatrix, SiteTable
-from hopla.pedigree import add_ghosts, predict_sexes
+from hopla.merlin import (
+    _mark_haploid_x,
+    _marker_indices,
+    _parse_blocks,
+    _warn_skipped_chromosomes,
+    correct_short_segments,
+    weighted_vote,
+)
+from hopla.models import FilteredGenotypes, GenotypeMatrix, SiteTable
+from hopla.pedigree import MERLIN_BIT_LIMIT, add_ghosts, merlin_bit_score, predict_sexes
 from hopla.settings import Settings, load_settings, validate_settings
 from hopla.vcf import load_vcf, mask_male_x_heterozygotes
 
@@ -51,6 +63,93 @@ def test_haplotype_corrections() -> None:
     assert voted.tolist() == ["A"] * 5
 
 
+def test_male_x_marks_the_second_minx_strand_as_absent() -> None:
+    """Represent hemizygous male chromosome X without a duplicate haplotype."""
+    flow = np.asarray([["A", "A"], ["B", "B"]])
+    genotypes = np.asarray([["A", "A"], ["G", "G"]])
+    marked_flow, marked_genotypes = _mark_haploid_x(flow, genotypes)
+    assert marked_flow.tolist() == [["A", "X"], ["B", "X"]]
+    assert marked_genotypes.tolist() == [["A", "NA"], ["G", "NA"]]
+    assert flow.tolist() == [["A", "A"], ["B", "B"]]
+    assert genotypes.tolist() == [["A", "A"], ["G", "G"]]
+
+
+def test_variant_depth_caps_outliers_on_shared_sample_bins() -> None:
+    """Keep every count while one extreme depth no longer stretches all panels."""
+    first = np.asarray([10] * 200 + [10_000], dtype=np.uint16)
+    second = np.asarray([20] * 201, dtype=np.uint16)
+    depths = np.vstack((first, second))
+    calls = np.zeros(depths.shape, dtype=np.int8)
+    matrix = GenotypeMatrix(
+        gt=calls,
+        dp=depths,
+        ad_ref=np.zeros(depths.shape, dtype=np.uint16),
+        ad_alt=np.zeros(depths.shape, dtype=np.uint16),
+        samples=("first", "second"),
+        sample_index={"first": 0, "second": 1},
+    )
+    filtered = FilteredGenotypes(
+        site_mask=np.ones(depths.shape[1], dtype=np.bool_),
+        gt=calls,
+        dp=depths.astype(np.float32),
+        af=np.zeros(depths.shape, dtype=np.float32),
+    )
+
+    table = variant_depth_table(matrix, filtered, filtered)
+    level = table.filter(table["filter_level"] == 0)
+    first_bins = level.filter(level["sample"] == "first")
+    second_bins = level.filter(level["sample"] == "second")
+    assert first_bins["bin_start"].to_list() == second_bins["bin_start"].to_list()
+    assert first_bins["bin_end"].to_list() == second_bins["bin_end"].to_list()
+    assert first_bins["bin_end"].max() == pytest.approx(20)
+    assert first_bins["count"].sum() == first.size
+    assert second_bins["count"].sum() == second.size
+    assert first_bins["count"][-1] == 1
+
+
+def test_zero_depth_window_keeps_its_chromosome_segmented() -> None:
+    """One uncovered window must not drop a whole chromosome from the segments."""
+    window = 1_000_000
+    per_chromosome = 12
+    chroms, positions, depths = [], [], []
+    for code in (1, 2):
+        for index in range(per_chromosome):
+            chroms.append(code)
+            positions.append(index * window + 1)
+            # chr2 loses coverage in one window; every other window is covered.
+            depths.append(0 if code == 2 and index == 5 else 30)
+    sites = SiteTable(
+        chrom=np.asarray(chroms, dtype=np.uint8),
+        pos=np.asarray(positions, dtype=np.uint32),
+        ref=np.asarray(["A"] * len(chroms), dtype=np.str_),
+        alt=np.asarray(["G"] * len(chroms), dtype=np.str_),
+    )
+    depth_row = np.asarray([depths], dtype=np.uint16)
+    matrix = GenotypeMatrix(
+        gt=np.zeros(depth_row.shape, dtype=np.int8),
+        dp=depth_row,
+        ad_ref=np.zeros(depth_row.shape, dtype=np.uint16),
+        ad_alt=np.zeros(depth_row.shape, dtype=np.uint16),
+        samples=("sample",),
+        sample_index={"sample": 0},
+    )
+    settings = Settings(
+        family={"members": [{"id": "sample", "sex": "F"}]},
+        run_merlin=False,
+        window_size=window,
+    )
+
+    windows, segments = copy_number_table(sites, matrix, settings)
+
+    uncovered = windows.filter(~windows["mask"])
+    assert uncovered.height == 1
+    assert uncovered["chrom"].to_list() == ["chr2"]
+    for chrom in ("chr1", "chr2"):
+        means = segments.filter(segments["chrom"] == chrom)["seg_mean"].to_numpy()
+        assert means.size >= 1, chrom
+        assert np.all(np.isfinite(means)), chrom
+
+
 def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
     """Preserve both strands when Merlin prints samples in separate column groups."""
     path = tmp_path / "merlin.flow"
@@ -82,6 +181,85 @@ def test_parse_merlin_strand_pairs_and_wrapped_samples(tmp_path: Path) -> None:
     map_path.write_text("1\tid9\t1.0\nX\tid21\t2.0\n", encoding="utf-8")
     assert _marker_indices(map_path)["chr1"].tolist() == [8]
     assert _marker_indices(map_path)["chrX"].tolist() == [20]
+
+
+def test_merlin_bit_score_matches_merlin_formula() -> None:
+    """Score 2 x descendants - founders, including ghosts for half-orphans."""
+    parents = [{"id": "father", "sex": "M"}, {"id": "mother", "sex": "F"}]
+    children = [
+        {"id": f"child{index}", "father": "father", "mother": "mother"} for index in range(13)
+    ]
+    nuclear = Settings(family={"members": [*parents, *children]}, run_merlin=False)
+    assert merlin_bit_score(nuclear) == MERLIN_BIT_LIMIT
+    over = Settings(
+        family={
+            "members": [
+                *parents,
+                *children,
+                {"id": "child13", "father": "father", "mother": "mother"},
+            ]
+        },
+        run_merlin=False,
+    )
+    assert merlin_bit_score(over) == 26
+
+    half = Settings(
+        family={"members": [{"id": "father", "sex": "M"}, {"id": "child", "father": "father"}]},
+        run_merlin=False,
+    )
+    add_ghosts(half)
+    assert merlin_bit_score(half) == 0
+
+
+def test_warn_when_merlin_skips_complex_pedigree_chromosomes(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Blame the bit limit only when the pedigree is actually over it."""
+    settings = Settings(
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                *(
+                    {"id": f"child{index}", "father": "father", "mother": "mother"}
+                    for index in range(14)
+                ),
+            ]
+        },
+        run_merlin=False,
+    )
+    flow = {"chrX": np.asarray([["A|B"]])}
+    markers = {
+        "chr1": np.asarray([0], dtype=np.int64),
+        "chrX": np.asarray([1], dtype=np.int64),
+    }
+    with caplog.at_level(logging.WARNING):
+        _warn_skipped_chromosomes(flow, markers, settings)
+    assert "chr1" in caplog.text
+    assert "26 bits" in caplog.text
+    assert f"{MERLIN_BIT_LIMIT}-bit limit" in caplog.text
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _warn_skipped_chromosomes(flow, {"chrX": markers["chrX"]}, settings)
+    assert caplog.text == ""
+
+    trio = Settings(
+        family={
+            "members": [
+                {"id": "father", "sex": "M"},
+                {"id": "mother", "sex": "F"},
+                {"id": "child", "father": "father", "mother": "mother"},
+            ]
+        },
+        run_merlin=False,
+    )
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _warn_skipped_chromosomes(flow, markers, trio)
+    assert "chr1" in caplog.text
+    assert "within the" in caplog.text
+    assert "above" not in caplog.text
 
 
 def test_mixed_ploidy_and_absent_format_fields(tmp_path: Path) -> None:
