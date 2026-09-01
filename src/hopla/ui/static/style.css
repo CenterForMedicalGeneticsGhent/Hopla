@@ -41,6 +41,7 @@ fieldset { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1
 fieldset label, .fields label:has(input[type=checkbox]) { display: flex; align-items: center; gap: .4rem; }
 input[type=checkbox] { width: auto; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem; }
+.fields small { opacity: .75; }
 .wide { grid-column: 1 / -1; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .section-heading h2, .section-heading h3 { margin: 0; }
