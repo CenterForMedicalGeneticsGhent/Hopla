@@ -67,6 +67,7 @@ The package manual is [docs/README.md](docs/README.md).
 
 - Run `pixi install --locked`.
 - Run `pixi run -e dev lint-py`; CI lint and type-check failures must be fixed, not suppressed globally.
+- Run `pixi run -e dev lint-galaxy` when changing files under `galaxy/`.
 - Run `pixi run -e dev test-py`.
 - Test YAML and JSON validation, including warnings for unsupported keys and rejection of mistyped settings.
 - Test all CLI subtools and their failure exit statuses, including the export toggles.
@@ -76,6 +77,7 @@ The package manual is [docs/README.md](docs/README.md).
 ## Continuous integration and releases
 
 - Build and check the Python package and its image for relevant pull requests targeting `main`.
+- Lint the Galaxy wrapper with `pixi run -e dev lint-galaxy` when files under `galaxy/` change.
 - On pushes to `main` or `master`, tag the image with the full commit SHA and `latest`.
 - On a published release, tag the image with the full commit SHA, package version, and `stable`.
 - Upload the built Python wheel and compressed Docker image artifacts from CI.

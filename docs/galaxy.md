@@ -52,7 +52,7 @@ configuration.
 ## Report sanitization and indexed VCFs
 
 The report includes JavaScript and a compressed columnar payload. Add the
-`hopla` tool ID to the file configured by Galaxy's
+`hopla3` tool ID to the file configured by Galaxy's
 `sanitize_allowlist_file` setting; otherwise Galaxy sanitizes the HTML and the
 interactive report cannot render.
 
@@ -63,8 +63,10 @@ valid but falls back to a sequential scan. Galaxy 23.0 does not register CSI
 files as a standalone history datatype, so upload a `.csi` index as generic
 `data` and select **CSI index** in the tool form.
 
-Run the embedded wrapper tests from a Galaxy or Planemo environment:
+Lint or run the embedded wrapper tests from a Planemo environment. The pixi
+`dev` environment provides Planemo:
 
 ```bash
+pixi run -e dev lint-galaxy
 planemo test galaxy/hopla.xml
 ```
