@@ -2,7 +2,7 @@ name: Python package CI
 
 on:
   pull_request:
-    branches: [main, 3.0.0]
+    branches: [main]
     paths:
       - "src/**"
       - "tests/**"
