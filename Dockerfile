@@ -18,5 +18,10 @@ RUN printf '#!/bin/sh\nexec /app/.pixi/envs/default/bin/hopla "$@"\n' \
     > /usr/local/bin/hopla \
     && chmod 0755 /usr/local/bin/hopla
 
+# Job runners that bypass the entrypoint (Galaxy with Singularity, docker --entrypoint)
+# still need merlin and minx, which hopla resolves through PATH.
+ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
+
 EXPOSE 8080
-ENTRYPOINT ["/app/entrypoint.sh", "bash"]
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["bash"]

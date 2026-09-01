@@ -27,6 +27,16 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   `{family.id}-export/` directory instead of its bare contents.
 - Renamed the `hopla3` outputs from `run_report` and `run_exports` to `report`
   and `exports`.
+
+### Fixed
+
+- Fixed the container entrypoint for job runners that pass a command to
+  `docker run`. `ENTRYPOINT ["/app/entrypoint.sh", "bash"]` turned Galaxy's
+  `docker run <image> /bin/sh tool_script.sh` into
+  `bash /bin/sh tool_script.sh`, so every containerized job died with
+  `cannot execute binary file` (exit 126). The interactive shell moved to
+  `CMD`, and the environment's `bin` directory is now on `PATH` so runtimes
+  that ignore the entrypoint still resolve `hopla`, `merlin`, and `minx`.
 ## [3.0.0] - 2026-08-28
 
 ### Added
