@@ -52,7 +52,7 @@ configuration.
 ## Report sanitization and indexed VCFs
 
 The report includes JavaScript and a compressed columnar payload. Add the
-`hopla` tool ID to the file configured by Galaxy's
+`hopla3` tool ID to the file configured by Galaxy's
 `sanitize_allowlist_file` setting; otherwise Galaxy sanitizes the HTML and the
 interactive report cannot render.
 
