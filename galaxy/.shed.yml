@@ -1,0 +1,20 @@
+categories:
+  - Analyses
+description: "HOPLA: Genomic family analysis from a VCF, with an interactive HTML report"
+homepage_url: https://github.com/CenterForMedicalGeneticsGhent/Hopla
+long_description: |
+  Hopla analyzes a multisample family VCF from schema-validated YAML or JSON
+  settings and writes a self-contained interactive HTML report. It can also
+  convert historical key=value settings to YAML.
+
+  The wrapper runs the published quay.io/cmgg/hopla container. Galaxy job
+  destinations must resolve Docker containers, and administrators must add
+  the hopla tool id to sanitize_allowlist.txt so the report is served without
+  HTML sanitization.
+name: hopla
+owner: ict
+remote_repository_url: https://github.com/CenterForMedicalGeneticsGhent/Hopla/tree/main/galaxy
+type: unrestricted
+include:
+  - hopla.xml
+  - test-data/**

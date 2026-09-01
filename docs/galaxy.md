@@ -14,12 +14,42 @@ batch operations:
 The interactive `serve` command and the `concordance` and `transform` CLI
 helpers are not exposed as Galaxy operations.
 
-## Install
+## Install from a ToolShed
 
-Install the wrapper and its `test-data` directory in a Galaxy tool directory,
-then register `hopla.xml` in the instance's tool panel configuration. The
+[`galaxy/.shed.yml`](../galaxy/.shed.yml) describes a ToolShed repository named
+`hopla` owned by `cmgg`. After the wrapper is published, a Galaxy administrator
+can install it from **Admin → Tool Management → Install and Uninstall**, or
+with Ephemeris / Ansible using:
+
+```yaml
+tools:
+  - name: hopla
+    owner: cmgg
+    tool_panel_section_label: Variant Analysis
+```
+
+The ToolShed owner in `.shed.yml` must match the account used to publish. The
 wrapper uses the published `quay.io/cmgg/hopla:3.0.0` container, so the Galaxy
 job destination must have a container resolver configured.
+
+Publish or update the repository with Planemo from a ToolShed account:
+
+```bash
+planemo shed_lint galaxy/
+planemo shed_create --shed_target testtoolshed galaxy/
+planemo shed_update --shed_target testtoolshed galaxy/
+```
+
+Replace `testtoolshed` with `toolshed` for the main Galaxy ToolShed once the
+test revision is verified.
+
+## Install from this repository
+
+To skip a ToolShed, copy the wrapper and its `test-data` directory into a
+Galaxy tool directory and register `hopla.xml` in the instance's tool panel
+configuration.
+
+## Report sanitization and indexed VCFs
 
 The report includes JavaScript and a compressed columnar payload. Add the
 `hopla` tool ID to the file configured by Galaxy's

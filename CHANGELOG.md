@@ -9,6 +9,8 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 - Added a Galaxy tool wrapper for `hopla run` and `hopla convert`, including
   optional tabix or CSI indexes for bgzip-compressed VCF input.
+- Added `galaxy/.shed.yml` so the wrapper can be published to a Galaxy ToolShed
+  and installed from there.
 
 ## [3.0.0] - 2026-08-28
 
