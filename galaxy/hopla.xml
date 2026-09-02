@@ -120,8 +120,9 @@ YAML or JSON settings and writes a self-contained interactive HTML report,
 optionally with an archive of the Parquet or IGV exports.
 
 A bgzip-compressed VCF is read per contig with all allocated job slots, using
-the tabix index Galaxy keeps for the dataset. An uncompressed VCF is scanned
-sequentially.
+the tabix index Galaxy keeps for the dataset. If that index is missing, Hopla
+writes one next to the staged VCF when the job directory is writable. An
+uncompressed VCF is scanned sequentially.
 
 The cytoband table is read from the path in **UCSC hg38 cytoband table**, which
 must be readable from inside the job container. Clearing the field makes Hopla

@@ -99,6 +99,7 @@ typer = "*"
 uvicorn = "*"
 pip = "*"
 merlin = "1.1.2.*"
+htslib = "*"
 
 [tool.pixi.feature.dev.dependencies]
 mypy = "*"

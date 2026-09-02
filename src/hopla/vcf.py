@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
+import subprocess
 from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
@@ -102,6 +104,38 @@ def _has_index(path: Path) -> bool:
     return any(path.with_name(f"{path.name}{suffix}").is_file() for suffix in (".tbi", ".csi"))
 
 
+def _looks_bgzf(path: Path) -> bool:
+    """Return whether the file starts with gzip magic, as required for tabix."""
+    with path.open("rb") as handle:
+        return handle.read(2) == b"\x1f\x8b"
+
+
+def _ensure_index(path: Path) -> bool:
+    """Write a sibling tabix index for a BGZF VCF when none exists."""
+    if _has_index(path):
+        return True
+    if not _looks_bgzf(path):
+        return False
+    tabix = shutil.which("tabix")
+    if tabix is None:
+        logging.warning("tabix is not on PATH; VCF loading will be single-threaded.")
+        return False
+    logging.info("No tabix/CSI index found for %s; writing a tabix index.", path)
+    try:
+        subprocess.run([tabix, "-p", "vcf", str(path)], check=True, capture_output=True, text=True)
+    except (OSError, subprocess.CalledProcessError) as error:
+        detail: object = error
+        if isinstance(error, subprocess.CalledProcessError):
+            detail = (error.stderr or error.stdout or str(error)).strip()
+        logging.warning(
+            "Could not write a tabix index for %s: %s; VCF loading will be single-threaded.",
+            path,
+            detail,
+        )
+        return False
+    return _has_index(path)
+
+
 def _collect_variants(variants: Iterable[Any], sample_count: int) -> _CollectedSites:
     """Retain biallelic SNVs from a cyvcf2 iterator."""
     collected = _CollectedSites()
@@ -188,6 +222,7 @@ def load_vcf(
 ) -> tuple[SiteTable, GenotypeMatrix]:
     """Stream biallelic SNVs and selected sample FORMAT fields from a VCF."""
     resolved = os.cpu_count() or 1 if threads is None else threads
+    indexed = _ensure_index(path)
     reader = VCF(str(path), samples=list(samples), lazy=True)
     missing = set(samples) - set(reader.samples)
     if missing:
@@ -196,7 +231,6 @@ def load_vcf(
     # cyvcf2 yields subset columns in file order, so map them onto the requested order.
     file_order = list(reader.samples)
     permutation = np.asarray([file_order.index(sample) for sample in samples])
-    indexed = _has_index(path)
     contigs = _supported_contigs(reader.seqnames)
     workers = min(resolved, len(contigs)) if indexed else 1
     if resolved > 1 and not indexed:

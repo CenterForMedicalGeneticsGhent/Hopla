@@ -5,6 +5,12 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Added
+
+- Auto-generate a tabix `.tbi` next to a bgzip-compressed VCF when no sibling
+  index exists, so contig-parallel loading can proceed. An uncompressed VCF or
+  a failed index write still warns and falls back to a sequential scan.
+
 ### Fixed
 
 - Fixed the Galaxy `hopla3` analysis failing with `Settings file must use a
