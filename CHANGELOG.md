@@ -17,6 +17,47 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   copy-pasted intervals such as `17:43,044,295-43,170,327` and store
   `chr17:43044295-43170327`.
 
+### Changed
+
+- Reduced the Galaxy `hopla3` wrapper to one `conditional` that selects `run`
+  or `convert`, with each operation's parameters in its own `when` block. The
+  compression and index conditionals are gone: one VCF parameter accepts `vcf`
+  or `vcf_bgzip`, and the tabix index Galaxy already stores as `vcf_bgzip`
+  metadata is staged automatically, so contig-parallel loading no longer
+  depends on the user supplying an index dataset.
+- Simplified the Galaxy command block to plain Cheetah: no `set -eu`, no shell
+  variables, and no command substitution. The report is moved from the job
+  working directory and the export archive now contains the
+  `{family.id}-export/` directory instead of its bare contents.
+- Renamed the `hopla3` outputs `run_report` and `run_exports` to `report` and
+  `exports`, and gave each output a single filter expression.
+- Turned the Galaxy cytoband parameter into a path with the default
+  `/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt`. It is no longer a
+  history dataset; clearing the field still downloads the table from UCSC.
+- Kept the container environment off the image `PATH`. `/usr/local/bin/hopla`
+  activates it for Hopla alone, so `merlin` and `minx` still resolve while a
+  bare `python` no longer does.
+
+### Fixed
+
+- Fixed the container entrypoint for job runners that pass a command to
+  `docker run`. `ENTRYPOINT ["/app/entrypoint.sh", "bash"]` turned Galaxy's
+  `docker run <image> /bin/sh tool_script.sh` into
+  `bash /bin/sh tool_script.sh`, so every containerized job died with
+  `cannot execute binary file` (exit 126). The image no longer sets an
+  entrypoint; `CMD` provides the interactive shell and a passed command runs
+  as given.
+- Fixed Galaxy's metadata step failing with `ModuleNotFoundError: No module
+  named 'sqlalchemy'` when it runs where the Hopla container's `python` is on
+  `PATH`. Galaxy's `metadata/set.py` needs Galaxy's own interpreter, so the
+  image keeps its environment off `PATH`.
+- Fixed `Illegal instruction` on every `hopla` command, including `--help`, on
+  hosts without AVX2 such as QEMU guests using the default `qemu64` CPU model.
+  `src/hopla/cli.py` imports Polars at module load, and conda-forge's default
+  `polars-runtime-32` is compiled with AVX2 while shipping no build feature
+  flags, so Polars' own CPU guard is inert and the process dies with SIGILL.
+  Depending on `polars-runtime-compat` makes Polars load the baseline runtime,
+  which it prefers whenever it is installed.
 ## [3.0.0] - 2026-08-28
 
 ### Added
