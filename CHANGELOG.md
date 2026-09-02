@@ -28,6 +28,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Turned the Galaxy cytoband parameter into a path with the default
   `/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt`. It is no longer a
   history dataset; clearing the field still downloads the table from UCSC.
+- Kept the container environment off the image `PATH`. `/usr/local/bin/hopla`
+  activates it for Hopla alone, so `merlin` and `minx` still resolve while a
+  bare `python` no longer does.
 
 ### Fixed
 
@@ -35,9 +38,13 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   `docker run`. `ENTRYPOINT ["/app/entrypoint.sh", "bash"]` turned Galaxy's
   `docker run <image> /bin/sh tool_script.sh` into
   `bash /bin/sh tool_script.sh`, so every containerized job died with
-  `cannot execute binary file` (exit 126). The interactive shell moved to
-  `CMD`, and the environment's `bin` directory is now on `PATH` so runtimes
-  that ignore the entrypoint still resolve `hopla`, `merlin`, and `minx`.
+  `cannot execute binary file` (exit 126). The image no longer sets an
+  entrypoint; `CMD` provides the interactive shell and a passed command runs
+  as given.
+- Fixed Galaxy's metadata step failing with `ModuleNotFoundError: No module
+  named 'sqlalchemy'` when it runs where the Hopla container's `python` is on
+  `PATH`. Galaxy's `metadata/set.py` needs Galaxy's own interpreter, so the
+  image keeps its environment off `PATH`.
 ## [3.0.0] - 2026-08-28
 
 ### Added

@@ -74,6 +74,26 @@ holding it must be part of the destination's `docker_volumes` (or the
 equivalent Singularity bind paths). Clearing the field makes Hopla download the
 hg38 table from UCSC, which needs the job to have network access.
 
+## Job destination checklist
+
+Per-tool Galaxy configuration is keyed on the tool id, which is `hopla3` and
+not the `hopla` id of the R-based 1.x wrapper. When the new tool behaves
+differently from the old one, check that the following name `hopla3`:
+
+- the tool-to-destination mapping in `job_conf`, including the destination that
+  enables containers and mounts the reference directory,
+- the `sanitize_allowlist_file` entry that keeps the report's JavaScript.
+
+Galaxy computes dataset metadata after the tool command by running its own
+`metadata/set.py` with the `python` it finds on `PATH`. That script imports
+Galaxy and its dependencies, so it only works with Galaxy's own interpreter.
+The Hopla image therefore keeps its environment off the image `PATH` and
+exposes only a `hopla` launcher; a container that puts a foreign `python`
+first makes Galaxy's metadata step fail with `ModuleNotFoundError: No module
+named 'sqlalchemy'`. If a destination computes metadata inside the container
+(`metadata_strategy: extended`), Galaxy's virtualenv must be readable there as
+well.
+
 ## Linting and testing
 
 Lint or run the embedded wrapper tests from a Planemo environment. The pixi
