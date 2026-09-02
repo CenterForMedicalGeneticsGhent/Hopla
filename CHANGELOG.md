@@ -45,6 +45,13 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   named 'sqlalchemy'` when it runs where the Hopla container's `python` is on
   `PATH`. Galaxy's `metadata/set.py` needs Galaxy's own interpreter, so the
   image keeps its environment off `PATH`.
+- Fixed `Illegal instruction` on every `hopla` command, including `--help`, on
+  hosts without AVX2 such as QEMU guests using the default `qemu64` CPU model.
+  `src/hopla/cli.py` imports Polars at module load, and conda-forge's default
+  `polars-runtime-32` is compiled with AVX2 while shipping no build feature
+  flags, so Polars' own CPU guard is inert and the process dies with SIGILL.
+  Depending on `polars-runtime-compat` makes Polars load the baseline runtime,
+  which it prefers whenever it is installed.
 ## [3.0.0] - 2026-08-28
 
 ### Added

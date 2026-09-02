@@ -13,6 +13,7 @@ The package manual is [docs/README.md](docs/README.md).
 - Require Python 3.12 or newer.
 - Add Python dependencies to both `[project]` / `[project.optional-dependencies]` and `[tool.pixi.dependencies]` / `[tool.pixi.feature.dev.dependencies]` in `pyproject.toml`; regenerate `pixi.lock` with pixi. Conda entries override the same-named PyPI requirements from `[project]`. Keep the bioconda `conda-pypi-map` entry for `pybigwig` so osx-arm64 does not pull a PyPI source build.
 - Keep `pixi.lock` free of third-party PyPI source dependencies. Every locked third-party dependency is a conda package; the local package is the editable `[tool.pixi.pypi-dependencies]` path entry.
+- Keep `polars[rtcompat]` in `[project]` and `polars-runtime-compat` in `[tool.pixi.dependencies]`. Polars prefers the compat runtime when it is installed; the default runtime is compiled with AVX2 and dies with `Illegal instruction` on hosts without it, such as QEMU guests that expose the default `qemu64` CPU model.
 - Prefer the pixi editable path install over unmanaged global pip installs.
 - Hopla must not invoke Pandoc. The report always inlines packaged `report.css`, `report.js`, and plotly.js basic, and compresses the columnar payload itself.
 

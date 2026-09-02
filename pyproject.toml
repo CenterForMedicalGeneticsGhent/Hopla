@@ -21,7 +21,9 @@ dependencies = [
   "jsonschema",
   "jinja2",
   "numpy",
-  "polars",
+  # rtcompat keeps Polars on a baseline x86-64 build; the default runtime is
+  # compiled with AVX2 and crashes on hosts without it, such as QEMU guests.
+  "polars[rtcompat]",
   "pydantic>=2",
   "pyarrow",
   "pybigwig",
@@ -87,6 +89,7 @@ jinja2 = "*"
 jsonschema = "*"
 numpy = "*"
 polars = "*"
+polars-runtime-compat = "*"
 pydantic = ">=2"
 pyarrow = "*"
 pybigwig = "*"
