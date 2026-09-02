@@ -5,39 +5,6 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
-### Changed
-
-- Copy-number report panels now use a fixed y-axis from -5 to +5 for every
-  sample. Windows with `|log2(ratio)| > 5` appear as red triangles on the
-  boundary; hover still shows the true value.
-
-### Added
-
-- Added `sanitize_region` so settings load and the settings editor accept
-  copy-pasted intervals such as `17:43,044,295-43,170,327` and store
-  `chr17:43044295-43170327`.
-
-### Changed
-
-- Reduced the Galaxy `hopla3` wrapper to one `conditional` that selects `run`
-  or `convert`, with each operation's parameters in its own `when` block. The
-  compression and index conditionals are gone: one VCF parameter accepts `vcf`
-  or `vcf_bgzip`, and the tabix index Galaxy already stores as `vcf_bgzip`
-  metadata is staged automatically, so contig-parallel loading no longer
-  depends on the user supplying an index dataset.
-- Simplified the Galaxy command block to plain Cheetah: no `set -eu`, no shell
-  variables, and no command substitution. The report is moved from the job
-  working directory and the export archive now contains the
-  `{family.id}-export/` directory instead of its bare contents.
-- Renamed the `hopla3` outputs `run_report` and `run_exports` to `report` and
-  `exports`, and gave each output a single filter expression.
-- Turned the Galaxy cytoband parameter into a path with the default
-  `/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt`. It is no longer a
-  history dataset; clearing the field still downloads the table from UCSC.
-- Kept the container environment off the image `PATH`. `/usr/local/bin/hopla`
-  activates it for Hopla alone, so `merlin` and `minx` still resolve while a
-  bare `python` no longer does.
-
 ### Fixed
 
 - Fixed the Galaxy `hopla3` analysis failing with `Settings file must use a
@@ -45,24 +12,7 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   `dataset_*.dat`, so the wrapper now symlinks the settings dataset to
   `settings.yaml` or `settings.json` according to its datatype, as it already
   did for the VCF.
-- Fixed the container entrypoint for job runners that pass a command to
-  `docker run`. `ENTRYPOINT ["/app/entrypoint.sh", "bash"]` turned Galaxy's
-  `docker run <image> /bin/sh tool_script.sh` into
-  `bash /bin/sh tool_script.sh`, so every containerized job died with
-  `cannot execute binary file` (exit 126). The image no longer sets an
-  entrypoint; `CMD` provides the interactive shell and a passed command runs
-  as given.
-- Fixed Galaxy's metadata step failing with `ModuleNotFoundError: No module
-  named 'sqlalchemy'` when it runs where the Hopla container's `python` is on
-  `PATH`. Galaxy's `metadata/set.py` needs Galaxy's own interpreter, so the
-  image keeps its environment off `PATH`.
-- Fixed `Illegal instruction` on every `hopla` command, including `--help`, on
-  hosts without AVX2 such as QEMU guests using the default `qemu64` CPU model.
-  `src/hopla/cli.py` imports Polars at module load, and conda-forge's default
-  `polars-runtime-32` is compiled with AVX2 while shipping no build feature
-  flags, so Polars' own CPU guard is inert and the process dies with SIGILL.
-  Depending on `polars-runtime-compat` makes Polars load the baseline runtime,
-  which it prefers whenever it is installed.
+
 ## [3.0.0] - 2026-08-28
 
 ### Added
@@ -87,6 +37,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   **Add sibling** and **Add embryo** refuse the member that would cross it, and
   a modal dialog explains why; the same dialog appears when an import or a newly
   named parent pushes an existing family past the limit.
+- Added `sanitize_region` so settings load and the settings editor accept
+  copy-pasted intervals such as `17:43,044,295-43,170,327` and store
+  `chr17:43044295-43170327`.
 - Added a Galaxy tool wrapper for `hopla run` and `hopla convert`, including
   optional tabix or CSI indexes for bgzip-compressed VCF input.
 - Added `galaxy/.shed.yml` so the wrapper can be published to a Galaxy ToolShed
@@ -122,6 +75,27 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   retaining higher observations in the final bin.
 - Moved report CSS and JS into packaged sibling files and inlined plotly.js
   basic instead of the full library, shrinking typical HTML by about 3.7 MB.
+- Copy-number report panels now use a fixed y-axis from -5 to +5 for every
+  sample. Windows with `|log2(ratio)| > 5` appear as red triangles on the
+  boundary; hover still shows the true value.
+- Reduced the Galaxy `hopla3` wrapper to one `conditional` that selects `run`
+  or `convert`, with each operation's parameters in its own `when` block. The
+  compression and index conditionals are gone: one VCF parameter accepts `vcf`
+  or `vcf_bgzip`, and the tabix index Galaxy already stores as `vcf_bgzip`
+  metadata is staged automatically, so contig-parallel loading no longer
+  depends on the user supplying an index dataset.
+- Simplified the Galaxy command block to plain Cheetah: no `set -eu`, no shell
+  variables, and no command substitution. The report is moved from the job
+  working directory and the export archive now contains the
+  `{family.id}-export/` directory instead of its bare contents.
+- Renamed the `hopla3` outputs `run_report` and `run_exports` to `report` and
+  `exports`, and gave each output a single filter expression.
+- Turned the Galaxy cytoband parameter into a path with the default
+  `/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt`. It is no longer a
+  history dataset; clearing the field still downloads the table from UCSC.
+- Kept the container environment off the image `PATH`. `/usr/local/bin/hopla`
+  activates it for Hopla alone, so `merlin` and `minx` still resolve while a
+  bare `python` no longer does.
 
 ### Fixed
 
@@ -138,6 +112,24 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 - Name newly added siblings and embryos with the next unused sample ID instead
   of the current list length, so removing a middle member no longer reuses an
   existing ID.
+- Fixed the container entrypoint for job runners that pass a command to
+  `docker run`. `ENTRYPOINT ["/app/entrypoint.sh", "bash"]` turned Galaxy's
+  `docker run <image> /bin/sh tool_script.sh` into
+  `bash /bin/sh tool_script.sh`, so every containerized job died with
+  `cannot execute binary file` (exit 126). The image no longer sets an
+  entrypoint; `CMD` provides the interactive shell and a passed command runs
+  as given.
+- Fixed Galaxy's metadata step failing with `ModuleNotFoundError: No module
+  named 'sqlalchemy'` when it runs where the Hopla container's `python` is on
+  `PATH`. Galaxy's `metadata/set.py` needs Galaxy's own interpreter, so the
+  image keeps its environment off `PATH`.
+- Fixed `Illegal instruction` on every `hopla` command, including `--help`, on
+  hosts without AVX2 such as QEMU guests using the default `qemu64` CPU model.
+  `src/hopla/cli.py` imports Polars at module load, and conda-forge's default
+  `polars-runtime-32` is compiled with AVX2 while shipping no build feature
+  flags, so Polars' own CPU guard is inert and the process dies with SIGILL.
+  Depending on `polars-runtime-compat` makes Polars load the baseline runtime,
+  which it prefers whenever it is installed.
 
 ### Removed
 
