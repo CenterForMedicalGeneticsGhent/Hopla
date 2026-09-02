@@ -341,23 +341,35 @@ def test_unindexed_vcf_warns_when_threads_exceed_one(
     assert np.array_equal(sequential_matrix.dp, parallel_matrix.dp)
 
 
-def _compress_and_index_vcf(plain: Path) -> Path:
-    """Bgzip and tabix-index a VCF, skipping when htslib tools are absent."""
+def _require_htslib() -> tuple[str, str]:
+    """Return bgzip and tabix paths, skipping when either tool is absent."""
     bgzip = shutil.which("bgzip")
     tabix = shutil.which("tabix")
     if bgzip is None or tabix is None:
         pytest.skip("bgzip and tabix are required to index a test VCF")
+    return bgzip, tabix
+
+
+def _compress_vcf(plain: Path) -> Path:
+    """Bgzip a VCF without writing an index."""
+    bgzip, _ = _require_htslib()
     compressed = Path(f"{plain}.gz")
     with compressed.open("wb") as handle:
         subprocess.run([bgzip, "-c", str(plain)], check=True, stdout=handle)
+    return compressed
+
+
+def _compress_and_index_vcf(plain: Path) -> Path:
+    """Bgzip and tabix-index a VCF, skipping when htslib tools are absent."""
+    _, tabix = _require_htslib()
+    compressed = _compress_vcf(plain)
     subprocess.run([tabix, "-p", "vcf", str(compressed)], check=True)
     return compressed
 
 
-def test_indexed_vcf_parallel_matches_sequential(tmp_path: Path) -> None:
-    """Read an indexed VCF by contig without changing retained sites or sample order."""
-    plain = tmp_path / "sites.vcf"
-    plain.write_text(
+def _write_two_contig_vcf(path: Path) -> None:
+    """Write a small two-contig VCF used by parallel-load tests."""
+    path.write_text(
         "\n".join(
             [
                 "##fileformat=VCFv4.2",
@@ -374,10 +386,40 @@ def test_indexed_vcf_parallel_matches_sequential(tmp_path: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def test_indexed_vcf_parallel_matches_sequential(tmp_path: Path) -> None:
+    """Read an indexed VCF by contig without changing retained sites or sample order."""
+    plain = tmp_path / "sites.vcf"
+    _write_two_contig_vcf(plain)
     compressed = _compress_and_index_vcf(plain)
     samples = ("BBB", "AAA")
     sequential, sequential_matrix = load_vcf(compressed, samples, threads=1)
     parallel, parallel_matrix = load_vcf(compressed, samples, threads=4)
+    assert sequential.chrom.tolist() == parallel.chrom.tolist()
+    assert sequential.pos.tolist() == parallel.pos.tolist()
+    assert np.array_equal(sequential_matrix.gt, parallel_matrix.gt)
+    assert np.array_equal(sequential_matrix.dp, parallel_matrix.dp)
+
+
+def test_missing_index_is_written_for_bgzipped_vcf(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Write a tabix index next to a bgzipped VCF so parallel loading can proceed."""
+    plain = tmp_path / "sites.vcf"
+    _write_two_contig_vcf(plain)
+    compressed = _compress_vcf(plain)
+    index = Path(f"{compressed}.tbi")
+    assert not index.is_file()
+    samples = ("BBB", "AAA")
+    with caplog.at_level(logging.INFO):
+        sequential, sequential_matrix = load_vcf(compressed, samples, threads=1)
+    assert index.is_file()
+    assert "writing a tabix index" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        parallel, parallel_matrix = load_vcf(compressed, samples, threads=4)
+    assert "single-threaded" not in caplog.text
     assert sequential.chrom.tolist() == parallel.chrom.tolist()
     assert sequential.pos.tolist() == parallel.pos.tolist()
     assert np.array_equal(sequential_matrix.gt, parallel_matrix.gt)

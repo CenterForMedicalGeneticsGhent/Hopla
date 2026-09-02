@@ -37,7 +37,9 @@ hopla [-hV] [-L LEVEL] serve [--host HOST] [--port PORT]
   into a temporary directory for that run.
 - `-t THREADS` / `--threads THREADS` is the number of parallel VCF contig
   workers (default: all CPUs). Indexed VCFs (tabix `.tbi` or CSI `.csi`) load
-  contigs in a process pool. A missing index logs a warning and falls back to a
+  contigs in a process pool. A bgzip-compressed VCF with no sibling index gets
+  a tabix `.tbi` written next to it when the directory is writable. An
+  uncompressed VCF, or a failed index write, logs a warning and falls back to a
   single sequential scan. `-t 1` stays sequential without that warning.
 - `--export-parquet` / `--no-export-parquet` controls writing portable Parquet
   tables under `{family.id}-export/` (default: off).

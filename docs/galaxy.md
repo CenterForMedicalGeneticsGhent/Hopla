@@ -62,8 +62,9 @@ interactive report cannot render.
 Galaxy keeps a tabix index as dataset metadata for every `vcf_bgzip` dataset.
 The wrapper stages that index next to the staged VCF, so bgzip-compressed input
 is loaded contig-parallel across the job's allocated slots without asking the
-user for an index dataset. An uncompressed `vcf` dataset has no index and falls
-back to a single sequential scan.
+user for an index dataset. When that metadata is absent, Hopla writes a tabix
+index next to the staged VCF if the job directory is writable. An uncompressed
+`vcf` dataset has no index and falls back to a single sequential scan.
 
 ## Cytoband table
 
