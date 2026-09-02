@@ -80,6 +80,10 @@ Windows without coverage have no finite log2 ratio. They are excluded from
 segmentation and from IGV tracks, and are flagged as `mask = false` in the
 portable `copy_number` table. Segments span across such gaps.
 
+Every sample panel uses a fixed y-axis from -5 to +5. Windows whose
+`|log2(ratio)|` is greater than 5 are drawn as red triangles on the
+corresponding boundary; hover still shows the true value.
+
 ## Filter 1: filter 0 plus `dp_hard_limit`, `af_hard_limit`, and `dp_soft_limit`
 
 Tables and plots applied to SNVs after those filters. See

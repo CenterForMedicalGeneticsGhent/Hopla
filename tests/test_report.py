@@ -235,6 +235,20 @@ def test_report_restores_every_original_section() -> None:
     assert "application/gzip+json" in html
 
 
+def test_copy_number_figure_uses_fixed_y_axis() -> None:
+    """Copy-number panels share -5 to +5 and mark clipped windows with red triangles."""
+    js = (Path(__file__).resolve().parents[1] / "src/hopla/report.js").read_text(encoding="utf-8")
+    cn = js.split("BUILD.cn = function", 1)[1].split("function bafTrace", 1)[0]
+    assert "var range = [-5, 5];" in cn
+    assert "fixedrange:true" in cn
+    assert "value > 5" in cn
+    assert "value < -5" in cn
+    assert "triangle-up" in cn
+    assert "triangle-down" in cn
+    assert "P[5]" in cn
+    assert "customdata" in cn
+
+
 def test_report_inlines_packaged_assets(tmp_path: Path) -> None:
     """Inline sibling CSS, JS, and the vendored plotly.js basic file."""
     package = Path(__file__).resolve().parents[1]

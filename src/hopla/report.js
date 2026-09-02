@@ -177,18 +177,25 @@
     BUILD.cn = function(spec){
       var d = D.copy_number.data;
       var mine = where('copy_number', function(d, i){ return d.sample[i] === spec.sample; });
-      var x = [], y = [], text = [];
+      var x = [], y = [], text = [], original = [], color = [], symbol = [], opacity = [];
       mine.forEach(function(i){
         var chrom = d.chrom[i], value = d.log2_ratio[i];
         if (OFF[chrom] === undefined || value === null || !isFinite(value)) return;
+        var high = value > 5, low = value < -5;
         x.push(OFF[chrom] + d.start[i]);
-        y.push(value);
+        y.push(high ? 5 : (low ? -5 : value));
         text.push(chrom + ':' + fmt(d.start[i]) + '-' + fmt(d.end[i]));
+        original.push(value);
+        color.push(high || low ? P[5] : P[0]);
+        symbol.push(high ? 'triangle-up' : (low ? 'triangle-down' : 'circle'));
+        opacity.push(high || low ? 1 : 0.6);
       });
-      var span = extent(y);
-      var range = [Math.min(-2.25, span[0]), Math.max(2.25, span[1])];
-      var traces = [{type:'scatter', mode:'markers', x:x, y:y, text:text, hoverinfo:'y+text',
-                     marker:{color:P[0], size:M.dot * 2, opacity:0.6}}];
+      var range = [-5, 5];
+      var traces = [{
+        type:'scatter', mode:'markers', x:x, y:y, text:text, customdata:original,
+        hovertemplate:'%{customdata}<br>%{text}<extra></extra>',
+        marker:{color:color, size:M.dot * 2, opacity:opacity, symbol:symbol}
+      }];
       if (has('cn_segments')){
         var s = D.cn_segments.data;
         where('cn_segments', function(s, i){ return s.sample[i] === spec.sample; }).forEach(function(i){
@@ -208,7 +215,7 @@
         traces: traces,
         layout: layout({
           height: spec.height, xtitle: M.labels[spec.sample], ytitle: 'log2(ratio)',
-          xaxis: chromosomeAxis(), yaxis: {range: range},
+          xaxis: chromosomeAxis(), yaxis: {range: range, fixedrange:true},
           shapes: chromosomeShapes(range[0], range[1]).concat(regionShapes(range[0], range[1], null, true))
         })
       };
