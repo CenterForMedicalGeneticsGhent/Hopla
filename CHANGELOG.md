@@ -5,19 +5,6 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
-### Added
-
-- Auto-generate a tabix `.tbi` next to a bgzip-compressed VCF when no sibling
-  index exists, so contig-parallel loading can proceed. An uncompressed VCF or
-  a failed index write still warns and falls back to a sequential scan.
-
-### Fixed
-
-- Fixed the Galaxy `hopla3` analysis failing with `Settings file must use a
-  .yaml, .yml, or .json extension.` Galaxy stages every dataset as
-  `dataset_*.dat`, so the wrapper now symlinks the settings dataset to
-  `settings.yaml` or `settings.json` according to its datatype, as it already
-  did for the VCF.
 
 ## [3.0.0] - 2026-08-28
 
@@ -35,6 +22,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   lazily on scroll.
 - Added a contents list at the top of the HTML report with links to each
   section.
+- Auto-generate a tabix `.tbi` next to a bgzip-compressed VCF when no sibling
+  index exists, so contig-parallel loading can proceed. An uncompressed VCF or
+  a failed index write still warns and falls back to a sequential scan.
 - Added optional `{family.id}-export/` Parquet tables plus BigWig / BED / SEG / `igv-session.xml` IGV desktop sidecars, enabled with `--export-parquet` and `--export-bigwig`.
 - Added `hopla serve`, a loopback-only-by-default Starlette and Jinja settings editor packaged with the Python wheel.
 - Added schema-validated YAML preview/download and legacy `.txt`, YAML, and JSON imports with pedigree reconstruction.
@@ -136,6 +126,11 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   flags, so Polars' own CPU guard is inert and the process dies with SIGILL.
   Depending on `polars-runtime-compat` makes Polars load the baseline runtime,
   which it prefers whenever it is installed.
+- Fixed the Galaxy `hopla3` analysis failing with `Settings file must use a
+  .yaml, .yml, or .json extension.` Galaxy stages every dataset as
+  `dataset_*.dat`, so the wrapper now symlinks the settings dataset to
+  `settings.yaml` or `settings.json` according to its datatype, as it already
+  did for the VCF.
 
 ### Removed
 
