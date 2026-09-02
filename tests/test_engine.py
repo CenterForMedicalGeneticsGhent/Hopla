@@ -258,7 +258,7 @@ def test_warn_when_merlin_skips_complex_pedigree_chromosomes(
     with caplog.at_level(logging.WARNING):
         _warn_skipped_chromosomes(flow, markers, trio)
     assert "chr1" in caplog.text
-    assert "within the" in caplog.text
+    assert "within" in caplog.text
     assert "above" not in caplog.text
 
 

@@ -6,6 +6,7 @@ import json
 import logging
 import re
 import shutil
+from functools import cache
 from pathlib import Path
 from typing import Any, Literal
 
@@ -38,6 +39,13 @@ def sanitize_region(region: str) -> str:
     if name.upper() in {"X", "Y"}:
         name = name.upper()
     return f"chr{name}:{interval}"
+
+
+def parse_region(region: str) -> tuple[str, int, int]:
+    """Split a canonical ``chrNAME:start-end`` interval into chromosome and bounds."""
+    chrom, interval = region.split(":")
+    start, end = (int(value) for value in interval.split("-"))
+    return chrom, start, end
 
 
 class FamilyMember(BaseModel):
@@ -165,7 +173,8 @@ class Settings(BaseModel):
         for region in self.regions:
             if re.fullmatch(r"chr[^:]+:[0-9]+-[0-9]+", region) is None:
                 raise ValueError(f"invalid region: {region}")
-        self.window_size_voting_x = self.window_size_voting_x or self.window_size_voting
+        if self.window_size_voting_x is None:
+            self.window_size_voting_x = self.window_size_voting
         self.family.id = re.sub(r"[^\w]", ".", self.family.id)
         return self
 
@@ -210,10 +219,16 @@ def schema_path() -> Path:
     return path
 
 
+@cache
+def load_schema() -> dict[str, Any]:
+    """Return the packaged JSON schema."""
+    schema: dict[str, Any] = json.loads(schema_path().read_text(encoding="utf-8"))
+    return schema
+
+
 def schema_properties() -> dict[str, Any]:
     """Return the packaged schema property map."""
-    schema = json.loads(schema_path().read_text(encoding="utf-8"))
-    properties: dict[str, Any] = schema["properties"]
+    properties: dict[str, Any] = load_schema()["properties"]
     return properties
 
 
@@ -308,7 +323,7 @@ def validate_settings(raw: object) -> Settings:
     if not isinstance(raw, dict):
         raise ValueError("Settings must contain a mapping at the document root.")
     prepared, _ignored = prepare_settings_mapping(raw)
-    schema = json.loads(schema_path().read_text(encoding="utf-8"))
+    schema = load_schema()
     errors = sorted(
         Draft7Validator(schema).iter_errors(prepared), key=lambda error: list(error.path)
     )

@@ -17,6 +17,20 @@ Float32Array = npt.NDArray[np.float32]
 CHROMOSOMES = tuple([f"chr{i}" for i in range(1, 23)] + ["chrX"])
 CHROMOSOME_CODES = {chrom: index + 1 for index, chrom in enumerate(CHROMOSOMES)}
 CHROMOSOME_CODES["chrY"] = 24
+PAIRED_PALETTE = (
+    "#A6CEE3",
+    "#1F78B4",
+    "#B2DF8A",
+    "#33A02C",
+    "#FB9A99",
+    "#E31A1C",
+    "#FDBF6F",
+    "#FF7F00",
+    "#CAB2D6",
+    "#6A3D9A",
+    "#FFFF99",
+    "#B15928",
+)
 
 
 @dataclass(slots=True, frozen=True)
@@ -72,16 +86,3 @@ class Cytoband:
     end: int
     name: str
     stain: str
-
-
-@dataclass(slots=True, frozen=True)
-class ReportSeries:
-    """Represent a portable report series before rendering or export."""
-
-    track_id: str
-    sample: str
-    chrom: str
-    start: npt.NDArray[np.uint32]
-    end: npt.NDArray[np.uint32]
-    value: npt.NDArray[np.float32]
-    filter_level: int

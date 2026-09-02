@@ -12,27 +12,12 @@ from typing import Any
 
 import polars as pl
 
-from hopla.analysis import iter_nonempty
 from hopla.cytobands import chromosome_sizes
-from hopla.models import CHROMOSOMES, Cytoband
+from hopla.models import CHROMOSOMES, PAIRED_PALETTE, Cytoband
 from hopla.pedigree import pedigree_svg, sample_label
-from hopla.settings import Settings
+from hopla.settings import Settings, parse_region
 
-# ColorBrewer "Paired", the palette used for every figure.
-PALETTE = (
-    "#A6CEE3",
-    "#1F78B4",
-    "#B2DF8A",
-    "#33A02C",
-    "#FB9A99",
-    "#E31A1C",
-    "#FDBF6F",
-    "#FF7F00",
-    "#CAB2D6",
-    "#6A3D9A",
-    "#FFFF99",
-    "#B15928",
-)
+PALETTE = PAIRED_PALETTE
 REPORT_FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
 GENOTYPES = ("0/0", "0/1", "1/1")
 FILTER_TITLES = (
@@ -129,8 +114,7 @@ def _regions(settings: Settings) -> list[dict[str, object]]:
     """Parse configured regions into chromosome and coordinate fields."""
     parsed: list[dict[str, object]] = []
     for region in settings.regions:
-        chrom, interval = region.split(":")
-        start, end = (int(value) for value in interval.split("-"))
+        chrom, start, end = parse_region(region)
         parsed.append({"label": region, "chrom": chrom, "start": start, "end": end})
     return parsed
 
@@ -482,7 +466,9 @@ def render_report(
     sizes = chromosome_sizes(cytobands)
     chromosomes = [chrom for chrom in CHROMOSOMES if chrom in sizes]
     payload: dict[str, object] = {
-        name: _table_payload(frame) for name, frame in iter_nonempty(tables)
+        name: _table_payload(frame)
+        for name, frame in tables.items()
+        if not frame.is_empty()
     }
     payload["meta"] = _meta(settings, tables, samples, cytobands)
     encoded = base64.b64encode(

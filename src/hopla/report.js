@@ -270,7 +270,6 @@
     BUILD.men = function(spec){
       var d = D.mendelian.data;
       var mine = where('mendelian', function(d, i){ return d.sample[i] === spec.sample; });
-      // Window rows arrive grouped, so order them before drawing connected lines.
       var at = function(i){ return OFF[d.chrom[i]] === undefined ? null : OFF[d.chrom[i]] + d.start[i]; };
       mine = mine.filter(function(i){ return at(i) !== null; }).sort(function(a, b){ return at(a) - at(b); });
       var x = [], text = [];

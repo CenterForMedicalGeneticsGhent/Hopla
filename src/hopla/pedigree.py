@@ -178,7 +178,6 @@ def _layout(settings: Settings) -> tuple[dict[str, float], dict[str, int]]:
         if father and mother
         for member, other in ((father, mother), (mother, father))
     }
-    # Columns are wide enough that neighbouring labels never touch.
     widest = max(len(sample_label(settings, sample)) for sample in settings.family.member_ids)
     column = max(_COLUMN, 7.4 * widest + 18)
     rows: dict[int, list[str]] = {}
@@ -289,7 +288,6 @@ def pedigree_svg(settings: Settings) -> str:
         'role="img" aria-label="Family tree">'
         '<g stroke="#334155" stroke-width="1.6" fill="none">' + "".join(lines) + "</g>"
         '<g stroke="#334155" stroke-width="1.6">' + "".join(symbols) + "</g>"
-        # An inline SVG stylesheet is document-wide, so every rule stays class-scoped.
         "<style>.pedigree-svg text{stroke:none;fill:#0f172a;text-anchor:middle;"
         "font:12px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}</style></svg>"
     )

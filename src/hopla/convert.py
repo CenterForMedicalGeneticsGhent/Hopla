@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
@@ -12,9 +11,8 @@ from jsonschema import Draft7Validator
 from hopla.settings import (
     LEGACY_FAMILY_KEYS,
     family_from_parallel_arrays,
+    load_schema,
     prepare_settings_mapping,
-    schema_path,
-    schema_properties,
 )
 
 
@@ -98,8 +96,8 @@ def _csv_tokens(value: str | list[str], *, nullable: bool) -> list[Any]:
 
 def _convert_mapping(raw: dict[str, str | list[str]]) -> dict[str, Any]:
     """Coerce a parsed legacy mapping and drop unsupported keys."""
-    schema = json.loads(schema_path().read_text(encoding="utf-8"))
-    properties = schema_properties()
+    schema = load_schema()
+    properties = schema["properties"]
     converted: dict[str, Any] = {}
     family: dict[str, Any] | None = None
     if "sample_ids" in raw:

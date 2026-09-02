@@ -22,7 +22,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 from hopla.pipeline import run_analysis
-from hopla.settings import Settings, validate_settings
+from hopla.settings import Settings
 from hopla.ui.form import default_form, form_to_settings, import_config, render_yaml
 
 MAX_REQUEST_BYTES = 1024 * 1024 + 64 * 1024
@@ -142,7 +142,7 @@ async def create_analysis(request: Request) -> JSONResponse:
         lower_name = filename.lower()
         if not lower_name.endswith((".vcf", ".vcf.gz", ".vcf.bgz")):
             raise ValueError("Choose a .vcf, .vcf.gz, or .vcf.bgz file.")
-        settings = validate_settings(form_to_settings(data["form"]))
+        settings = Settings.model_validate(form_to_settings(data["form"])).derive_filter_ids()
         identifier = uuid.uuid4().hex
         directory = request.app.state.analysis_directory / identifier
         directory.mkdir()

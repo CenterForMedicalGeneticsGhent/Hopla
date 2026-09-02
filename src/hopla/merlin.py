@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from hopla.models import CHROMOSOMES, FilteredGenotypes, GenotypeMatrix, SiteTable
+from hopla.models import CHROMOSOMES, PAIRED_PALETTE, FilteredGenotypes, GenotypeMatrix, SiteTable
 from hopla.pedigree import MERLIN_BIT_LIMIT, merlin_bit_score
 from hopla.settings import Settings
 
@@ -228,20 +228,13 @@ def _warn_skipped_chromosomes(
         return
     names = ", ".join(missing)
     score = merlin_bit_score(settings)
-    if score > MERLIN_BIT_LIMIT:
-        logging.warning(
-            "Merlin produced no haplotypes for %s. Pedigree complexity is %d bits, above "
-            "Merlin's default %d-bit limit; those chromosomes have no haplotype panel.",
-            names,
-            score,
-            MERLIN_BIT_LIMIT,
-        )
-        return
+    over = score > MERLIN_BIT_LIMIT
     logging.warning(
-        "Merlin produced no haplotypes for %s (pedigree scores %d bits, within the %d-bit "
-        "limit). Those chromosomes have no haplotype panel.",
+        "Merlin produced no haplotypes for %s. Pedigree complexity is %d bits, %s "
+        "Merlin's default %d-bit limit; those chromosomes have no haplotype panel.",
         names,
         score,
+        "above" if over else "within",
         MERLIN_BIT_LIMIT,
     )
 
@@ -302,9 +295,11 @@ def run_merlin(
             window = (
                 settings.window_size_voting_x if chrom == "chrX" else settings.window_size_voting
             )
+            if window is None:
+                window = settings.window_size_voting
             minimum = settings.min_seg_var_x if chrom == "chrX" else settings.min_seg_var
             corrected, changed = correct_haplotypes(
-                strands, genotype_strands, positions, float(window or 0), int(minimum)
+                strands, genotype_strands, positions, float(window), int(minimum)
             )
             for marker, position in enumerate(positions):
                 for strand in range(2):
@@ -328,22 +323,11 @@ def _write_flow_tables(
     output_directory: Path, haplotypes: pl.DataFrame, samples: tuple[str, ...]
 ) -> None:
     """Write one compatibility flow TSV per real sample."""
-    palette = (
-        "#A6CEE3",
-        "#1F78B4",
-        "#B2DF8A",
-        "#33A02C",
-        "#FB9A99",
-        "#E31A1C",
-        "#FDBF6F",
-        "#FF7F00",
-        "#CAB2D6",
-        "#6A3D9A",
-        "#FFFF99",
-        "#B15928",
-    )
     letters = sorted(set(haplotypes["letter"].to_list())) if not haplotypes.is_empty() else []
-    colors = {letter: palette[index % len(palette)] for index, letter in enumerate(letters)}
+    colors = {
+        letter: PAIRED_PALETTE[index % len(PAIRED_PALETTE)]
+        for index, letter in enumerate(letters)
+    }
     colors["X"] = "white"
     for sample in samples:
         frame = haplotypes.filter(pl.col("sample") == sample)

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from hopla.settings import sanitize_region, schema_path, validate_settings
+from hopla.settings import parse_region, sanitize_region, schema_path, validate_settings
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 LOCAL_SCHEMA = PACKAGE_ROOT / "src" / "hopla" / "schema" / "hopla.schema.json"
@@ -116,3 +116,21 @@ def test_validate_settings_rejects_invalid_region() -> None:
                 "run_merlin": False,
             }
         )
+
+
+def test_parse_region_splits_canonical_interval() -> None:
+    """Expose chromosome and inclusive bounds from a stored region string."""
+    assert parse_region("chr17:43044295-43170327") == ("chr17", 43044295, 43170327)
+
+
+def test_explicit_zero_x_voting_window_is_kept() -> None:
+    """Do not treat a configured X voting window of zero as a missing default."""
+    settings = validate_settings(
+        {
+            "family": {"members": [{"id": "A"}]},
+            "window_size_voting": 10_000_000,
+            "window_size_voting_x": 0,
+            "run_merlin": False,
+        }
+    )
+    assert settings.window_size_voting_x == 0

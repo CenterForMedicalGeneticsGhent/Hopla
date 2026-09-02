@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 import numpy as np
 import polars as pl
 
 from hopla.models import CHROMOSOMES, FilteredGenotypes, GenotypeMatrix, SiteTable
-from hopla.settings import Settings
+from hopla.settings import Settings, parse_region
 
 
 def _chrom_names(codes: np.ndarray) -> np.ndarray:
@@ -53,8 +51,7 @@ def variant_statistics(
             selected_chrom = _chrom_names(sites.chrom[site_mask])
             called = gt[sample_index] >= 0
             for region in settings.regions:
-                chrom, interval = region.split(":")
-                start, end = (int(value) for value in interval.split("-"))
+                chrom, start, end = parse_region(region)
                 flank = settings.regions_flanking_size
                 on_chromosome = selected_chrom == chrom
                 spans = (
@@ -112,13 +109,11 @@ def genotype_pair_counts(
 
 
 def genotype_counts(
-    sites: SiteTable,
     matrix: GenotypeMatrix,
     filtered1: FilteredGenotypes,
     filtered2: FilteredGenotypes,
 ) -> pl.DataFrame:
     """Count missing, homozygous, and heterozygous calls per filter and sample."""
-    del sites
     labels = {-1: "missing", 0: "0/0", 1: "0/1", 2: "1/1"}
     rows: list[dict[str, object]] = []
     for level, calls in ((0, matrix.gt), (1, filtered1.gt), (2, filtered2.gt)):
@@ -530,7 +525,7 @@ def build_analysis_tables(
     copy_number, segments = copy_number_table(sites, matrix, settings)
     return {
         "variant_stats": variant_statistics(sites, matrix, filtered1, filtered2, settings),
-        "genotype_counts": genotype_counts(sites, matrix, filtered1, filtered2),
+        "genotype_counts": genotype_counts(matrix, filtered1, filtered2),
         "genotype_pairs": genotype_pair_counts(matrix, filtered1, filtered2),
         "variant_depth": variant_depth_table(matrix, filtered1, filtered2),
         "variant_density": variant_density_table(
@@ -563,21 +558,18 @@ def haplotype_concordance(haplotypes: pl.DataFrame) -> pl.DataFrame:
             aligned = left.join(right, on=["chrom", "pos"], how="inner").filter(
                 (pl.col("left") != "X") & (pl.col("right") != "X")
             )
-            mean = (aligned["left"] == aligned["right"]).mean() if not aligned.is_empty() else None
+            percent = None
+            if not aligned.is_empty():
+                mean = (aligned["left"] == aligned["right"]).mean()
+                if isinstance(mean, (int, float)):
+                    percent = round(float(mean) * 100, 2)
             rows.append(
                 {
                     "sample_a": left_sample,
                     "strand_a": left_strand,
                     "sample_b": right_sample,
                     "strand_b": right_strand,
-                    "concordance_percent": (
-                        round(float(mean) * 100, 2) if isinstance(mean, (int, float)) else None
-                    ),
+                    "concordance_percent": percent,
                 }
             )
     return pl.DataFrame(rows)
-
-
-def iter_nonempty(tables: dict[str, pl.DataFrame]) -> Iterable[tuple[str, pl.DataFrame]]:
-    """Yield report tables that contain at least one row."""
-    return ((name, frame) for name, frame in tables.items() if not frame.is_empty())
