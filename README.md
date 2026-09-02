@@ -1,5 +1,14 @@
 # Hopla
 
+[![Python package CI](https://github.com/CenterForMedicalGeneticsGhent/Hopla/actions/workflows/python-ci.yaml/badge.svg)](https://github.com/CenterForMedicalGeneticsGhent/Hopla/actions/workflows/python-ci.yaml)
+[![Galaxy wrapper CI](https://github.com/CenterForMedicalGeneticsGhent/Hopla/actions/workflows/galaxy-ci.yaml/badge.svg)](https://github.com/CenterForMedicalGeneticsGhent/Hopla/actions/workflows/galaxy-ci.yaml)
+[![GitHub release](https://img.shields.io/github/v/release/CenterForMedicalGeneticsGhent/Hopla)](https://github.com/CenterForMedicalGeneticsGhent/Hopla/releases)
+[![License: MIT](https://img.shields.io/github/license/CenterForMedicalGeneticsGhent/Hopla)](LICENSE)
+[![Python](https://img.shields.io/badge/python-%3E%3D3.12-blue)](docs/install.md)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/recipes/hopla/README.html)
+[![Conda version](https://img.shields.io/conda/vn/bioconda/hopla)](https://anaconda.org/bioconda/hopla)
+[![Quay](https://img.shields.io/badge/quay.io-cmgg%2Fhopla-blue)](https://quay.io/repository/cmgg/hopla)
+
 Hopla performs classic genomic single, duo, trio, and larger-family analysis from one (multisample) VCF, and writes interactive HTML visualizations. When the pedigree allows it, it also runs offline haplotyping with [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Besides post-natal work, the report is meant to support embryo selection during preimplantation genetic testing, with the aim of healthy births in affected families. The name is both a ‘haplo’ anagram and a children’s television show.
 
 This repository holds the typed Python package `hopla` (version 3.0.0).
