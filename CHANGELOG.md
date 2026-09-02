@@ -13,20 +13,18 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ### Changed
 
-- Split the Galaxy wrapper into one tool per CLI subtool: `hopla3` runs the
-  analysis and the new `hopla3_convert` converts legacy settings. Both are
-  published from the same ToolShed repository.
-- Reduced the Galaxy `hopla3` wrapper to a single flat input form. The
-  operation, compression, and index conditionals are gone; one VCF parameter
-  accepts `vcf` or `vcf_bgzip`, and the tabix index Galaxy already stores as
-  `vcf_bgzip` metadata is staged automatically, so contig-parallel loading no
-  longer depends on the user supplying an index dataset.
+- Reduced the Galaxy `hopla3` wrapper to one `conditional` that selects `run`
+  or `convert`, with each operation's parameters in its own `when` block. The
+  compression and index conditionals are gone: one VCF parameter accepts `vcf`
+  or `vcf_bgzip`, and the tabix index Galaxy already stores as `vcf_bgzip`
+  metadata is staged automatically, so contig-parallel loading no longer
+  depends on the user supplying an index dataset.
 - Simplified the Galaxy command block to plain Cheetah: no `set -eu`, no shell
   variables, and no command substitution. The report is moved from the job
   working directory and the export archive now contains the
   `{family.id}-export/` directory instead of its bare contents.
-- Renamed the `hopla3` outputs from `run_report` and `run_exports` to `report`
-  and `exports`.
+- Renamed the `hopla3` outputs `run_report` and `run_exports` to `report` and
+  `exports`, and gave each output a single filter expression.
 
 ### Fixed
 

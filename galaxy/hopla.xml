@@ -1,44 +1,67 @@
 <tool id="hopla3" name="Hopla 3" version="3.0.0+galaxy0" profile="23.0">
-    <description>genomic family analysis with an interactive HTML report</description>
+    <description>genomic family analysis and legacy settings conversion</description>
     <requirements>
         <container type="docker">quay.io/cmgg/hopla:3.0.0</container>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
-#set $vcf_path = 'input.vcf.gz' if $vcf.is_of_type('vcf_bgzip') else 'input.vcf'
-ln -s '$vcf' '$vcf_path' &&
-#if $vcf.is_of_type('vcf_bgzip')
-ln -s '$vcf.metadata.tabix_index' '${vcf_path}.tbi' &&
-#end if
+#if str($operation.subcommand) == "run":
+    #set $vcf_path = 'input.vcf.gz' if $operation.vcf.is_of_type('vcf_bgzip') else 'input.vcf'
+ln -s '$operation.vcf' '$vcf_path' &&
+    #if $operation.vcf.is_of_type('vcf_bgzip'):
+ln -s '$operation.vcf.metadata.tabix_index' '${vcf_path}.tbi' &&
+    #end if
 hopla -L debug run
 -t \${GALAXY_SLOTS:-1}
-#if $cytoband
--c '$cytoband'
-#end if
-$export_parquet $export_bigwig
-'$settings' '$vcf_path' &&
+    #if $operation.cytoband:
+-c '$operation.cytoband'
+    #end if
+$operation.export_parquet $operation.export_bigwig
+'$operation.settings' '$vcf_path' &&
 mv *-output.html '$report'
-#if $export_parquet or $export_bigwig
+    #if $operation.export_parquet or $operation.export_bigwig:
 && tar -czf '$exports' *-export
+    #end if
+#else:
+hopla -L debug convert '$operation.legacy' '$converted_settings'
 #end if
     ]]></command>
     <inputs>
-        <param name="settings" type="data" format="yaml,json" label="Analysis settings"/>
-        <param name="vcf" type="data" format="vcf,vcf_bgzip" label="Family VCF"/>
-        <param name="cytoband" type="data" format="tabular,txt" optional="true" label="UCSC hg38 cytoband table" help="Downloaded from UCSC when omitted."/>
-        <param name="export_parquet" type="boolean" truevalue="--export-parquet" falsevalue="" checked="false" label="Export portable Parquet tables"/>
-        <param name="export_bigwig" type="boolean" truevalue="--export-bigwig" falsevalue="" checked="false" label="Export IGV tracks"/>
+        <conditional name="operation">
+            <param name="subcommand" type="select" label="Operation">
+                <option value="run" selected="true">Run family analysis</option>
+                <option value="convert">Convert legacy settings</option>
+            </param>
+            <when value="run">
+                <param name="settings" type="data" format="yaml,json" label="Analysis settings"/>
+                <param name="vcf" type="data" format="vcf,vcf_bgzip" label="Family VCF"/>
+                <param name="cytoband" type="data" format="tabular,txt" optional="true" label="UCSC hg38 cytoband table" help="Downloaded from UCSC when omitted."/>
+                <param name="export_parquet" type="boolean" truevalue="--export-parquet" falsevalue="" checked="false" label="Export portable Parquet tables"/>
+                <param name="export_bigwig" type="boolean" truevalue="--export-bigwig" falsevalue="" checked="false" label="Export IGV tracks"/>
+            </when>
+            <when value="convert">
+                <param name="legacy" type="data" format="txt" label="Legacy key=value settings"/>
+            </when>
+        </conditional>
     </inputs>
     <outputs>
-        <data name="report" format="html" label="${tool.name} on ${on_string}: report"/>
+        <data name="report" format="html" label="${tool.name} on ${on_string}: report">
+            <filter>operation['subcommand'] == 'run'</filter>
+        </data>
         <data name="exports" format="tgz" label="${tool.name} on ${on_string}: exports">
-            <filter>export_parquet or export_bigwig</filter>
+            <filter>operation['subcommand'] == 'run' and (operation['export_parquet'] or operation['export_bigwig'])</filter>
+        </data>
+        <data name="converted_settings" format="yaml" label="${tool.name} on ${on_string}: settings">
+            <filter>operation['subcommand'] == 'convert'</filter>
         </data>
     </outputs>
     <tests>
         <test expect_num_outputs="1">
-            <param name="settings" value="settings.yaml" ftype="yaml"/>
-            <param name="vcf" value="family.vcf" ftype="vcf"/>
-            <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+            <conditional name="operation">
+                <param name="subcommand" value="run"/>
+                <param name="settings" value="settings.yaml" ftype="yaml"/>
+                <param name="vcf" value="family.vcf" ftype="vcf"/>
+                <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+            </conditional>
             <output name="report">
                 <assert_contents>
                     <has_text text="galaxy.test"/>
@@ -47,9 +70,12 @@ mv *-output.html '$report'
             </output>
         </test>
         <test expect_num_outputs="1">
-            <param name="settings" value="settings.yaml" ftype="yaml"/>
-            <param name="vcf" value="family.vcf.gz" ftype="vcf_bgzip"/>
-            <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+            <conditional name="operation">
+                <param name="subcommand" value="run"/>
+                <param name="settings" value="settings.yaml" ftype="yaml"/>
+                <param name="vcf" value="family.vcf.gz" ftype="vcf_bgzip"/>
+                <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+            </conditional>
             <output name="report">
                 <assert_contents>
                     <has_text text="galaxy.test"/>
@@ -58,10 +84,13 @@ mv *-output.html '$report'
             </output>
         </test>
         <test expect_num_outputs="2">
-            <param name="settings" value="settings.yaml" ftype="yaml"/>
-            <param name="vcf" value="family.vcf" ftype="vcf"/>
-            <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
-            <param name="export_parquet" value="true"/>
+            <conditional name="operation">
+                <param name="subcommand" value="run"/>
+                <param name="settings" value="settings.yaml" ftype="yaml"/>
+                <param name="vcf" value="family.vcf" ftype="vcf"/>
+                <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+                <param name="export_parquet" value="true"/>
+            </conditional>
             <output name="report">
                 <assert_contents>
                     <has_text text="galaxy.test"/>
@@ -73,16 +102,27 @@ mv *-output.html '$report'
                 </assert_contents>
             </output>
         </test>
+        <test expect_num_outputs="1">
+            <conditional name="operation">
+                <param name="subcommand" value="convert"/>
+                <param name="legacy" value="legacy-settings.txt" ftype="txt"/>
+            </conditional>
+            <output name="converted_settings" file="converted-settings.yaml"/>
+        </test>
     </tests>
     <help><![CDATA[
 **Hopla**
 
-Hopla analyzes a multisample family VCF from schema-validated YAML or JSON
-settings and writes a self-contained interactive HTML report.
+**Run family analysis** analyzes a multisample family VCF from schema-validated
+YAML or JSON settings and writes a self-contained interactive HTML report,
+optionally with an archive of the Parquet or IGV exports.
 
 A bgzip-compressed VCF is read per contig with all allocated job slots, using
 the tabix index Galaxy keeps for the dataset. An uncompressed VCF is scanned
 sequentially.
+
+**Convert legacy settings** converts the historical ``key=value`` settings
+format to the YAML accepted by the analysis.
 
 The report requires JavaScript. Galaxy administrators must add the ``hopla3``
 tool id to the file configured by ``sanitize_allowlist_file`` so Galaxy serves
