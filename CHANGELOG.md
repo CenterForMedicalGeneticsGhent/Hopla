@@ -1,81 +1,53 @@
 # Changelog
 
-This changelog covers the Hopla Python package. Releases 2.0.0 and 1.0.6
-document the predecessor R analysis pipeline.
+This changelog covers the Hopla Python package. Releases 2.0.0 and 1.0.6 document the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
 
 ## [3.0.0] - 2026-08-28
 
-Hopla 3.0.0 is a complete rewrite of 2.0.0. The R package (`hopla-r`) and Vue
-settings editor (`hopla-ui`) are replaced by one installable Python package at
-the repository root.
+Hopla 3.0.0 is a complete rewrite of 2.0.0. The R package (`hopla-r`) and Vue settings editor (`hopla-ui`) are replaced by one installable Python package at the repository root.
 
-The command line still exposes `run`, `convert`, `concordance`, and `transform`
-with the same status conventions (`0` success, `2` usage, `1` runtime).
-Analysis still takes a settings file and a VCF, still calls Merlin 1.1.2 for
-haplotyping when the pedigree allows it, and still writes a self-contained HTML
-report. The engine, editor, packaging, and container are new.
+The command line still exposes `run`, `convert`, `concordance`, and `transform` with the same status conventions (`0` success, `2` usage, `1` runtime). Analysis still takes a settings file and a VCF, still calls Merlin 1.1.2 for haplotyping when the pedigree allows it, and still writes a self-contained HTML report. The engine, editor, packaging, and container are new.
 
 ### Added
 
-- Typed Python engine under `src/hopla/`, with pixi `default` / `dev`
-  environments, pytest, ruff, and mypy.
-- `hopla serve`, a packaged Starlette settings editor: YAML/JSON/legacy import,
-  validated YAML preview and download, a Merlin 24-bit family-size guard, and
-  optional in-browser analysis (`--no-analysis` serves settings only).
-- `hopla run -t` / `--threads` for contig-parallel VCF loading (default: all
-  CPUs). A missing tabix index on a bgzip VCF is written when possible.
-- Optional `{family.id}-export/` Parquet tables and IGV desktop sidecars
-  (`--export-parquet`, `--export-bigwig`).
-- Galaxy wrapper for `hopla run` and `hopla convert`, with ToolShed metadata in
-  `galaxy/.shed.yml`.
+- Typed Python engine under `src/hopla/`, with pixi `default` / `dev` environments, pytest, ruff, and mypy.
+- `hopla serve`, a packaged Starlette settings editor: YAML/JSON/legacy import, validated YAML preview and download, a Merlin 24-bit family-size guard, and optional in-browser analysis (`--no-analysis` serves settings only).
+- `hopla run -t` / `--threads` for contig-parallel VCF loading (default: all CPUs). A missing tabix index on a bgzip VCF is written when possible.
+- Optional `{family.id}-export/` Parquet tables and IGV desktop sidecars (`--export-parquet`, `--export-bigwig`).
+- Galaxy wrapper for `hopla run` and `hopla convert`, with ToolShed metadata in `galaxy/.shed.yml`.
 - Python user and contributor manual under `docs/`.
 
 ### Changed
 
 Relative to 2.0.0 settings and CLI:
 
-- Pedigree is a structured `family.id` / `family.members` object with
-  member-by-ID parents and `sex`. Parallel-array files and `genders` still load
-  through remap and `hopla convert`.
-- `info` is one multiline string instead of a list of disease / inheritance /
-  sequencing lines.
-- Unsupported keys warn and are ignored; generated YAML omits unused
-  compatibility keys.
-- Copy-pasted intervals such as `17:43,044,295-43,170,327` are stored as
-  `chr17:43044295-43170327`.
-- An explicit `window_size_voting_x` of `0` is kept rather than replaced by the
-  autosome window.
+- Pedigree is a structured `family.id` / `family.members` object with member-by-ID parents and `sex`. Parallel-array files and `genders` still load through remap and `hopla convert`.
+- `info` is one multiline string instead of a list of disease / inheritance / sequencing lines.
+- Unsupported keys warn and are ignored; generated YAML omits unused compatibility keys.
+- Copy-pasted intervals such as `17:43,044,295-43,170,327` are stored as `chr17:43044295-43170327`.
+- An explicit `window_size_voting_x` of `0` is kept rather than replaced by the autosome window.
 
 Relative to the 2.0.0 R report:
 
-- BAF and parent-mapping downsampling (`limit_baf_to_p`, `limit_pm_to_p`) uses
-  a deterministic stride, not random sampling.
+- BAF and parent-mapping downsampling (`limit_baf_to_p`, `limit_pm_to_p`) uses a deterministic stride, not random sampling.
 - Genotype-count and haplotype-concordance grids are HTML tables.
-- Copy-number panels share a −5 to +5 y-axis; `|log2(ratio)| > 5` is drawn on
-  the boundary and shown on hover.
+- Copy-number panels share a −5 to +5 y-axis; `|log2(ratio)| > 5` is drawn on the boundary and shown on hover.
 - Variant-depth histograms share bins capped at the pooled 99.5th percentile.
-- Copy-number segmentation is a deterministic recursive CBS statistic, not
-  DNAcopy with resampling.
-- The report inlines packaged CSS, JS, and plotly.js basic (not the full
-  library) and draws SVG panels lazily on scroll.
+- Copy-number segmentation is a deterministic recursive CBS statistic, not DNAcopy with resampling.
+- The report inlines packaged CSS, JS, and plotly.js basic (not the full library) and draws SVG panels lazily on scroll.
 
 ### Removed
 
-- The R analysis engine, Vue/Vuetify editor, Node toolchain, UI container tags,
-  and unused settings `color_palette`, `self_contained`, and `cairo`.
+- The R analysis engine, Vue/Vuetify editor, Node toolchain, UI container tags, and unused settings `color_palette`, `self_contained`, and `cairo`.
 
 ### Notes
 
-- Merlin 1.1.2 remains an external binary. Haplotyping is skipped when `merlin`
-  or `minx` is missing from `PATH`, or when only one real sample is analyzed.
-- The container keeps the pixi environment off `PATH` and runs Hopla through
-  `/usr/local/bin/hopla`, so Galaxy metadata and a bare `python` do not use the
-  image interpreter.
-- Polars uses the compat runtime so hosts without AVX2 (including default QEMU
-  `qemu64` guests) do not die with `Illegal instruction`.
+- Merlin 1.1.2 remains an external binary. Haplotyping is skipped when `merlin` or `minx` is missing from `PATH`, or when only one real sample is analyzed.
+- The container keeps the pixi environment off `PATH` and runs Hopla through `/usr/local/bin/hopla`, so Galaxy metadata and a bare `python` do not use the image interpreter.
+- Polars uses the compat runtime so hosts without AVX2 (including default QEMU `qemu64` guests) do not die with `Illegal instruction`.
 
 ## [2.0.0] - 2026-08-27
 

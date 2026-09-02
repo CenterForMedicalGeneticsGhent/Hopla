@@ -1,8 +1,6 @@
 # Python engine architecture
 
-Hopla is an installable Python package at the repository root. Public
-modules live under `src/hopla/`, tests under `tests/`, and the user/contributor
-manual under `docs/`.
+Hopla is an installable Python package at the repository root. Public modules live under `src/hopla/`, tests under `tests/`, and the user/contributor manual under `docs/`.
 
 ```text
 pyproject.toml              package metadata, console script, tool config
@@ -32,60 +30,27 @@ tests/                      pytest coverage for CLI, engine, report, export
 docs/                       user and contributor manual
 ```
 
-The settings schema is packaged with the wheel as
-`hopla/schema/hopla.schema.json` from `src/hopla/schema/hopla.schema.json`.
-Report CSS, JS, and the plotly.js basic bundle sit next to `report.py` and are
-packaged the same way. There is no runtime fallback to another package tree.
+The settings schema is packaged with the wheel as `hopla/schema/hopla.schema.json` from `src/hopla/schema/hopla.schema.json`. Report CSS, JS, and the plotly.js basic bundle sit next to `report.py` and are packaged the same way. There is no runtime fallback to another package tree.
 
 ## Engine flow
 
 The Python engine is explicit and columnar:
 
-1. `settings.py` validates the structured `family.members` YAML/JSON model and
-   derives pedigree defaults before VCF loading. Engine modules resolve
-   parents and sex directly from family members by ID.
-2. `vcf.py` streams selected biallelic SNVs with cyvcf2 into one `SiteTable`
-   and compact sample-by-site NumPy matrices. Indexed VCFs load supported
-   contigs in a process pool (`hopla run -t`, default all CPUs). A missing
-   tabix or CSI index on a bgzip-compressed VCF is written as `{vcf}.tbi` when
-   possible; otherwise loading warns and falls back to a single sequential
-   scan.
-3. `filters.py`, `analysis.py`, and `merlin.py` operate on masks and matrices;
-   they do not duplicate site columns per sample.
-4. `report.py` serializes each result table by column, gzip-compresses the
-   payload, and inlines packaged `report.css`, `report.js`, and plotly.js
-   basic once. Figures are built in the browser from that single payload and
-   drawn only when they scroll into view, so the report keeps Plotly visuals
-   without repeating the data per figure.
-5. `export/parquet.py` and `export/igv.py` optionally write the same visualized
-   tables as portable Parquet plus BigWig / BED / SEG / `igv-session.xml`
-   sidecars. See [exports.md](exports.md).
+1. `settings.py` validates the structured `family.members` YAML/JSON model and derives pedigree defaults before VCF loading. Engine modules resolve parents and sex directly from family members by ID.
+2. `vcf.py` streams selected biallelic SNVs with cyvcf2 into one `SiteTable` and compact sample-by-site NumPy matrices. Indexed VCFs load supported contigs in a process pool (`hopla run -t`, default all CPUs). A missing tabix or CSI index on a bgzip-compressed VCF is written as `{vcf}.tbi` when possible; otherwise loading warns and falls back to a single sequential scan.
+3. `filters.py`, `analysis.py`, and `merlin.py` operate on masks and matrices; they do not duplicate site columns per sample.
+4. `report.py` serializes each result table by column, gzip-compresses the payload, and inlines packaged `report.css`, `report.js`, and plotly.js basic once. Figures are built in the browser from that single payload and drawn only when they scroll into view, so the report keeps Plotly visuals without repeating the data per figure.
+5. `export/parquet.py` and `export/igv.py` optionally write the same visualized tables as portable Parquet plus BigWig / BED / SEG / `igv-session.xml` sidecars. See [exports.md](exports.md).
 
-All functions are typed and documented. Polars owns tabular joins and
-aggregation; NumPy owns dense genotype operations. Merlin 1.1.2 remains an
-external executable so its haplotyping inference stays compatible with prior
-Hopla Merlin workflows.
+All functions are typed and documented. Polars owns tabular joins and aggregation; NumPy owns dense genotype operations. Merlin 1.1.2 remains an external executable so its haplotyping inference stays compatible with prior Hopla Merlin workflows.
 
-`cli.py` owns command-line parsing and logging setup. `pipeline.py` owns the
-shared analysis sequence, temporary cytoband download lifetime, and output
-writes used by the CLI and web interface. Individual analysis modules define
-the narrower helpers called by that sequence.
+`cli.py` owns command-line parsing and logging setup. `pipeline.py` owns the shared analysis sequence, temporary cytoband download lifetime, and output writes used by the CLI and web interface. Individual analysis modules define the narrower helpers called by that sequence.
 
 ## Web interface flow
 
-`hopla serve` starts the Starlette application in `serve.py` through Uvicorn.
-The application serves package-local Jinja, CSS, and JavaScript assets from
-`ui/`. Browser form state is stateless: preview, import, and download requests
-carry the complete form model. `ui/form.py` converts that model to schema-valid
-settings and reconstructs the youngest pedigree from imported legacy,
-YAML, or JSON settings.
+`hopla serve` starts the Starlette application in `serve.py` through Uvicorn. The application serves package-local Jinja, CSS, and JavaScript assets from `ui/`. Browser form state is stateless: preview, import, and download requests carry the complete form model. `ui/form.py` converts that model to schema-valid settings and reconstructs the youngest pedigree from imported legacy, YAML, or JSON settings.
 
-For an analysis, the application validates the current form, allocates a
-randomly identified job directory under an application-lifetime temporary
-directory, and streams the selected VCF into it. The blocking shared pipeline
-runs in a worker thread while the browser polls coarse job status. Web jobs
-disable portable and IGV exports; the completed HTML report remains available
-for download until the server stops.
+For an analysis, the application validates the current form, allocates a randomly identified job directory under an application-lifetime temporary directory, and streams the selected VCF into it. The blocking shared pipeline runs in a worker thread while the browser polls coarse job status. Web jobs disable portable and IGV exports; the completed HTML report remains available for download until the server stops.
 
 ## Change placement
 
@@ -96,24 +61,12 @@ for download until the server stops.
 - Put analysis tables in `analysis.py`.
 - Put Merlin execution and haplotype correction in `merlin.py`.
 - Put report HTML assembly in `report.py`.
-- Put settings and analysis HTTP routes in `serve.py` and form mapping/assets
-  in `ui/`.
+- Put settings and analysis HTTP routes in `serve.py` and form mapping/assets in `ui/`.
 - Put portable / IGV exporters under `export/`.
 - Add behavior coverage under `tests/`.
 
 ## Compatibility
 
-The Typer CLI preserves the `run`, `convert`, `concordance`, and `transform`
-commands and status conventions (`0` success, `2` usage, `1` runtime). The
-report reproduces the established section order, figures, and Paired palette.
-Two deliberate differences remain: the count and concordance grids are HTML
-tables rather than Plotly tables, and `limit_baf_to_p` / `limit_pm_to_p`
-subsample deterministically instead of randomly. Every panel is drawn as SVG
-rather than WebGL, because browsers cap the number of simultaneous WebGL
-contexts well below the panel count. Copy-number segmentation uses a
-deterministic recursive circular-binary-segmentation change statistic and is
-therefore not bit-identical to permutation-based circular-binary-segmentation
-with resampling.
+The Typer CLI preserves the `run`, `convert`, `concordance`, and `transform` commands and status conventions (`0` success, `2` usage, `1` runtime). The report reproduces the established section order, figures, and Paired palette. Two deliberate differences remain: the count and concordance grids are HTML tables rather than Plotly tables, and `limit_baf_to_p` / `limit_pm_to_p` subsample deterministically instead of randomly. Every panel is drawn as SVG rather than WebGL, because browsers cap the number of simultaneous WebGL contexts well below the panel count. Copy-number segmentation uses a deterministic recursive circular-binary-segmentation change statistic and is therefore not bit-identical to permutation-based circular-binary-segmentation with resampling.
 
-The report always inlines packaged CSS, JS, and plotly.js basic, and uses the
-Paired palette.
+The report always inlines packaged CSS, JS, and plotly.js basic, and uses the Paired palette.

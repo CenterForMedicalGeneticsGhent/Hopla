@@ -1,12 +1,6 @@
 # Hopla
 
-Hopla performs classic genomic single, duo, trio, and larger-family analysis
-from one (multisample) VCF, and writes interactive HTML visualizations. When
-the pedigree allows it, it also runs offline haplotyping with
-[Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Besides
-post-natal work, the report is meant to support embryo selection during
-preimplantation genetic testing, with the aim of healthy births in affected
-families. The name is both a ‘haplo’ anagram and a children’s television show.
+Hopla performs classic genomic single, duo, trio, and larger-family analysis from one (multisample) VCF, and writes interactive HTML visualizations. When the pedigree allows it, it also runs offline haplotyping with [Merlin](http://csg.sph.umich.edu/abecasis/merlin/index.html). Besides post-natal work, the report is meant to support embryo selection during preimplantation genetic testing, with the aim of healthy births in affected families. The name is both a ‘haplo’ anagram and a children’s television show.
 
 This repository holds the typed Python package `hopla` (version 3.0.0).
 
@@ -27,22 +21,11 @@ This repository holds the typed Python package `hopla` (version 3.0.0).
 
 - A (multisample) `vcf.gz` file.
 - A YAML or JSON [settings file](docs/settings.md) describing the family and analysis options. Create it by hand or with the optional local [`hopla serve`](docs/serve.md) editor.
-- For CLI runs, the VCF path and output directory are command-line arguments,
-  not settings keys. The local web interface can instead upload a selected VCF
-  and return a temporary HTML report.
+- For CLI runs, the VCF path and output directory are command-line arguments, not settings keys. The local web interface can instead upload a selected VCF and return a temporary HTML report.
 
 ### Maximum family size for haplotyping
 
-Merlin refuses any chromosome whose pedigree complexity exceeds its built-in
-24-bit limit, scored as `2 x descendants - founders`. Two parents and thirteen
-children reach exactly 24 bits, so that is the largest such family Merlin will
-haplotype; adding four grandparents lowers the ceiling to twelve children.
-Beyond that, Merlin silently skips every autosome and only chromosome X is
-haplotyped, because `minx` treats males as hemizygous and scores the same
-family lower. Hopla logs a warning naming the skipped chromosomes and still
-writes the report, and the [settings editor](docs/serve.md) stops you adding
-members past the limit. Every other analysis is unaffected by family size. See
-[HTML output](docs/output.md) for details.
+Merlin refuses any chromosome whose pedigree complexity exceeds its built-in 24-bit limit, scored as `2 x descendants - founders`. Two parents and thirteen children reach exactly 24 bits, so that is the largest such family Merlin will haplotype; adding four grandparents lowers the ceiling to twelve children. Beyond that, Merlin silently skips every autosome and only chromosome X is haplotyped, because `minx` treats males as hemizygous and scores the same family lower. Hopla logs a warning naming the skipped chromosomes and still writes the report, and the [settings editor](docs/serve.md) stops you adding members past the limit. Every other analysis is unaffected by family size. See [HTML output](docs/output.md) for details.
 
 ## Quick start
 
@@ -53,13 +36,9 @@ pixi install --locked
 pixi run hopla run example/settings.yaml path/to/family.vcf.gz
 ```
 
-Pass `--export-parquet` and `--export-bigwig` to also write `{family.id}-export/`
-with Parquet tables and IGV desktop tracks. See [exports.md](docs/exports.md).
-Example settings and a legacy conversion fixture are in [`example/`](example/).
+Pass `--export-parquet` and `--export-bigwig` to also write `{family.id}-export/` with Parquet tables and IGV desktop tracks. See [exports.md](docs/exports.md). Example settings and a legacy conversion fixture are in [`example/`](example/).
 
-`hopla serve` can create or import settings, upload a VCF selected in the
-browser, run the analysis, and return its HTML report. Web runs use temporary
-storage and omit the Parquet and IGV exports.
+`hopla serve` can create or import settings, upload a VCF selected in the browser, run the analysis, and return its HTML report. Web runs use temporary storage and omit the Parquet and IGV exports.
 
 ```bash
 hopla run settings.yaml family.vcf.gz
@@ -80,8 +59,7 @@ pixi run hopla serve
 
 ## Container images
 
-The image is published as `quay.io/cmgg/hopla` with `latest`, `stable`, a
-package version such as `3.0.0`, or a commit SHA.
+The image is published as `quay.io/cmgg/hopla` with `latest`, `stable`, a package version such as `3.0.0`, or a commit SHA.
 
 ```bash
 docker build -t hopla .
