@@ -25,6 +25,9 @@ subtools, including historical notes from the predecessor R analysis pipeline.
   `{family.id}-export/` directory instead of its bare contents.
 - Renamed the `hopla3` outputs `run_report` and `run_exports` to `report` and
   `exports`, and gave each output a single filter expression.
+- Turned the Galaxy cytoband parameter into a path with the default
+  `/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt`. It is no longer a
+  history dataset; clearing the field still downloads the table from UCSC.
 
 ### Fixed
 

@@ -34,7 +34,7 @@ hopla -L debug convert '$operation.legacy' '$converted_settings'
             <when value="run">
                 <param name="settings" type="data" format="yaml,json" label="Analysis settings"/>
                 <param name="vcf" type="data" format="vcf,vcf_bgzip" label="Family VCF"/>
-                <param name="cytoband" type="data" format="tabular,txt" optional="true" label="UCSC hg38 cytoband table" help="Downloaded from UCSC when omitted."/>
+                <param name="cytoband" type="text" value="/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt" optional="true" label="UCSC hg38 cytoband table" help="Path to a cytoband table on the job host; it must be readable from inside the job container. Clear the field to download the hg38 table from UCSC."/>
                 <param name="export_parquet" type="boolean" truevalue="--export-parquet" falsevalue="" checked="false" label="Export portable Parquet tables"/>
                 <param name="export_bigwig" type="boolean" truevalue="--export-bigwig" falsevalue="" checked="false" label="Export IGV tracks"/>
             </when>
@@ -60,7 +60,7 @@ hopla -L debug convert '$operation.legacy' '$converted_settings'
                 <param name="subcommand" value="run"/>
                 <param name="settings" value="settings.yaml" ftype="yaml"/>
                 <param name="vcf" value="family.vcf" ftype="vcf"/>
-                <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+                <param name="cytoband" value=""/>
             </conditional>
             <output name="report">
                 <assert_contents>
@@ -74,7 +74,7 @@ hopla -L debug convert '$operation.legacy' '$converted_settings'
                 <param name="subcommand" value="run"/>
                 <param name="settings" value="settings.yaml" ftype="yaml"/>
                 <param name="vcf" value="family.vcf.gz" ftype="vcf_bgzip"/>
-                <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+                <param name="cytoband" value=""/>
             </conditional>
             <output name="report">
                 <assert_contents>
@@ -88,7 +88,7 @@ hopla -L debug convert '$operation.legacy' '$converted_settings'
                 <param name="subcommand" value="run"/>
                 <param name="settings" value="settings.yaml" ftype="yaml"/>
                 <param name="vcf" value="family.vcf" ftype="vcf"/>
-                <param name="cytoband" value="cytoband.hg38.txt" ftype="tabular"/>
+                <param name="cytoband" value=""/>
                 <param name="export_parquet" value="true"/>
             </conditional>
             <output name="report">
@@ -120,6 +120,11 @@ optionally with an archive of the Parquet or IGV exports.
 A bgzip-compressed VCF is read per contig with all allocated job slots, using
 the tabix index Galaxy keeps for the dataset. An uncompressed VCF is scanned
 sequentially.
+
+The cytoband table is read from the path in **UCSC hg38 cytoband table**, which
+must be readable from inside the job container. Clearing the field makes Hopla
+download the hg38 table from UCSC instead, which requires the job to have
+network access.
 
 **Convert legacy settings** converts the historical ``key=value`` settings
 format to the YAML accepted by the analysis.

@@ -4,7 +4,7 @@ The Galaxy wrapper at [`galaxy/hopla.xml`](../galaxy/hopla.xml) (tool id
 `hopla3`) exposes two operations behind an **Operation** selector:
 
 - **Run family analysis** accepts YAML or JSON settings, an uncompressed or
-  bgzip-compressed VCF, and an optional cytoband table. It produces the
+  bgzip-compressed VCF, and the path of a cytoband table. It produces the
   interactive HTML report and, when requested, a compressed archive of the
   Parquet or IGV exports.
 - **Convert legacy settings** accepts the historical `key=value` text format
@@ -65,6 +65,15 @@ is loaded contig-parallel across the job's allocated slots without asking the
 user for an index dataset. An uncompressed `vcf` dataset has no index and falls
 back to a single sequential scan.
 
+## Cytoband table
+
+**UCSC hg38 cytoband table** is a path, not a history dataset. It defaults to
+`/references/Hsapiens/hg38/hopla/cytoBand_hg38.txt`, the location used by the
+CMGG instance. The path is resolved inside the job container, so the directory
+holding it must be part of the destination's `docker_volumes` (or the
+equivalent Singularity bind paths). Clearing the field makes Hopla download the
+hg38 table from UCSC, which needs the job to have network access.
+
 ## Linting and testing
 
 Lint or run the embedded wrapper tests from a Planemo environment. The pixi
@@ -74,3 +83,6 @@ Lint or run the embedded wrapper tests from a Planemo environment. The pixi
 pixi run -e dev lint-galaxy
 planemo test galaxy/hopla.xml
 ```
+
+The wrapper tests leave the cytoband path empty, so the analysis tests download
+the hg38 cytoband table from UCSC.
