@@ -5,6 +5,12 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ## [Unreleased]
 
+### Changed
+
+- Copy-number report panels now use a fixed y-axis from -5 to +5 for every
+  sample. Windows with `|log2(ratio)| > 5` appear as red triangles on the
+  boundary; hover still shows the true value.
+
 ### Added
 
 - Added `sanitize_region` so settings load and the settings editor accept
