@@ -40,6 +40,11 @@ subtools, including historical notes from the predecessor R analysis pipeline.
 
 ### Fixed
 
+- Fixed the Galaxy `hopla3` analysis failing with `Settings file must use a
+  .yaml, .yml, or .json extension.` Galaxy stages every dataset as
+  `dataset_*.dat`, so the wrapper now symlinks the settings dataset to
+  `settings.yaml` or `settings.json` according to its datatype, as it already
+  did for the VCF.
 - Fixed the container entrypoint for job runners that pass a command to
   `docker run`. `ENTRYPOINT ["/app/entrypoint.sh", "bash"]` turned Galaxy's
   `docker run <image> /bin/sh tool_script.sh` into

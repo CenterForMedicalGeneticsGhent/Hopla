@@ -5,7 +5,9 @@
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
 #if str($operation.subcommand) == "run":
+    #set $settings_path = 'settings.yaml' if $operation.settings.is_of_type('yaml') else 'settings.json'
     #set $vcf_path = 'input.vcf.gz' if $operation.vcf.is_of_type('vcf_bgzip') else 'input.vcf'
+ln -s '$operation.settings' '$settings_path' &&
 ln -s '$operation.vcf' '$vcf_path' &&
     #if $operation.vcf.is_of_type('vcf_bgzip'):
 ln -s '$operation.vcf.metadata.tabix_index' '${vcf_path}.tbi' &&
@@ -16,7 +18,7 @@ hopla -L debug run
 -c '$operation.cytoband'
     #end if
 $operation.export_parquet $operation.export_bigwig
-'$operation.settings' '$vcf_path' &&
+'$settings_path' '$vcf_path' &&
 mv *-output.html '$report'
     #if $operation.export_parquet or $operation.export_bigwig:
 && tar -czf '$exports' *-export
