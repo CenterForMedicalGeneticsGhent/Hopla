@@ -1,0 +1,28 @@
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:#0f172a;margin:0 auto;padding:24px 32px 96px;max-width:1600px;line-height:1.45}
+h1{font-size:22px;margin:0 0 16px}
+h2,h3{scroll-margin-top:12px}
+h2{font-size:19px;margin:44px 0 12px;padding-top:16px;border-top:2px solid #0f172a}
+h3{font-size:16px;margin:28px 0 8px}
+.toc{margin:0 0 8px;padding:16px 20px 12px;border:1px solid #cbd5f5;background:#f8fafc}
+.toc-title{font-size:16px;font-weight:600;margin:0 0 8px}
+.toc ul{margin:0;padding:0;list-style:none}
+.toc li{margin:4px 0}
+.toc li.toc-h3{margin-left:18px}
+.toc a{color:#1F78B4;text-decoration:none}
+.toc a:hover{text-decoration:underline}
+h4{font-size:14px;margin:20px 0 6px;color:#334155}
+h5{font-size:13px;margin:12px 0 2px;color:#475569}
+p{margin:2px 0;font-size:13px}
+.family-info{white-space:pre-wrap}
+.grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px;margin:8px 0 4px}
+.fig{min-width:0;background:#fff}
+.pedigree{margin:12px 0 8px;overflow-x:auto}
+.pedigree svg{max-width:100%;height:auto}
+.table-scroll{max-width:100%;overflow-x:auto}
+table.matrix{border-collapse:collapse;font-size:11px;margin:6px 0 10px}
+table.matrix th,table.matrix td{border:1px solid #cbd5f5;padding:3px 7px;text-align:right;white-space:nowrap}
+table.matrix th{font-weight:600;text-align:center}
+table.matrix th.row-label{text-align:left}
+table.matrix th.block0{background:#A6CEE3}
+table.matrix th.block1{background:#1F78B4;color:#fff}
+table.matrix td.empty{background:#f8fafc;border-color:#eef2f7}

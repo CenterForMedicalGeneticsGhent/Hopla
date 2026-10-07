@@ -1,0 +1,9 @@
+family:
+  id: galaxy-test
+  members:
+    - {id: FATHER, sex: M}
+    - {id: MOTHER, sex: F}
+    - {id: CHILD, father: FATHER, mother: MOTHER, sex: F}
+run_merlin: false
+keep_informative_ids: [FATHER, MOTHER]
+baf_ids: [CHILD]
