@@ -1,0 +1,5 @@
+description: Run Hopla analysis
+name: hopla
+owner: ict
+categories:
+- "Analyses"

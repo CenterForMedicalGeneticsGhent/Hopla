@@ -1,0 +1,54 @@
+# This is a GitLab CI configuration to build the project as a docker image
+stages:
+  - docker
+
+variables:
+  # fill those if you have a proxy in your environment
+  vendor: "Center for Medical Genetics, Ghent"
+  authors: "Bioinformatics & Team <ict@cmgg.be>"
+
+
+default:
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  tags:
+    - docker
+
+
+docker_build:
+  stage: docker
+  rules:
+    - if: $CI_COMMIT_TAG                                                           # on tag in default branch
+      variables:
+        IMAGE_VERSION: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push" # on merge into default branch
+      variables: 
+        IMAGE_VERSION: stable
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"                             # on PR creation or update
+      variables: 
+        IMAGE_VERSION: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - if: $CI_COMMIT_BRANCH == 'test'                                              # on commit into test
+      variables: 
+        IMAGE_VERSION: test
+  script:
+    - export IMAGE_VERSION=$(echo -en $IMAGE_VERSION | tr -c '[:alnum:]_.-' '-')
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      --pull
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --label "org.opencontainers.image.title=$CI_PROJECT_TITLE"
+      --label "org.opencontainers.image.url=$CI_PROJECT_URL"
+      --label "org.opencontainers.image.created=$CI_JOB_STARTED_AT"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.version=$CI_COMMIT_REF_NAME"
+      --label "org.opencontainers.image.vendor=$vendor"
+      --label "org.opencontainers.image.authors=$authors"
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+      --tag $CI_REGISTRY_IMAGE:$IMAGE_VERSION
+      --tag $CI_REGISTRY_IMAGE:latest
+      .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_VERSION
+    - docker push $CI_REGISTRY_IMAGE:latest
+
