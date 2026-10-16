@@ -4,6 +4,9 @@ This changelog covers the Hopla Python package. Releases 2.0.0 and 1.0.6 documen
 
 ## [Unreleased]
 
+### Changed
+
+- Merlin haplotype marker hover boxes now include the phased genotype of every sample at that position.
 
 ## [3.0.0] - 2026-08-28
 
