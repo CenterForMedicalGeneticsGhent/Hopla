@@ -249,6 +249,18 @@ def test_copy_number_figure_uses_fixed_y_axis() -> None:
     assert "customdata" in cn
 
 
+def test_haplotype_figure_hover_includes_all_sample_genotypes() -> None:
+    """Haplotype marker hover text lists every sample's phased genotype at that position."""
+    js = (Path(__file__).resolve().parents[1] / "src/hopla/report.js").read_text(encoding="utf-8")
+    hap = js.split("BUILD.hap = function", 1)[1].split("function draw", 1)[0]
+    assert "function summaryAt(pos)" in hap
+    assert "M.samples.map(function(sample)" in hap
+    assert "entry[2].letter === 'X' ? first : first + '|' + second" in hap
+    assert "M.labels[sample] + ': ' + value" in hap
+    assert "summaryAt(d.pos[i])" in hap
+    assert "hoverlabel:{align:'left'}" in hap
+
+
 def test_report_inlines_packaged_assets(tmp_path: Path) -> None:
     """Inline sibling CSS, JS, and the vendored plotly.js basic file."""
     package = Path(__file__).resolve().parents[1]

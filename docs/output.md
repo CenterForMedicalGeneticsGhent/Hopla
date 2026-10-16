@@ -86,7 +86,7 @@ Merlin runs when more than one real sample is in `family.members`, `run_merlin` 
 
 Merlin refuses chromosomes whose pedigree complexity exceeds its built-in 24-bit limit, scored as `2 x descendants - founders`. A family with two parents and fourteen children scores 26 bits, so Merlin skips every autosome and only chromosome X is haplotyped, because `minx` treats males as hemizygous and scores the same family lower. Hopla logs a warning naming the skipped chromosomes and still writes the report; those chromosomes simply have no haplotype panel.
 
-Haplotypes are coloured. Colours are relative between individuals and strands within a family. Hover a variant for details.
+Haplotypes are coloured. Colours are relative between individuals and strands within a family. Hover a variant marker to view the coordinate, the hovered strand's allele, and the phased genotype of every sample at that position.
 
 **Weighted neighbourhood voting (`window_size_voting`).** Raw Merlin haplotypes can be corrected by neighbourhood voting. At each variant X, nearby variants vote on the haplotype. A neighbour at distance `d` contributes
 
@@ -96,7 +96,7 @@ votes. Neighbours with a negative weight lie outside the window and are ignored.
 
 **Minimum segment size (`min_seg_var`).** A same-haplotype stretch must contain at least `min_seg_var` variants; otherwise it is corrected to neighbouring segments. Set to `0` to disable. Chromosome X can use `min_seg_var_x` (default `15`).
 
-Corrected haplotypes are drawn as circles instead of squares. Raw uncorrected genotypes remain available on hover.
+Corrected haplotypes are drawn as circles instead of squares. Raw uncorrected genotypes for all samples remain available on hover.
 
 When the raw genotype is `NA`, it was removed by soft filtering and no symbol is shown. Male chromosome X is hemizygous and is therefore drawn as one haplotype strand. The absent second minx strand is retained as `X` in portable tables and compatibility flow files, but is not drawn.
 

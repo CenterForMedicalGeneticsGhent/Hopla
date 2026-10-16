@@ -359,6 +359,24 @@
       var d = D.haplotypes.data;
       var count = M.samples.length;
       var inChromosome = where('haplotypes', function(d, i){ return d.chrom[i] === spec.chrom; });
+      var byPos = {}, summaryByPos = {};
+      inChromosome.forEach(function(i){
+        var pos = d.pos[i], row = byPos[pos] || (byPos[pos] = {});
+        var entry = row[d.sample[i]] || (row[d.sample[i]] = {});
+        entry[d.strand[i]] = {genotype: d.genotype[i], letter: d.letter[i]};
+      });
+      function summaryAt(pos){
+        if (summaryByPos[pos] !== undefined) return summaryByPos[pos];
+        var row = byPos[pos] || {};
+        summaryByPos[pos] = M.samples.map(function(sample){
+          var entry = row[sample] || {};
+          var first = entry[1] ? entry[1].genotype : 'NA';
+          var second = entry[2] ? entry[2].genotype : 'NA';
+          var value = entry[2] && entry[2].letter === 'X' ? first : first + '|' + second;
+          return M.labels[sample] + ': ' + value;
+        }).join('<br>');
+        return summaryByPos[pos];
+      }
       var traces = [], annotations = [];
       var regionChromosome = M.regions.some(function(region){ return region.chrom === spec.chrom; });
       var showPoints = M.keepChromosomesOnly || M.keepRegionsOnly ? regionChromosome : true;
@@ -384,11 +402,12 @@
             px.push(d.pos[i]);
             py.push(y);
             pc.push(LC[d.letter[i]] || '#ffffff');
-            pt.push(spec.chrom + ':' + fmt(d.pos[i]) + ' (' + d.genotype[i] + ')');
+            pt.push(spec.chrom + ':' + fmt(d.pos[i]) + ' (' + d.genotype[i] + ')<br>' + summaryAt(d.pos[i]));
             ps.push(d.is_corrected[i] ? 'circle' : 'square');
           });
           if (px.length){
             traces.push({type:'scatter', mode:'markers', x:px, y:py, text:pt, hoverinfo:'text',
+                         hoverlabel:{align:'left'},
                          marker:{color:pc, symbol:ps, size:M.dot * 4, line:{color:pc, width:1}}});
           }
           var blocks = runs(letters, positions);
