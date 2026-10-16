@@ -1,0 +1,5 @@
+sample.ids=FATHER,MOTHER,CHILD
+father.ids=NA,NA,FATHER
+mother.ids=NA,NA,MOTHER
+genders=M,F,F
+run.merlin=FALSE

@@ -1,0 +1,119 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hopla"
+version = "3.0.0"
+description = "Genomic family analysis and interactive reporting"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+  { name = "Lennart Raman", email = "leraman@users.noreply.github.com" },
+  { name = "Matthias De Smet", email = "matthdsm@users.noreply.github.com" },
+]
+maintainers = [
+  { name = "Matthias De Smet", email = "matthdsm@users.noreply.github.com" },
+]
+dependencies = [
+  "cyvcf2",
+  "jsonschema",
+  "jinja2",
+  "numpy",
+  # rtcompat keeps Polars on a baseline x86-64 build; the default runtime is
+  # compiled with AVX2 and crashes on hosts without it, such as QEMU guests.
+  "polars[rtcompat]",
+  "pydantic>=2",
+  "pyarrow",
+  "pybigwig",
+  "pyyaml",
+  "starlette",
+  "typer",
+  "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = ["httpx2", "mypy", "pytest", "ruff", "types-jsonschema", "types-pyyaml", "planemo"]
+
+[project.urls]
+Homepage = "https://github.com/CenterForMedicalGeneticsGhent/Hopla"
+Repository = "https://github.com/CenterForMedicalGeneticsGhent/Hopla"
+Issues = "https://github.com/CenterForMedicalGeneticsGhent/Hopla/issues"
+
+[project.scripts]
+hopla = "hopla.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hopla"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/hopla/schema/hopla.schema.json" = "hopla/schema/hopla.schema.json"
+"src/hopla/report.css" = "hopla/report.css"
+"src/hopla/report.js" = "hopla/report.js"
+"src/hopla/plotly-basic.min.js" = "hopla/plotly-basic.min.js"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ANN", "D"]
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/hopla/convert.py" = ["ANN401"]
+"src/hopla/report.py" = ["ANN401"]
+"src/hopla/vcf.py" = ["ANN401"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["hopla"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+conda-pypi-map = { bioconda = { mapping = { pybigwig = "pybigwig" } } }
+
+[tool.pixi.pypi-dependencies]
+hopla = { path = ".", editable = true }
+
+[tool.pixi.dependencies]
+python = ">=3.12,<3.14"
+cyvcf2 = "*"
+jinja2 = "*"
+jsonschema = "*"
+numpy = "*"
+polars = "*"
+polars-runtime-compat = "*"
+pydantic = ">=2"
+pyarrow = "*"
+pybigwig = "*"
+pyyaml = "*"
+starlette = "*"
+typer = "*"
+uvicorn = "*"
+pip = "*"
+merlin = "1.1.2.*"
+htslib = "*"
+
+[tool.pixi.feature.dev.dependencies]
+mypy = "*"
+pytest = "*"
+ruff = "*"
+types-pyyaml = "*"
+types-jsonschema = "*"
+httpx2 = ">=2.12.0,<3"
+
+[tool.pixi.feature.dev.tasks]
+lint-py = "ruff check src tests && mypy src"
+lint-galaxy = "planemo lint galaxy/hopla.xml"
+test-py = "pytest tests"
+
+[tool.pixi.environments]
+default = { features = [], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
