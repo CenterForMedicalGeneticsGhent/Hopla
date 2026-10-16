@@ -14,6 +14,7 @@ This manual documents the Python package at the repository root. Start from the 
 - [HTML output](output.md)
 - [Portable and IGV exports](exports.md)
 - [Package and engine structure](architecture.md)
+- [Comparison with `main` (R engine)](branch-comparison.md)
 - [Contributing](contributing.md)
 - [Changelog](../CHANGELOG.md)
 
