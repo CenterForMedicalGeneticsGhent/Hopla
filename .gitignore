@@ -1,2 +1,16 @@
 .Rhistory
 *.lock
+!pixi.lock
+.pixi/
+*merlin
+*.html
+!src/hopla/ui/templates/index.html
+.DS_Store
+tests/assets
+dist/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/

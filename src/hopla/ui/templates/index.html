@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hopla settings editor and analysis</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Hopla</h1>
+    <p>
+      {% if analysis %}Build, validate, and run a family analysis.
+      {% else %}Build and validate a settings file for <code>hopla run</code>.{% endif %}
+    </p>
+    <label class="upload button">Import configuration
+      <input id="config-upload" type="file" accept=".txt,.yaml,.yml,.json">
+    </label>
+    <p id="message" role="status" aria-live="polite"></p>
+  </header>
+
+  <main>
+    <nav class="tabs" aria-label="Editor sections">
+      <button type="button" data-tab="pedigree" class="active">Pedigree</button>
+      <button type="button" data-tab="parameters">Parameters</button>
+      <button type="button" data-tab="advanced">Advanced</button>
+      <button type="button" data-tab="config">Config</button>
+      {% if analysis %}<button type="button" data-tab="analysis">Analysis</button>{% endif %}
+    </nav>
+
+    <section id="pedigree" class="panel active">
+      <label>Family ID <input id="fam_id" required></label>
+      <h2>Grandparents</h2>
+      <div id="grandparents" class="member-grid"></div>
+      <h2>Parents</h2>
+      <div id="parents" class="member-grid"></div>
+      <div class="section-heading">
+        <h2>Siblings</h2>
+        <button type="button" id="add-sibling">Add sibling</button>
+      </div>
+      <div id="siblings" class="member-grid"></div>
+      <div class="section-heading">
+        <h2>Embryos</h2>
+        <button type="button" id="add-embryo">Add embryo</button>
+      </div>
+      <div id="embryos" class="member-grid"></div>
+    </section>
+
+    <section id="parameters" class="panel">
+      <div class="fields">
+        <label>Hard allele-frequency limit
+          <input id="af_hard_limit" type="number" min="0" max="0.999999" step="any">
+        </label>
+        <label>Merlin voting window
+          <input id="window_size_voting" type="number" min="0" step="1">
+        </label>
+        <label class="wide"><span>Regions (one <code>chr:start-end</code> per line)</span>
+          <textarea id="regions" rows="5"></textarea>
+          <small>Commas and a missing <code>chr</code> prefix are normalized.</small>
+        </label>
+        <label class="wide">Family information
+          <textarea id="info" rows="6" placeholder="Free text printed at the top of the report"></textarea>
+        </label>
+        <label><input id="keep_chromosomes_only" type="checkbox"> Keep chromosomes only</label>
+        <label><input id="keep_regions_only" type="checkbox"> Keep regions only</label>
+      </div>
+      <p class="hint">Select the input VCF on the Analysis tab.</p>
+    </section>
+
+    <section id="advanced" class="panel">
+      <div class="fields">
+        <label>Region flanking size
+          <input id="regions_flanking_size" type="number" min="0" step="1">
+        </label>
+        <label>Value of P
+          <input id="value_of_p" type="number" min="0.000001" max="1" step="any">
+        </label>
+        <label><input id="limit_pm_to_p" type="checkbox"> Limit parent mapping to P</label>
+        <label><input id="limit_baf_to_p" type="checkbox"> Limit BAF to P</label>
+      </div>
+    </section>
+
+    <section id="config" class="panel">
+      <div class="section-heading">
+        <h2>Validated YAML</h2>
+        <button type="button" id="download">Download YAML</button>
+      </div>
+      <pre id="yaml-preview"></pre>
+    </section>
+
+    {% if analysis %}
+    <section id="analysis" class="panel">
+      <h2>Run analysis</h2>
+      <p>
+        Hopla uses the current validated configuration. Imported configurations and changes made
+        in this editor are handled identically.
+      </p>
+      <div class="analysis-controls">
+        <label>Family VCF
+          <input id="vcf-upload" type="file"
+                 accept=".vcf,.vcf.gz,.vcf.bgz,.gz,.bgz,text/plain,application/gzip">
+        </label>
+        <button type="button" id="run-analysis">Run analysis</button>
+      </div>
+      <p class="hint">
+        The VCF and generated report are stored temporarily and removed when this server stops.
+        Web runs generate the HTML report only.
+      </p>
+      <p id="analysis-status" role="status" aria-live="polite">Select a VCF to begin.</p>
+      <progress id="analysis-progress" aria-label="Analysis running" hidden></progress>
+      <ol id="analysis-log" class="log" hidden></ol>
+      <a id="report-download" class="button" href="#" download hidden>Download HTML report</a>
+    </section>
+    {% endif %}
+  </main>
+
+  <dialog id="member-limit" aria-labelledby="member-limit-title">
+    <h2 id="member-limit-title">Family too large for Merlin haplotyping</h2>
+    <p id="member-limit-text"></p>
+    <form method="dialog"><button autofocus>Understood</button></form>
+  </dialog>
+
+  <template id="member-template">
+    <article class="member-card">
+      <div class="section-heading">
+        <h3></h3>
+        <button type="button" class="remove danger">Remove</button>
+      </div>
+      <label>Sample ID <input class="sample-id"></label>
+      <label>Sex
+        <select class="sex"><option>NA</option><option>M</option><option>F</option></select>
+      </label>
+      <label>Disease status
+        <select class="disease-status">
+          <option value="NA">Not specified</option>
+          <option value="carrier">Carrier</option>
+          <option value="affected">Affected</option>
+          <option value="nonaffected">Non-affected</option>
+        </select>
+      </label>
+      <fieldset>
+        <legend>Include in</legend>
+        <label><input class="hard-dp" type="checkbox"> Hard DP</label>
+        <label><input class="hard-af" type="checkbox"> Hard AF</label>
+        <label><input class="soft-dp" type="checkbox"> Soft DP</label>
+        <label><input class="informative" type="checkbox"> Informative</label>
+        <label><input class="hetero" type="checkbox"> Heterozygous</label>
+        <label><input class="baf" type="checkbox"> BAF</label>
+      </fieldset>
+    </article>
+  </template>
+  <script id="initial-state" type="application/json">{{ initial_state | tojson }}</script>
+</body>
+</html>

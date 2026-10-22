@@ -1,4 +1,8 @@
-.venv
-data
-UI
-.github
+.git
+.pixi
+example/*.vcf
+example/*.vcf.gz
+example/*.bcf
+*.html
+!src/hopla/ui/templates/index.html
+*-output_files
