@@ -359,57 +359,41 @@
       var d = D.haplotypes.data;
       var count = M.samples.length;
       var inChromosome = where('haplotypes', function(d, i){ return d.chrom[i] === spec.chrom; });
-      var byPos = {}, summaryByPos = {};
-      inChromosome.forEach(function(i){
-        var pos = d.pos[i], row = byPos[pos] || (byPos[pos] = {});
-        var entry = row[d.sample[i]] || (row[d.sample[i]] = {});
-        entry[d.strand[i]] = {genotype: d.genotype[i], letter: d.letter[i]};
-      });
-      function summaryAt(pos){
-        if (summaryByPos[pos] !== undefined) return summaryByPos[pos];
-        var row = byPos[pos] || {};
-        summaryByPos[pos] = M.samples.map(function(sample){
-          var entry = row[sample] || {};
-          var first = entry[1] ? entry[1].genotype : 'NA';
-          var second = entry[2] ? entry[2].genotype : 'NA';
-          var value = entry[2] && entry[2].letter === 'X' ? first : first + '|' + second;
-          return M.labels[sample] + ': ' + value;
-        }).join('<br>');
-        return summaryByPos[pos];
-      }
       var traces = [], annotations = [];
       var regionChromosome = M.regions.some(function(region){ return region.chrom === spec.chrom; });
       var showPoints = M.keepChromosomesOnly || M.keepRegionsOnly ? regionChromosome : true;
       M.samples.forEach(function(sample, order){
         var base = count * 3 - (order + 1) * 3;
         annotations.push({x:0, y:base + 2, text:M.labels[sample], showarrow:false, xanchor:'left', font:{size:10}});
+        var sampleIndices = inChromosome.filter(function(i){ return d.sample[i] === sample; });
+        if (!sampleIndices.length || sampleIndices.every(function(i){ return d.genotype[i] === 'NA'; })) return;
         [1, 2].forEach(function(strand){
-          var mine = inChromosome.filter(function(i){ return d.sample[i] === sample && d.strand[i] === strand; });
+          var mine = sampleIndices.filter(function(i){ return d.strand[i] === strand; });
           if (!mine.length) return;
           mine.sort(function(a, b){ return d.pos[a] - d.pos[b]; });
           var y = strand === 1 ? base + 1 : base;
           var positions = pick(d.pos, mine), letters = pick(d.letter, mine);
-          var genotypes = pick(d.genotype, mine);
-          if (letters.every(function(letter){ return letter === 'X'; }) ||
-              genotypes.every(function(genotype){ return genotype === 'NA'; })) return;
-          var px = [], py = [], pc = [], pt = [], ps = [];
+          var haploidX = letters.every(function(letter){ return letter === 'X'; });
+          var px = [], py = [], pc = [], pt = [], ps = [], po = [];
           mine.forEach(function(i){
-            if (d.genotype[i] === 'NA') return;
             if (!showPoints) return;
             if (M.keepRegionsOnly && !M.regions.some(function(region){
               return region.chrom === spec.chrom && d.pos[i] >= region.start - M.flank && d.pos[i] <= region.end + M.flank;
             })) return;
+            var call = d.letter[i] === 'X' ? 'X' : d.genotype[i];
             px.push(d.pos[i]);
             py.push(y);
             pc.push(LC[d.letter[i]] || '#ffffff');
-            pt.push(spec.chrom + ':' + fmt(d.pos[i]) + ' (' + d.genotype[i] + ')<br>' + summaryAt(d.pos[i]));
+            pt.push(spec.chrom + ':' + fmt(d.pos[i]) + ' (' + call + ')');
             ps.push(d.is_corrected[i] ? 'circle' : 'square');
+            po.push(d.genotype[i] === 'NA' || d.letter[i] === 'X' ? 0 : 1);
           });
           if (px.length){
             traces.push({type:'scatter', mode:'markers', x:px, y:py, text:pt, hoverinfo:'text',
-                         hoverlabel:{align:'left'},
-                         marker:{color:pc, symbol:ps, size:M.dot * 4, line:{color:pc, width:1}}});
+                         hoverlabel:{bgcolor:pc},
+                         marker:{color:pc, symbol:ps, opacity:po, size:M.dot * 4, line:{color:pc, width:1}}});
           }
+          if (haploidX) return;
           var blocks = runs(letters, positions);
           blocks.forEach(function(block){
             traces.push({type:'scatter', mode:'lines', x:[block.start, block.end], y:[y, y], hoverinfo:'none',
@@ -428,7 +412,7 @@
       return {
         traces: traces,
         layout: layout({
-          height: spec.height, xtitle: spec.chrom,
+          height: spec.height, xtitle: spec.chrom, hovermode: 'x',
           xaxis: {range:[0, SIZES[spec.chrom]]},
           yaxis: {range:[-1, ceiling + 1], fixedrange:true, showticklabels:false},
           annotations: annotations,

@@ -249,16 +249,15 @@ def test_copy_number_figure_uses_fixed_y_axis() -> None:
     assert "customdata" in cn
 
 
-def test_haplotype_figure_hover_includes_all_sample_genotypes() -> None:
-    """Haplotype marker hover text lists every sample's phased genotype at that position."""
+def test_haplotype_figure_hover_shows_every_sample_strand() -> None:
+    """Haplotype figures compare strands across the hovered x position, including NA and X."""
     js = (Path(__file__).resolve().parents[1] / "src/hopla/report.js").read_text(encoding="utf-8")
     hap = js.split("BUILD.hap = function", 1)[1].split("function draw", 1)[0]
-    assert "function summaryAt(pos)" in hap
-    assert "M.samples.map(function(sample)" in hap
-    assert "entry[2].letter === 'X' ? first : first + '|' + second" in hap
-    assert "M.labels[sample] + ': ' + value" in hap
-    assert "summaryAt(d.pos[i])" in hap
-    assert "hoverlabel:{align:'left'}" in hap
+    assert "hovermode: 'x'" in hap
+    assert "var call = d.letter[i] === 'X' ? 'X' : d.genotype[i];" in hap
+    assert "po.push(d.genotype[i] === 'NA' || d.letter[i] === 'X' ? 0 : 1);" in hap
+    assert "hoverlabel:{bgcolor:pc}" in hap
+    assert "opacity:po" in hap
 
 
 def test_report_inlines_packaged_assets(tmp_path: Path) -> None:
